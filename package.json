@@ -14,7 +14,11 @@
     "build": "pnpm --filter solid-glass build && pnpm --filter @solid-glass/demo build",
     "build:lib": "pnpm --filter solid-glass build",
     "build:demo": "pnpm --filter @solid-glass/demo build",
+    "build:web": "pnpm --filter @solid-glass/web build",
+    "dev:web": "pnpm --filter @solid-glass/web dev",
     "preview": "pnpm --filter @solid-glass/demo preview",
+    "test": "pnpm --filter solid-glass test",
+    "test:coverage": "pnpm --filter solid-glass test:coverage",
     "typecheck": "pnpm -r typecheck",
     "clean": "pnpm -r clean"
   },
