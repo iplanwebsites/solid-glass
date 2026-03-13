@@ -4,7 +4,7 @@ A lightweight, customizable solid glass effect library for modern web applicatio
 
 ![Solid Glass Demo](https://github.com/iplanwebsites/solid-glass/blob/main/demo/demo.png?raw=true)
 
-🚀 **[Live Demo](https://iplanwebsites.github.io/solid-glass/)**
+🚀 **[Live Demo & Docs](https://solidglass.dev)** | 📦 [npm](https://www.npmjs.com/package/solid-glass)
 
 ## Features
 
@@ -240,7 +240,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT © fmenard .
+Apache 2.0 — [solidglass.dev](https://solidglass.dev)
 
 ## Credits
 

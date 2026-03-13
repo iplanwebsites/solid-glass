@@ -1,26 +1,5 @@
 import { useState } from "react";
-import { Copy, Check } from "lucide-react";
-
-function CopyBtn({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="absolute top-3 right-3 p-1.5 rounded-md bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-    >
-      {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
-    </button>
-  );
-}
-
-function CodeBlock({ code, lang = "tsx" }: { code: string; lang?: string }) {
-  return (
-    <div className="relative bg-slate-900/80 rounded-xl p-4 my-4">
-      <CopyBtn text={code} />
-      <pre className="code-block text-slate-300 overflow-x-auto text-xs">{code}</pre>
-    </div>
-  );
-}
+import { CodeBlock } from "../components/CodeBlock";
 
 const sections = [
   {
@@ -31,7 +10,7 @@ const sections = [
         <p className="text-slate-400 mb-4">Install with your preferred package manager:</p>
         <CodeBlock code={`npm install solid-glass\n# or\npnpm add solid-glass\n# or\nyarn add solid-glass`} lang="bash" />
         <p className="text-slate-400 mt-4">
-          <strong className="text-white">Peer dependency:</strong> React 18+ is required.
+          <strong className="text-white">Peer dependencies:</strong> React 18+, Vue 3.3+, or neither (vanilla JS). All are optional.
         </p>
       </>
     ),
@@ -191,7 +170,139 @@ import { frosted, crystal } from "solid-glass/effects";
 import { presets, presetNames } from "solid-glass/presets";
 
 // CSS (required — import once at app root)
-import "solid-glass/css";`} />
+import "solid-glass/css";
+
+// SVG refraction engine (no framework dependency)
+import { createLiquidGlass } from "solid-glass/engines/svg-refraction";`} />
+      </>
+    ),
+  },
+  {
+    id: "vue-api",
+    title: "Vue API",
+    content: (
+      <>
+        <p className="text-slate-400 mb-4">
+          Use the <code className="text-blue-300">&lt;Glass&gt;</code> component or <code className="text-blue-300">useGlass</code> composable in Vue 3:
+        </p>
+        <CodeBlock code={`<template>
+  <Glass effect="frosted" :options="{ blur: 16 }">
+    <p>Frosted glass in Vue</p>
+  </Glass>
+</template>
+
+<script setup>
+import { Glass } from "solid-glass/vue";
+import "solid-glass/css";
+</script>`} />
+        <p className="text-slate-400 mt-4 mb-4">
+          Or use the composable for full control:
+        </p>
+        <CodeBlock code={`<script setup>
+import { useGlass } from "solid-glass/vue";
+
+const { glassRef, className, style } = useGlass("crystal", {
+  blur: 10, distortionStrength: 50,
+});
+</script>
+
+<template>
+  <div :ref="glassRef" :class="className" :style="style">
+    Content
+  </div>
+</template>`} />
+      </>
+    ),
+  },
+  {
+    id: "vanilla-api",
+    title: "Vanilla JS API",
+    content: (
+      <>
+        <p className="text-slate-400 mb-4">
+          No framework? Use <code className="text-blue-300">applyGlass</code> directly on any DOM element:
+        </p>
+        <CodeBlock code={`import { applyGlass } from "solid-glass/vanilla";
+import "solid-glass/css";
+
+const el = document.querySelector("#my-card");
+const cleanup = applyGlass(el, "frosted", {
+  blur: 16,
+  tintColor: "#ffffff",
+  tintOpacity: 0.1,
+});
+
+// Remove the effect later:
+cleanup();`} />
+        <p className="text-slate-400 mt-4">
+          Returns a cleanup function that removes all styles and injected SVG filters.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "svg-refraction-engine",
+    title: "SVG Refraction Engine",
+    content: (
+      <>
+        <p className="text-slate-400 mb-4">
+          A separate physics-based engine that uses Snell-Descartes law and canvas-generated displacement maps
+          for realistic glass refraction. <strong className="text-white">Chromium-only.</strong>
+        </p>
+        <CodeBlock code={`import { createLiquidGlass } from "solid-glass/engines/svg-refraction";
+
+const glass = createLiquidGlass({
+  width: 300,
+  height: 200,
+  radius: 20,
+  bezelWidth: 50,
+  glassThickness: 200,
+  blur: 8,
+  refractiveIndex: 1.5,
+  surface: "convexSquircle",  // convexCircle | convexSquircle | concave | lip
+  specularOpacity: 0.6,
+});
+
+// Inject SVG filter into DOM
+document.body.insertAdjacentHTML("beforeend", glass.svgFilter);
+
+// Apply as backdrop-filter
+element.style.backdropFilter = glass.filterRef;`} />
+        <p className="text-slate-400 mt-4 text-sm">
+          Physics approach based on <a href="https://kube.io/blog/liquid-glass-css-svg" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">Chris Feijoo's blog post</a>.
+          Try it in the <a href="#/showcase" className="text-blue-400 hover:text-blue-300 underline">Playground</a>.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "example-components",
+    title: "Example Components",
+    content: (
+      <>
+        <p className="text-slate-400 mb-4">
+          Ready-to-use React components in <code className="text-blue-300">components/react/</code>. Copy into your project and customize:
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-700">
+                <th className="text-left py-3 text-slate-300 font-semibold">Component</th>
+                <th className="text-left py-3 text-slate-300 font-semibold">Description</th>
+                <th className="text-left py-3 text-slate-300 font-semibold">Engine</th>
+              </tr>
+            </thead>
+            <tbody className="text-slate-400">
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassCard</td><td>Frosted glass card with title/subtitle slots</td><td><span className="text-violet-400">Shaders</span></td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassButton</td><td>Interactive glass button with hover states</td><td><span className="text-violet-400">Shaders</span></td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">Loupe</td><td>Magnifying glass overlay</td><td><span className="text-emerald-400">SVG Refraction</span></td></tr>
+              <tr><td className="py-3 text-white font-mono">LiquidGlassPanel</td><td>Physics-based glass panel wrapper</td><td><span className="text-emerald-400">SVG Refraction</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="text-slate-400 mt-4 text-sm">
+          See live demos on the <a href="#/components" className="text-blue-400 hover:text-blue-300 underline">Components page</a>.
+        </p>
       </>
     ),
   },

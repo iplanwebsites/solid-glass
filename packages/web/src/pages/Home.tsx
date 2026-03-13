@@ -2,6 +2,7 @@ import { Glass, type GlassEffectName } from "solid-glass";
 import { NavLink } from "react-router-dom";
 import { ArrowRight, Zap, Palette, Code2, TreePine, Box, Sparkles, Copy, Check } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { CodeBlock } from "../components/CodeBlock";
 
 const BG_PHOTOS = [
   "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=70",
@@ -27,46 +28,53 @@ const FEATURES = [
   { icon: Code2, title: "TypeScript-First", desc: "Full type definitions, IntelliSense support, and type-safe options for every effect." },
   { icon: TreePine, title: "Tree-Shakeable", desc: "Import only what you use. Each effect is independently importable for minimal bundle size." },
   { icon: Zap, title: "Zero Config", desc: "Sensible defaults for every effect. Drop in a <Glass> component and it just works." },
-  { icon: Box, title: "Component + Hook API", desc: "Use the <Glass> component for quick integration, or useGlass() hook for full control." },
+  { icon: Box, title: "React, Vue & Vanilla", desc: "First-class support for React, Vue 3, and vanilla JS. Same effects everywhere." },
   { icon: Sparkles, title: "16 Built-in Presets", desc: "Ready-made configurations for common patterns. From frostedDark to holoCard." },
 ];
 
 const INSTALL_SNIPPET = `npm install solid-glass`;
-const QUICK_SNIPPET = `import { Glass } from "solid-glass";
+const REACT_SNIPPET = `import { Glass } from "solid-glass/react";
 import "solid-glass/css";
 
 function Card() {
   return (
-    <Glass effect="frosted" options={{ blur: 16 }}>
+    <Glass effect="crystal" options={{
+      blur: 7,
+      tintColor: "#0ad9f5",
+      tintOpacity: 0.23,
+      noiseFrequency: 0.032,
+      distortionStrength: 40,
+    }}>
       <h2>Behind the glass</h2>
     </Glass>
   );
 }`;
 
-const HOOK_SNIPPET = `import { useGlass } from "solid-glass";
+const VUE_SNIPPET = `<template>
+  <Glass effect="aurora" :options="{
+    colors: ['#a78bfa', '#6ee7b7'],
+    blur: 16,
+  }">
+    <p>Aurora vibes</p>
+  </Glass>
+</template>
+
+<script setup>
+import { Glass } from "solid-glass/vue";
+import "solid-glass/css";
+</script>`;
+
+const VANILLA_SNIPPET = `import { applyGlass } from "solid-glass/vanilla";
 import "solid-glass/css";
 
-function Card() {
-  const glass = useGlass("aurora", {
-    colors: ["#a78bfa", "#6ee7b7"],
-  });
+const card = document.querySelector("#card");
+const cleanup = applyGlass(card, "frosted", {
+  blur: 16,
+  tintColor: "#3b82f6",
+  tintOpacity: 0.12,
+});
 
-  return (
-    <div ref={glass.ref}
-         className={glass.className}
-         style={glass.style}>
-      <p>Aurora vibes</p>
-    </div>
-  );
-}`;
-
-const PRESET_SNIPPET = `import { Glass, presets } from "solid-glass";
-
-// Use a preset directly
-<Glass
-  effect={presets.frostedDark.effect}
-  options={presets.frostedDark.options}
-/>`;
+// Later: cleanup();`;
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -155,18 +163,18 @@ export function Home() {
       <section className="max-w-5xl mx-auto px-6 pt-24 pb-20 text-center">
         <div className="inline-flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-full px-4 py-1.5 text-sm text-slate-300 mb-8">
           <Sparkles size={14} className="text-violet-400" />
-          7 glass effects, 16 presets, 1 import
+          Multiple engines, 7+ effects, React / Vue / Vanilla JS
         </div>
 
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1]">
           <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">Glass effects</span>
           <br />
-          <span className="bg-gradient-to-r from-blue-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">for React</span>
+          <span className="bg-gradient-to-r from-blue-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">for the web</span>
         </h1>
 
         <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mt-6 leading-relaxed">
-          A comprehensive toolkit of glassmorphism effects. Frosted, Crystal, Aurora, Smoke,
-          Prism, Holographic, and Thin — all with a simple, type-safe API.
+          A comprehensive toolkit of glassmorphism effects for React, Vue, and vanilla JS.
+          Frosted, Crystal, Aurora, Smoke, Prism, Holographic, and Thin — all with a simple, type-safe API.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
@@ -174,7 +182,7 @@ export function Home() {
             to="/showcase"
             className="inline-flex items-center justify-center gap-2 bg-white text-slate-900 px-6 py-3 rounded-xl font-semibold hover:bg-slate-100 transition-colors"
           >
-            View Showcase <ArrowRight size={18} />
+            Open Playground <ArrowRight size={18} />
           </NavLink>
           <div className="inline-flex items-center gap-3 bg-slate-800/80 border border-slate-700 px-6 py-3 rounded-xl">
             <code className="font-mono text-sm text-slate-200">{INSTALL_SNIPPET}</code>
@@ -190,7 +198,7 @@ export function Home() {
       <section className="max-w-6xl mx-auto px-6 pb-24">
         <h2 className="text-3xl font-bold text-center mb-4">Why solid-glass?</h2>
         <p className="text-slate-400 text-center max-w-xl mx-auto mb-14">
-          Everything you need to add beautiful glass effects to your React app, nothing you don't.
+          Everything you need to add beautiful glass effects to your app, nothing you don't.
         </p>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -208,24 +216,21 @@ export function Home() {
 
       {/* Code examples */}
       <section className="max-w-6xl mx-auto px-6 pb-24">
-        <h2 className="text-3xl font-bold text-center mb-4">Simple API, powerful results</h2>
+        <h2 className="text-3xl font-bold text-center mb-4">One library, every framework</h2>
         <p className="text-slate-400 text-center max-w-xl mx-auto mb-14">
-          Three ways to use solid-glass — pick the approach that fits your codebase.
+          Use solid-glass with React, Vue, or vanilla JS — same effects, same API shape.
         </p>
 
         <div className="grid md:grid-cols-3 gap-6">
           {[
-            { title: "Component API", desc: "Drop-in component with props", code: QUICK_SNIPPET },
-            { title: "Hook API", desc: "Full control with useGlass()", code: HOOK_SNIPPET },
-            { title: "Presets", desc: "Ready-made configurations", code: PRESET_SNIPPET },
+            { title: "React", desc: "Component & hook API", code: REACT_SNIPPET, lang: "tsx" },
+            { title: "Vue", desc: "Composition API component", code: VUE_SNIPPET, lang: "vue" },
+            { title: "Vanilla JS", desc: "Zero-framework, pure DOM", code: VANILLA_SNIPPET, lang: "ts" },
           ].map((ex) => (
             <div key={ex.title} className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 relative">
               <h3 className="font-semibold text-white mb-1">{ex.title}</h3>
               <p className="text-xs text-slate-500 mb-4">{ex.desc}</p>
-              <div className="bg-slate-900/80 rounded-xl p-4 relative">
-                <CopyButton text={ex.code} />
-                <pre className="code-block text-slate-300 overflow-x-auto text-[11px] leading-relaxed">{ex.code}</pre>
-              </div>
+              <CodeBlock code={ex.code} lang={ex.lang} />
             </div>
           ))}
         </div>
@@ -241,8 +246,11 @@ export function Home() {
           </p>
           <div className="space-y-3">
             {[
-              { path: 'solid-glass', desc: 'Everything — Glass, useGlass, all effects, presets, utils' },
+              { path: 'solid-glass/react', desc: 'React — Glass component + useGlass hook' },
+              { path: 'solid-glass/vue', desc: 'Vue 3 — Glass component + useGlass composable' },
+              { path: 'solid-glass/vanilla', desc: 'Vanilla JS — applyGlass() for any DOM element' },
               { path: 'solid-glass/effects', desc: 'Just the style generators (frosted, crystal, ...)' },
+              { path: 'solid-glass/engines/svg-refraction', desc: 'Physics-based liquid glass via SVG displacement maps' },
               { path: 'solid-glass/presets', desc: 'Pre-configured effect combos' },
               { path: 'solid-glass/css', desc: 'The CSS file — required for visual effects' },
             ].map((imp) => (
@@ -266,7 +274,7 @@ export function Home() {
             to="/showcase"
             className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-violet-500 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
           >
-            Interactive Showcase <ArrowRight size={18} />
+            Open Playground <ArrowRight size={18} />
           </NavLink>
           <NavLink
             to="/docs"

@@ -1,7 +1,7 @@
 {
   "name": "solid-glass",
   "version": "1.0.0",
-  "description": "A comprehensive glass effect toolkit for React \u2014 frosted, crystal, aurora, smoke, prism, and more.",
+  "description": "A comprehensive glass effect toolkit — frosted, crystal, aurora, smoke, prism, and more. Works with React, Vue, and vanilla JS.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -15,6 +15,30 @@
       "require": {
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
+      }
+    },
+    "./react": {
+      "import": {
+        "types": "./dist/react/index.d.ts",
+        "default": "./dist/react/index.js"
+      }
+    },
+    "./vue": {
+      "import": {
+        "types": "./dist/vue/index.d.ts",
+        "default": "./dist/vue/index.js"
+      }
+    },
+    "./vanilla": {
+      "import": {
+        "types": "./dist/vanilla/index.d.ts",
+        "default": "./dist/vanilla/index.js"
+      }
+    },
+    "./engines/svg-refraction": {
+      "import": {
+        "types": "./dist/engines/svg-refraction.d.ts",
+        "default": "./dist/engines/svg-refraction.js"
       }
     },
     "./effects": {
@@ -52,6 +76,8 @@
     "liquid-glass",
     "apple-ui",
     "react",
+    "vue",
+    "vanilla",
     "css",
     "ui-effects",
     "backdrop-filter",
@@ -59,14 +85,20 @@
   ],
   "author": "felix_m",
   "license": "Apache-2.0",
-  "homepage": "https://iplanwebsites.github.io/solid-glass/",
+  "homepage": "https://solidglass.dev",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/iplanwebsites/solid-glass.git"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react-dom": ">=18.0.0",
+    "vue": ">=3.3.0"
+  },
+  "peerDependenciesMeta": {
+    "react": { "optional": true },
+    "react-dom": { "optional": true },
+    "vue": { "optional": true }
   },
   "devDependencies": {
     "react": "^18.3.1",
