@@ -1,6 +1,6 @@
 # Credits & Acknowledgments
 
-solid-glass aims to be a comprehensive hub for glass effects on the web,
+[solidglass.dev](https://solidglass.dev) aims to be a comprehensive hub for glass effects on the web,
 bringing together multiple approaches and engines under one roof.
 We stand on the shoulders of excellent work by the community.
 

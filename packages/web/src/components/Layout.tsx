@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Github, Package, BookOpen, Layers } from "lucide-react";
+import { Github, Package, BookOpen, Layers, Box } from "lucide-react";
 
 export function Layout() {
   const navLink = (to: string, label: string, Icon: typeof Layers, end = false) => (
@@ -35,6 +35,7 @@ export function Layout() {
             {navLink("/", "Home", Package, true)}
             {navLink("/docs", "Docs", BookOpen)}
             {navLink("/showcase", "Showcase", Layers)}
+            {navLink("/components", "Components", Box)}
             <a
               href="https://github.com/iplanwebsites/solid-glass"
               target="_blank"
@@ -62,7 +63,7 @@ export function Layout() {
       <footer className="border-t border-white/5 py-8">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-slate-500">
-            solid-glass — Open source glass effect toolkit for React.
+            solid-glass — Open source glass effect toolkit for React, Vue & Vanilla JS. <a href="https://solidglass.dev" className="text-slate-400 hover:text-white transition-colors">solidglass.dev</a>
           </p>
           <div className="flex gap-6 text-sm text-slate-500">
             <a href="https://github.com/iplanwebsites/solid-glass" className="hover:text-white transition-colors">GitHub</a>

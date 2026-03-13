@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "A comprehensive glass effect toolkit for the web",
-  "homepage": "https://iplanwebsites.github.io/solid-glass/",
+  "homepage": "https://solidglass.dev",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/iplanwebsites/solid-glass.git"
