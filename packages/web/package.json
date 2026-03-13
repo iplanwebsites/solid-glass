@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "deploy": "wrangler pages deploy dist --project-name solid-glass-web"
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "solid-glass": "workspace:*",
