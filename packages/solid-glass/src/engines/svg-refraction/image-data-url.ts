@@ -11,7 +11,7 @@ export function pixelDataToUrl(
   canvas.height = height;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Failed to get canvas 2d context");
-  const imageData = new ImageData(data, width, height);
+  const imageData = new ImageData(new Uint8ClampedArray(data.buffer) as unknown as Uint8ClampedArray<ArrayBuffer>, width, height);
   ctx.putImageData(imageData, 0, 0);
   return canvas.toDataURL();
 }
