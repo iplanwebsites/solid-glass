@@ -161,7 +161,7 @@ export type GlassCSSVars = Record<string, string | number>;
 
 /** An effect style generator function */
 export type GlassStyleGenerator<T extends GlassBaseOptions = GlassBaseOptions> = (
-  options: T
+  options?: T
 ) => {
   className: string;
   cssVars: GlassCSSVars;

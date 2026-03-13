@@ -11,16 +11,16 @@
   "scripts": {
     "dev": "pnpm --filter @solid-glass/demo dev",
     "dev:lib": "pnpm --filter solid-glass dev",
-    "build": "pnpm --filter solid-glass build && pnpm --filter @solid-glass/demo build",
-    "build:lib": "pnpm --filter solid-glass build",
-    "build:demo": "pnpm --filter @solid-glass/demo build",
-    "build:web": "pnpm --filter @solid-glass/web build",
     "dev:web": "pnpm --filter @solid-glass/web dev",
+    "build": "turbo run build",
+    "build:lib": "turbo run build --filter=solid-glass",
+    "build:demo": "turbo run build --filter=@solid-glass/demo",
+    "build:web": "turbo run build --filter=@solid-glass/web",
     "preview": "pnpm --filter @solid-glass/demo preview",
-    "test": "pnpm --filter solid-glass test",
+    "test": "turbo run test",
     "test:coverage": "pnpm --filter solid-glass test:coverage",
-    "typecheck": "pnpm -r typecheck",
-    "clean": "pnpm -r clean"
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean"
   },
   "keywords": [
     "glass",
@@ -33,5 +33,9 @@
     "ui-effects"
   ],
   "author": "felix_m",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.29.3",
+  "devDependencies": {
+    "turbo": "^2.8.16"
+  }
 }
