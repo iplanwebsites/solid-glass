@@ -59,6 +59,21 @@ const cleanup = applyGlass(card, "frosted", {
 const LOUPE_IMAGE = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80";
 const PANEL_IMAGE = "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&q=80";
 
+// Approved liquid glass styles
+const LIQUID_GLASS_STYLES = {
+  defaultPanel: {
+    width: 280,
+    height: 200,
+    radius: 54,
+    bezelWidth: 22,
+    glassThickness: 130,
+    blur: 2,
+    refractiveIndex: 2.05,
+    surface: "convexSquircle" as SurfaceType,
+    specularOpacity: 0.7,
+  },
+} as const;
+
 function LoupeDemo() {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<Element | null>(null);
@@ -131,21 +146,13 @@ function LoupeDemo() {
 function PanelDemo() {
   const svgRef = useRef<Element | null>(null);
   const [surface, setSurface] = useState<SurfaceType>("convexSquircle");
+  const baseStyle = LIQUID_GLASS_STYLES.defaultPanel;
 
   const glass = useMemo(
     () =>
       createLiquidGlass({
-        width: 220,
-        height: 120,
-        radius: 16,
-        bezelWidth: 35,
-        glassThickness: 200,
-        blur: 8,
-        refractiveIndex: 1.5,
+        ...baseStyle,
         surface,
-        specularOpacity: 0.6,
-        saturation: 1.2,
-        dpr: 1,
       }),
     [surface]
   );
@@ -181,9 +188,9 @@ function PanelDemo() {
         <img src={PANEL_IMAGE} alt="" className="absolute inset-0 w-[115%] h-[115%] object-cover -top-[7%] -left-[7%]" />
         <div
           style={{
-            width: 220,
-            height: 120,
-            borderRadius: 16,
+            width: baseStyle.width,
+            height: baseStyle.height,
+            borderRadius: baseStyle.radius,
             overflow: "hidden",
             backdropFilter: glass.filterRef,
             WebkitBackdropFilter: glass.filterRef,

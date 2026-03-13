@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Github, BookOpen, Layers, Box, Play, Gem } from "lucide-react";
+import { Github, BookOpen, Layers, Box, Play, Gem, FlaskConical } from "lucide-react";
 
 export function Layout() {
   const navLink = (to: string, label: string, Icon: typeof Layers, end = false) => (
@@ -34,6 +34,7 @@ export function Layout() {
             {navLink("/showcase", "Playground", Play)}
             {navLink("/docs", "Docs", BookOpen)}
             {navLink("/components", "Components", Box)}
+            {navLink("/kitchen", "Kitchen", FlaskConical)}
             <a
               href="https://github.com/iplanwebsites/solid-glass"
               target="_blank"
