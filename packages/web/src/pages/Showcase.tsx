@@ -204,9 +204,19 @@ function ShadersPlayground() {
   const [effect, setEffect] = useState<GlassEffectName>("frosted");
   const [values, setValues] = useState<Record<string, number>>({});
   const [tintColor, setTintColor] = useState("#ffffff");
-  const [bgIndex, setBgIndex] = useState(-1);
+  const [bgIndex, setBgIndex] = useState(0); // Default to first image
   const [gradientIndex, setGradientIndex] = useState(0);
   const [framework, setFramework] = useState<Framework>("react");
+  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const rect = previewRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    setMouseOffset({ x: nx * -20, y: ny * -20 });
+  }, []);
 
   const activeSliders = SLIDERS.filter((s) => s.effects.includes(effect));
   const getValue = (key: string, def: number) => values[key] ?? def;
@@ -257,13 +267,22 @@ function ShadersPlayground() {
           ))}
         </div>
 
-        <div className={`relative overflow-hidden rounded-2xl h-[460px] flex items-center justify-center ${bgIndex === -1 ? `bg-gradient-to-br ${GRADIENT_BGS[gradientIndex]}` : ""}`}>
+        <div
+          ref={previewRef}
+          className={`relative overflow-hidden rounded-2xl h-[460px] flex items-center justify-center ${bgIndex === -1 ? `bg-gradient-to-br ${GRADIENT_BGS[gradientIndex]}` : ""}`}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => setMouseOffset({ x: 0, y: 0 })}
+        >
           {bgIndex >= 0 && (
             <img
               src={BG_IMAGES[bgIndex]}
               alt=""
-              className="absolute inset-0 w-[115%] h-[115%] object-cover -top-[7%] -left-[7%]"
-              style={{ animation: "panBg0 14s ease-in-out infinite alternate" }}
+              className="absolute w-[115%] h-[115%] object-cover transition-transform duration-150 ease-out pointer-events-none"
+              style={{
+                top: "-7.5%",
+                left: "-7.5%",
+                transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)`,
+              }}
             />
           )}
           <Glass effect={effect} options={options as never} className="w-[280px] h-[200px] flex items-center justify-center transition-all duration-300">
@@ -347,7 +366,17 @@ function SVGPlayground() {
   const [surface, setSurface] = useState<SurfaceType>("convexSquircle");
   const [values, setValues] = useState<Record<string, number>>({});
   const [bgIndex, setBgIndex] = useState(0);
+  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
   const svgRef = useRef<Element | null>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const rect = previewRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    setMouseOffset({ x: nx * -20, y: ny * -20 });
+  }, []);
 
   const getValue = (key: string, def: number) => values[key] ?? def;
 
@@ -430,12 +459,21 @@ element.style.backdropFilter = glass.filterRef;`;
             ))}
           </div>
 
-          <div className="relative overflow-hidden rounded-2xl h-[460px] flex items-center justify-center">
+          <div
+            ref={previewRef}
+            className="relative overflow-hidden rounded-2xl h-[460px] flex items-center justify-center"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => setMouseOffset({ x: 0, y: 0 })}
+          >
             <img
               src={BG_IMAGES[bgIndex]}
               alt=""
-              className="absolute inset-0 w-[115%] h-[115%] object-cover -top-[7%] -left-[7%]"
-              style={{ animation: "panBg0 14s ease-in-out infinite alternate" }}
+              className="absolute w-[115%] h-[115%] object-cover transition-transform duration-150 ease-out pointer-events-none"
+              style={{
+                top: "-7.5%",
+                left: "-7.5%",
+                transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)`,
+              }}
             />
             <div
               style={{

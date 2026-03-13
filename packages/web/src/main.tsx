@@ -4,6 +4,7 @@ import { HashRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { Home } from "./pages/Home";
 import { Docs } from "./pages/Docs";
+import { Gallery } from "./pages/Gallery";
 import { Showcase } from "./pages/Showcase";
 import { Components } from "./pages/Components";
 import "solid-glass/css";
@@ -16,6 +17,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="docs" element={<Docs />} />
+          <Route path="gallery" element={<Gallery />} />
           <Route path="showcase" element={<Showcase />} />
           <Route path="components" element={<Components />} />
         </Route>

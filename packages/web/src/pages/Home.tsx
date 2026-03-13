@@ -1,27 +1,10 @@
-import { Glass, type GlassEffectName } from "solid-glass";
+import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
 import { NavLink } from "react-router-dom";
-import { ArrowRight, Zap, Palette, Code2, TreePine, Box, Sparkles, Copy, Check } from "lucide-react";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { ArrowRight, Zap, Palette, Code2, TreePine, Box, Sparkles } from "lucide-react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { CodeBlock } from "../components/CodeBlock";
-
-const BG_PHOTOS = [
-  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=70",
-  "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&q=70",
-  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=70",
-  "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600&q=70",
-  "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=70",
-  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=70",
-];
-
-const EFFECTS: { name: string; effect: GlassEffectName; desc: string; opts: Record<string, unknown> }[] = [
-  { name: "Frosted", effect: "frosted", desc: "Classic Apple-style frosted glass", opts: { blur: 14, tintOpacity: 0.1 } },
-  { name: "Crystal", effect: "crystal", desc: "Noise-based refraction distortion", opts: { blur: 8, distortionStrength: 50 } },
-  { name: "Aurora", effect: "aurora", desc: "Animated gradient overlay", opts: { colors: ["#a78bfa", "#6ee7b7", "#fbbf24"] } },
-  { name: "Smoke", effect: "smoke", desc: "Dark or light animated smoke", opts: { blur: 22, density: 0.35 } },
-  { name: "Prism", effect: "prism", desc: "Spectral color splitting", opts: { saturation: 1.4, brightness: 1.1 } },
-  { name: "Holographic", effect: "holographic", desc: "Iridescent card-like shimmer", opts: { iridescence: 0.45 } },
-  { name: "Thin", effect: "thin", desc: "Barely-there minimal glass", opts: { blur: 4, backgroundOpacity: 0.03 } },
-];
+import { CopyCommand } from "../components/CopyCommand";
+import { EffectGrid } from "../components/EffectGrid";
 
 const FEATURES = [
   { icon: Palette, title: "7 Distinct Effects", desc: "Frosted, Crystal, Aurora, Smoke, Prism, Holographic, and Thin — each with its own visual character." },
@@ -32,7 +15,6 @@ const FEATURES = [
   { icon: Sparkles, title: "16 Built-in Presets", desc: "Ready-made configurations for common patterns. From frostedDark to holoCard." },
 ];
 
-const INSTALL_SNIPPET = `npm install solid-glass`;
 const REACT_SNIPPET = `import { Glass } from "solid-glass/react";
 import "solid-glass/css";
 
@@ -76,85 +58,153 @@ const cleanup = applyGlass(card, "frosted", {
 
 // Later: cleanup();`;
 
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="absolute top-3 right-3 p-1.5 rounded-md bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-    >
-      {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
-    </button>
-  );
-}
+const LOUPE_IMAGE = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80";
+const PANEL_IMAGE = "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&q=80";
 
-function EffectShowcaseStrip() {
+function LoupeDemo() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
-  const [photoIndex, setPhotoIndex] = useState(0);
+  const svgRef = useRef<Element | null>(null);
+  const [pos, setPos] = useState({ x: 140, y: 100 });
+  const loupeSize = 100;
+
+  const glass = useMemo(
+    () =>
+      createLiquidGlass({
+        width: loupeSize,
+        height: loupeSize,
+        radius: loupeSize / 2,
+        bezelWidth: 20,
+        glassThickness: 200,
+        blur: 0,
+        refractiveIndex: 1.5,
+        surface: "convexCircle" as SurfaceType,
+        specularOpacity: 0.7,
+        dpr: 1,
+      }),
+    []
+  );
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPhotoIndex((prev) => (prev + 1) % BG_PHOTOS.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (rect) {
-      setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    const container = document.createElement("div");
+    container.innerHTML = glass.svgFilter;
+    const svg = container.firstElementChild;
+    if (svg) {
+      document.body.appendChild(svg);
+      svgRef.current = svg;
     }
-  }, []);
+    return () => { svgRef.current?.remove(); };
+  }, [glass.svgFilter]);
 
-  const handleMouseLeave = useCallback(() => setMousePos(null), []);
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setPos({
+      x: Math.max(loupeSize / 2, Math.min(rect.width - loupeSize / 2, e.clientX - rect.left)),
+      y: Math.max(loupeSize / 2, Math.min(rect.height - loupeSize / 2, e.clientY - rect.top)),
+    });
+  };
 
   return (
-    <section className="max-w-7xl mx-auto px-6 pb-24">
+    <div
+      ref={containerRef}
+      className="relative overflow-hidden rounded-2xl h-48 cursor-none select-none"
+      onMouseMove={handleMouseMove}
+    >
+      <img src={LOUPE_IMAGE} alt="" className="absolute inset-0 w-full h-full object-cover" />
       <div
-        ref={containerRef}
-        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      >
-        {EFFECTS.map((e, idx) => {
-          const photo = BG_PHOTOS[(photoIndex + idx) % BG_PHOTOS.length];
-          return (
-            <div key={e.effect} className="group">
-              <div
-                className="relative overflow-hidden rounded-2xl aspect-square flex items-center justify-center"
-                style={mousePos ? {
-                  transform: `translate(${(mousePos.x / (containerRef.current?.offsetWidth || 1) - 0.5) * 6}px, ${(mousePos.y / (containerRef.current?.offsetHeight || 1) - 0.5) * 6}px)`,
-                  transition: "transform 0.15s ease-out",
-                } : { transition: "transform 0.3s ease-out" }}
-              >
-                <img
-                  src={photo}
-                  alt=""
-                  className="absolute inset-0 w-[120%] h-[120%] object-cover -top-[10%] -left-[10%] transition-transform duration-[8s] ease-linear"
-                  style={{
-                    transform: `scale(1.15) translate(${Math.sin(Date.now() / 3000 + idx) * 3}%, ${Math.cos(Date.now() / 3000 + idx) * 3}%)`,
-                    animation: `panBg${idx % 3} 12s ease-in-out infinite alternate`,
-                  }}
-                />
-                <div className="absolute inset-0 bg-slate-950/20" />
-                <Glass
-                  effect={e.effect}
-                  options={e.opts as never}
-                  className="w-full h-full flex items-center justify-center relative z-10 p-3"
-                  style={{ borderRadius: 14 }}
-                >
-                  <span className="text-white/80 text-xs font-medium text-center drop-shadow-sm">{e.name}</span>
-                </Glass>
-              </div>
-              <p className="text-[11px] text-slate-500 text-center mt-2">{e.desc}</p>
-            </div>
-          );
-        })}
-      </div>
-    </section>
+        style={{
+          position: "absolute",
+          left: pos.x - loupeSize / 2,
+          top: pos.y - loupeSize / 2,
+          width: loupeSize,
+          height: loupeSize,
+          borderRadius: "50%",
+          overflow: "hidden",
+          backdropFilter: glass.filterRef,
+          WebkitBackdropFilter: glass.filterRef,
+          boxShadow: "0 0 0 2px rgba(255,255,255,0.3), 0 8px 32px rgba(0,0,0,0.3)",
+          pointerEvents: "none",
+        }}
+      />
+    </div>
   );
 }
+
+function PanelDemo() {
+  const svgRef = useRef<Element | null>(null);
+  const [surface, setSurface] = useState<SurfaceType>("convexSquircle");
+
+  const glass = useMemo(
+    () =>
+      createLiquidGlass({
+        width: 220,
+        height: 120,
+        radius: 16,
+        bezelWidth: 35,
+        glassThickness: 200,
+        blur: 8,
+        refractiveIndex: 1.5,
+        surface,
+        specularOpacity: 0.6,
+        saturation: 1.2,
+        dpr: 1,
+      }),
+    [surface]
+  );
+
+  useEffect(() => {
+    if (svgRef.current) svgRef.current.remove();
+    const container = document.createElement("div");
+    container.innerHTML = glass.svgFilter;
+    const svg = container.firstElementChild;
+    if (svg) {
+      document.body.appendChild(svg);
+      svgRef.current = svg;
+    }
+    return () => { svgRef.current?.remove(); };
+  }, [glass.svgFilter]);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-1.5 flex-wrap">
+        {(["convexCircle", "convexSquircle", "concave", "lip"] as SurfaceType[]).map((s) => (
+          <button
+            key={s}
+            onClick={() => setSurface(s)}
+            className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+              surface === s ? "bg-white text-slate-900" : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+            }`}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+      <div className="relative overflow-hidden rounded-2xl h-48 flex items-center justify-center">
+        <img src={PANEL_IMAGE} alt="" className="absolute inset-0 w-[115%] h-[115%] object-cover -top-[7%] -left-[7%]" />
+        <div
+          style={{
+            width: 220,
+            height: 120,
+            borderRadius: 16,
+            overflow: "hidden",
+            backdropFilter: glass.filterRef,
+            WebkitBackdropFilter: glass.filterRef,
+            border: "1px solid rgba(255,255,255,0.15)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div className="text-center px-3 relative z-10">
+            <p className="text-white/90 font-medium text-sm">Physics-based glass</p>
+            <p className="text-white/50 text-[10px] mt-0.5">Surface: {surface}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 export function Home() {
   return (
@@ -162,14 +212,14 @@ export function Home() {
       {/* Hero */}
       <section className="max-w-5xl mx-auto px-6 pt-24 pb-20 text-center">
         <div className="inline-flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-full px-4 py-1.5 text-sm text-slate-300 mb-8">
-          <Sparkles size={14} className="text-violet-400" />
+          <Sparkles size={14} className="text-accent" />
           Multiple engines, 7+ effects, React / Vue / Vanilla JS
         </div>
 
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1]">
-          <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">Glass effects</span>
+          <span className="bg-gradient-to-r from-white via-lime-100 to-white bg-clip-text text-transparent">Glass effects</span>
           <br />
-          <span className="bg-gradient-to-r from-blue-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">for the web</span>
+          <span className="bg-gradient-to-r from-lime-300 via-yellow-300 to-lime-300 bg-clip-text text-transparent">for the web</span>
         </h1>
 
         <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mt-6 leading-relaxed">
@@ -179,20 +229,47 @@ export function Home() {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
           <NavLink
-            to="/showcase"
+            to="/gallery"
             className="inline-flex items-center justify-center gap-2 bg-white text-slate-900 px-6 py-3 rounded-xl font-semibold hover:bg-slate-100 transition-colors"
           >
-            Open Playground <ArrowRight size={18} />
+            View Gallery <ArrowRight size={18} />
           </NavLink>
-          <div className="inline-flex items-center gap-3 bg-slate-800/80 border border-slate-700 px-6 py-3 rounded-xl">
-            <code className="font-mono text-sm text-slate-200">{INSTALL_SNIPPET}</code>
-            <CopyButton text={INSTALL_SNIPPET} />
-          </div>
+          <CopyCommand command="npm install solid-glass" />
         </div>
       </section>
 
-      {/* Effect showcase strip */}
-      <EffectShowcaseStrip />
+      {/* Effect showcase grid */}
+      <section className="max-w-4xl mx-auto px-6 pb-16">
+        <EffectGrid compact showDescriptions />
+      </section>
+
+      {/* SVG Refraction Engine Hero */}
+      <section className="max-w-6xl mx-auto px-6 pb-24">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-lime-200 to-yellow-200 bg-clip-text text-transparent">
+            SVG Refraction Engine
+          </h2>
+          <p className="text-slate-400 mt-3 max-w-2xl mx-auto">
+            Physics-based glass using Snell-Descartes law. Real light refraction, not just blur.
+          </p>
+          <span className="inline-block mt-3 text-[10px] font-medium bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-full px-3 py-1">
+            Chrome only
+          </span>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5">
+            <h3 className="font-semibold text-white mb-1">Loupe</h3>
+            <p className="text-xs text-slate-500 mb-4">Magnifying glass with real refraction. Move your mouse.</p>
+            <LoupeDemo />
+          </div>
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5">
+            <h3 className="font-semibold text-white mb-1">LiquidGlassPanel</h3>
+            <p className="text-xs text-slate-500 mb-3">Physics-based panel with switchable surface types.</p>
+            <PanelDemo />
+          </div>
+        </div>
+      </section>
 
       {/* Features */}
       <section className="max-w-6xl mx-auto px-6 pb-24">
@@ -204,8 +281,8 @@ export function Home() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((f) => (
             <div key={f.title} className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 hover:border-slate-600 transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-violet-500/20 flex items-center justify-center mb-4">
-                <f.icon size={20} className="text-blue-400" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-lime-500/20 to-yellow-500/20 flex items-center justify-center mb-4">
+                <f.icon size={20} className="text-accent" />
               </div>
               <h3 className="font-semibold text-white mb-2">{f.title}</h3>
               <p className="text-sm text-slate-400 leading-relaxed">{f.desc}</p>
@@ -255,7 +332,7 @@ export function Home() {
               { path: 'solid-glass/css', desc: 'The CSS file — required for visual effects' },
             ].map((imp) => (
               <div key={imp.path} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                <code className="font-mono text-sm text-blue-300 shrink-0">import "{imp.path}"</code>
+                <code className="font-mono text-sm text-lime-300 shrink-0">import "{imp.path}"</code>
                 <span className="text-sm text-slate-500">{imp.desc}</span>
               </div>
             ))}
@@ -267,14 +344,14 @@ export function Home() {
       <section className="max-w-3xl mx-auto px-6 pb-24 text-center">
         <h2 className="text-3xl font-bold mb-4">Ready to add some glass?</h2>
         <p className="text-slate-400 mb-8">
-          Explore the interactive showcase or dive into the docs.
+          Explore the gallery or dive into the docs.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <NavLink
-            to="/showcase"
-            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-violet-500 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
+            to="/gallery"
+            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-lime-500 to-yellow-500 text-slate-900 px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
           >
-            Open Playground <ArrowRight size={18} />
+            View Gallery <ArrowRight size={18} />
           </NavLink>
           <NavLink
             to="/docs"
