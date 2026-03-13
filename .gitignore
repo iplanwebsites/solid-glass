@@ -3,4 +3,5 @@ node_modules/
 DEV.md
 dist/
 packages/*/dist/
-*.tsbuildinfo.turbo
+*.tsbuildinfo
+.turbo
