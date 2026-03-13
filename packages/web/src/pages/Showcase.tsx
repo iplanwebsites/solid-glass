@@ -2,6 +2,71 @@ import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Glass, type GlassEffectName, presets, type PresetName, presetNames } from "solid-glass";
 import { Copy, Check, RotateCcw, Image, SlidersHorizontal, Layers } from "lucide-react";
 
+/* ─── Framework Code Generators ─── */
+type Framework = "react" | "vue" | "vanilla";
+
+function generateReactSnippet(effect: string, options: Record<string, unknown>) {
+  return `import { Glass } from "solid-glass/react";
+import "solid-glass/css";
+
+<Glass effect="${effect}" options={${JSON.stringify(options, null, 2)}}>
+  {children}
+</Glass>`;
+}
+
+function generateVueSnippet(effect: string, options: Record<string, unknown>) {
+  const optStr = JSON.stringify(options, null, 2).replace(/"/g, "'");
+  return `<template>
+  <Glass effect="${effect}" :options="${optStr}">
+    <slot />
+  </Glass>
+</template>
+
+<script setup>
+import { Glass } from "solid-glass/vue";
+import "solid-glass/css";
+</script>`;
+}
+
+function generateVanillaSnippet(effect: string, options: Record<string, unknown>) {
+  return `import { applyGlass } from "solid-glass/vanilla";
+import "solid-glass/css";
+
+const el = document.querySelector("#my-card");
+const cleanup = applyGlass(el, "${effect}", ${JSON.stringify(options, null, 2)});
+
+// Later: cleanup();`;
+}
+
+function getSnippet(framework: Framework, effect: string, options: Record<string, unknown>) {
+  if (framework === "vue") return generateVueSnippet(effect, options);
+  if (framework === "vanilla") return generateVanillaSnippet(effect, options);
+  return generateReactSnippet(effect, options);
+}
+
+/* ─── Framework Tab Bar ─── */
+const FRAMEWORKS: { key: Framework; label: string }[] = [
+  { key: "react", label: "React" },
+  { key: "vue", label: "Vue" },
+  { key: "vanilla", label: "Vanilla JS" },
+];
+
+function FrameworkTabs({ active, onChange }: { active: Framework; onChange: (f: Framework) => void }) {
+  return (
+    <div className="flex gap-1">
+      {FRAMEWORKS.map((f) => (
+        <button
+          key={f.key}
+          onClick={() => onChange(f.key)}
+          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${active === f.key ? "bg-slate-600 text-white" : "text-slate-400 hover:text-slate-200"}`}
+        >
+          {f.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /* ─── Gallery Data ─── */
 const ALL_EFFECTS: {
   name: string;
@@ -9,18 +74,33 @@ const ALL_EFFECTS: {
   options: Record<string, unknown>;
   description: string;
 }[] = [
+  // Frosted variants
   { name: "Frosted Light", effect: "frosted", options: { blur: 12, tintColor: "#ffffff", tintOpacity: 0.1 }, description: "Classic light frosted glass." },
   { name: "Frosted Dark", effect: "frosted", options: { blur: 14, tintColor: "#000000", tintOpacity: 0.2, shadowColor: "rgba(0,0,0,0.3)" }, description: "Dark mode frosted variant." },
   { name: "Frosted Blue", effect: "frosted", options: { blur: 16, tintColor: "#3b82f6", tintOpacity: 0.12 }, description: "Blue-tinted frosted glass." },
+  { name: "Frosted Rose", effect: "frosted", options: { blur: 18, tintColor: "#f43f5e", tintOpacity: 0.15, borderRadius: 32 }, description: "Soft rose-tinted frost." },
+  // Crystal variants
   { name: "Crystal Clear", effect: "crystal", options: { blur: 6, noiseFrequency: 0.006, distortionStrength: 40 }, description: "Subtle refraction." },
   { name: "Crystal Amber", effect: "crystal", options: { blur: 8, tintColor: "#f59e0b", tintOpacity: 0.08, distortionStrength: 70 }, description: "Warm crystal distortion." },
+  { name: "Crystal Cyan", effect: "crystal", options: { blur: 7, borderRadius: 4, tintOpacity: 0.23, noiseFrequency: 0.032, distortionStrength: 40, tintColor: "#0ad9f5" }, description: "Vivid cyan refraction with tight corners." },
+  { name: "Crystal Heavy", effect: "crystal", options: { blur: 4, noiseFrequency: 0.045, distortionStrength: 120, tintColor: "#8b5cf6", tintOpacity: 0.12 }, description: "Extreme distortion for dramatic impact." },
+  // Aurora variants
   { name: "Aurora North", effect: "aurora", options: { colors: ["#a78bfa", "#818cf8", "#6ee7b7"] }, description: "Northern Lights gradient." },
   { name: "Aurora Sunset", effect: "aurora", options: { colors: ["#f97316", "#ef4444", "#ec4899", "#8b5cf6"] }, description: "Warm sunset palette." },
+  { name: "Aurora Neon", effect: "aurora", options: { colors: ["#00ff87", "#60efff", "#ff1cf7"], colorOpacity: 0.25, animationSpeed: 4, blur: 20 }, description: "High-energy neon aurora." },
+  // Smoke variants
   { name: "Smoke Noir", effect: "smoke", options: { blur: 24, density: 0.4, smokeColor: "#000000" }, description: "Deep dark smoke." },
   { name: "Smoke Mist", effect: "smoke", options: { blur: 18, density: 0.15, smokeColor: "#ffffff" }, description: "Light misty smoke." },
+  { name: "Smoke Ember", effect: "smoke", options: { blur: 20, density: 0.35, smokeColor: "#dc2626", turbulence: 0.025, animationDuration: 8 }, description: "Fiery red smoke with fast turbulence." },
+  // Prism variants
   { name: "Prism Rainbow", effect: "prism", options: { blur: 8, saturation: 1.4, brightness: 1.1 }, description: "Spectral splitting." },
+  { name: "Prism Warm", effect: "prism", options: { blur: 10, hueRotate: 30, saturation: 1.6, brightness: 1.15, contrast: 1.2 }, description: "Warm-shifted spectral effect." },
+  // Holographic variants
   { name: "Holo Card", effect: "holographic", options: { blur: 8, iridescence: 0.5, animationSpeed: 4 }, description: "Iridescent shimmer." },
+  { name: "Holo Intense", effect: "holographic", options: { blur: 6, iridescence: 0.85, animationSpeed: 2, noiseOpacity: 0.12 }, description: "Maximum iridescence, fast shift." },
+  // Thin variants
   { name: "Thin Light", effect: "thin", options: { blur: 4, backgroundOpacity: 0.03 }, description: "Barely-there glass." },
+  { name: "Thin Dark", effect: "thin", options: { blur: 6, backgroundOpacity: 0.05, dark: true, borderOpacity: 0.15 }, description: "Subtle dark panel." },
 ];
 
 const EFFECT_TYPES: GlassEffectName[] = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin"];
@@ -96,6 +176,7 @@ function GalleryView() {
   const [photoIndex, setPhotoIndex] = useState(0);
   const gridRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+  const [framework, setFramework] = useState<Framework>("react");
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -112,7 +193,7 @@ function GalleryView() {
 
   return (
     <>
-      <div className="flex flex-wrap gap-2 justify-center mb-10">
+      <div className="flex flex-wrap gap-2 justify-center mb-6">
         <button onClick={() => setFilter("all")} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === "all" ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}>
           All ({ALL_EFFECTS.length})
         </button>
@@ -123,6 +204,13 @@ function GalleryView() {
         ))}
       </div>
 
+      <div className="flex justify-center mb-10">
+        <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-lg px-3 py-1.5">
+          <span className="text-xs text-slate-500">Code:</span>
+          <FrameworkTabs active={framework} onChange={setFramework} />
+        </div>
+      </div>
+
       <div
         ref={gridRef}
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
@@ -130,7 +218,7 @@ function GalleryView() {
         onMouseLeave={handleMouseLeave}
       >
         {filtered.map((item, i) => {
-          const snippet = `<Glass effect="${item.effect}" options={${JSON.stringify(item.options, null, 2)}} />`;
+          const snippet = getSnippet(framework, item.effect, item.options);
           const photo = BG_IMAGES[(photoIndex + i) % BG_IMAGES.length];
           return (
             <GalleryCard
@@ -226,6 +314,7 @@ function PlaygroundView() {
   const [bgIndex, setBgIndex] = useState(-1);
   const [gradientIndex, setGradientIndex] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [framework, setFramework] = useState<Framework>("react");
 
   const activeSliders = SLIDERS.filter((s) => s.effects.includes(effect));
   const getValue = (key: string, def: number) => values[key] ?? def;
@@ -237,7 +326,7 @@ function PlaygroundView() {
     return o;
   }, [effect, values, tintColor, activeSliders]);
 
-  const codeSnippet = useMemo(() => `<Glass effect="${effect}" options={${JSON.stringify(options, null, 2)}}>\n  {children}\n</Glass>`, [effect, options]);
+  const codeSnippet = useMemo(() => getSnippet(framework, effect, options), [framework, effect, options]);
 
   const handlePreset = (name: PresetName) => {
     const p = presets[name];
@@ -285,7 +374,7 @@ function PlaygroundView() {
 
         <div className="relative bg-slate-800/80 border border-slate-700 rounded-xl p-5">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-xs text-slate-400 font-medium">Generated Code</span>
+            <FrameworkTabs active={framework} onChange={setFramework} />
             <button onClick={() => { navigator.clipboard.writeText(codeSnippet); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors">
               {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
               {copied ? "Copied!" : "Copy"}
