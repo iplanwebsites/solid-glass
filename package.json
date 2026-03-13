@@ -9,14 +9,14 @@
     "url": "git+https://github.com/iplanwebsites/solid-glass.git"
   },
   "scripts": {
-    "dev": "pnpm --filter @solid-glass/demo dev",
+    "dev": "pnpm --filter @solid-glass/playground dev",
     "dev:lib": "pnpm --filter solid-glass dev",
     "dev:web": "pnpm --filter @solid-glass/web dev",
     "build": "turbo run build",
     "build:lib": "turbo run build --filter=solid-glass",
-    "build:demo": "turbo run build --filter=@solid-glass/demo",
+    "build:playground": "turbo run build --filter=@solid-glass/playground",
     "build:web": "turbo run build --filter=@solid-glass/web",
-    "preview": "pnpm --filter @solid-glass/demo preview",
+    "preview": "pnpm --filter @solid-glass/playground preview",
     "test": "turbo run test",
     "test:coverage": "pnpm --filter solid-glass test:coverage",
     "typecheck": "turbo run typecheck",

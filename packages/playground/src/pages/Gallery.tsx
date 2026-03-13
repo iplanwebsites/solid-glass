@@ -1,7 +1,9 @@
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { EffectCard } from "../components/EffectCard";
 import type { GlassEffectName } from "solid-glass";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
+
+const BG_IMAGE = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80";
 
 const ALL_EFFECTS: {
   name: string;
@@ -287,8 +289,36 @@ function RefractionDemoCard() {
 
 export function Gallery() {
   const [filter, setFilter] = useState<GlassEffectName | "all">("all");
+  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const filtered = filter === "all" ? ALL_EFFECTS : ALL_EFFECTS.filter((e) => e.effect === filter);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const rect = gridRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    setMouseOffset({ x: nx * -20, y: ny * -20 });
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (!gridRef.current) return;
+      const rect = gridRef.current.getBoundingClientRect();
+      const viewH = window.innerHeight;
+      // Normalize: 0 when top enters viewport, 1 when bottom leaves
+      const progress = (viewH - rect.top) / (viewH + rect.height);
+      setScrollOffset(Math.max(0, Math.min(1, progress)) * -40);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const imgX = mouseOffset.x;
+  const imgY = mouseOffset.y + scrollOffset;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -330,11 +360,32 @@ export function Gallery() {
         ))}
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filtered.map((item, i) => (
-          <EffectCard key={`${item.effect}-${i}`} {...item} />
-        ))}
+      {/* Grid — shared image background */}
+      <div
+        ref={gridRef}
+        className="relative overflow-hidden rounded-3xl p-6 md:p-8"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setMouseOffset({ x: 0, y: 0 })}
+      >
+        {/* Shared background image */}
+        <img
+          src={BG_IMAGE}
+          alt=""
+          className="absolute w-[115%] h-[115%] object-cover transition-transform duration-200 ease-out pointer-events-none"
+          style={{
+            top: "-7.5%",
+            left: "-7.5%",
+            transform: `translate(${imgX}px, ${imgY}px)`,
+          }}
+        />
+        {/* Subtle overlay to soften the image slightly */}
+        <div className="absolute inset-0 bg-black/10 pointer-events-none" />
+
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filtered.map((item, i) => (
+            <EffectCard key={`${item.effect}-${i}`} {...item} />
+          ))}
+        </div>
       </div>
 
       {/* SVG Engine Showcase */}
