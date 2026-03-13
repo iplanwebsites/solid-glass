@@ -1,11 +1,14 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
 import { Glass, type GlassEffectName } from "solid-glass";
-import { ArrowRight, Sparkles, Zap, Play, Pause, FlaskConical } from "lucide-react";
+import { ArrowRight, Sparkles, Play, Pause, Settings2, RotateCcw, X } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { Switch } from "../components/ui/switch";
+import { Slider } from "../components/ui/slider";
 
 // Hero background images - random on page load
 const HERO_BGS = [
+  // Nature & Landscapes
   "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=90", // Mountains
   "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1600&q=90", // Foggy mountains
   "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1600&q=90", // Nature valley
@@ -13,6 +16,25 @@ const HERO_BGS = [
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=90", // Beach
   "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1600&q=90", // Stars
   "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=90", // Mountain peak
+  // Textures & Surfaces
+  "https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=1600&q=90", // Colorful gradient abstract
+  "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=1600&q=90", // Purple gradient
+  "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1600&q=90", // Gradient mesh
+  "https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?w=1600&q=90", // Aurora borealis
+  "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=1600&q=90", // Dark gradient
+  "https://images.unsplash.com/photo-1557683316-973673bdar25?w=1600&q=90", // Marble texture
+  "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?w=1600&q=90", // Paper texture cream
+  "https://images.unsplash.com/photo-1533134486753-c833f0ed4866?w=1600&q=90", // Dark geometric
+  "https://images.unsplash.com/photo-1550684376-efcbd6e3f031?w=1600&q=90", // Red smoke
+  "https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=1600&q=90", // Watercolor abstract
+  // Architecture & Patterns
+  "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1600&q=90", // Japan temple
+  "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=1600&q=90", // Glass building
+  "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&q=90", // Geometric ceiling
+  // Macro & Abstract
+  "https://images.unsplash.com/photo-1604076913837-52ab5629fba9?w=1600&q=90", // Oil on water
+  "https://images.unsplash.com/photo-1567095761054-7a02e69e5571?w=1600&q=90", // Crystal macro
+  "https://images.unsplash.com/photo-1553356084-58ef4a67b2a7?w=1600&q=90", // Paint swirl
 ];
 
 // Pick random background on module load
@@ -111,7 +133,7 @@ function generateDistributedPositions(
   return positions;
 }
 
-function useAnimatedBubbles(count: number, containerSize: { width: number; height: number }, paused: boolean) {
+function useAnimatedBubbles(count: number, containerSize: { width: number; height: number }, paused: boolean, resetKey: number = 0) {
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
   const frameRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
@@ -141,7 +163,7 @@ function useAnimatedBubbles(count: number, containerSize: { width: number; heigh
       styleIndex: i % BUBBLE_STYLES.length,
     }));
     setBubbles(initial);
-  }, [count, containerSize.width, containerSize.height]);
+  }, [count, containerSize.width, containerSize.height, resetKey]);
 
   useEffect(() => {
     if (paused || containerSize.width === 0) return;
@@ -192,12 +214,8 @@ function useAnimatedBubbles(count: number, containerSize: { width: number; heigh
   return bubbles;
 }
 
-function GlassBubble({ bubble, mousePos }: { bubble: Bubble; mousePos: { x: number; y: number } }) {
+function GlassBubble({ bubble, mousePos, svgParams }: { bubble: Bubble; mousePos: { x: number; y: number }; svgParams: SVGParams }) {
   const svgRef = useRef<Element | null>(null);
-  const [isHovered, setIsHovered] = useState(false);
-
-  // Get the style preset for this bubble
-  const style = BUBBLE_STYLES[bubble.styleIndex];
 
   // Use fixed integer size for the glass (ImageData requires integers)
   const glassSize = Math.round(bubble.size);
@@ -222,20 +240,20 @@ function GlassBubble({ bubble, mousePos }: { bubble: Bubble; mousePos: { x: numb
   }, [mousePos.x, mousePos.y, bubble.x, bubble.y]);
 
   // Scale bezel proportionally to bubble size
-  const scaledBezelWidth = Math.round((style.bezelWidth / 100) * glassSize);
+  const scaledBezelWidth = Math.round((svgParams.bezelWidth / 100) * glassSize);
 
   const glass = useMemo(() => createLiquidGlass({
     width: glassSize,
     height: glassSize,
     radius: Math.round(glassSize / 2), // Max radius = perfect circle
     bezelWidth: Math.max(10, scaledBezelWidth),
-    glassThickness: style.glassThickness,
-    blur: isHovered ? style.blur + 2 : style.blur,
-    refractiveIndex: style.refractiveIndex,
-    surface: style.surface,
-    specularOpacity: isHovered ? Math.min(1, style.specularOpacity + 0.15) : style.specularOpacity,
+    glassThickness: svgParams.glassThickness,
+    blur: svgParams.blur,
+    refractiveIndex: svgParams.refractiveIndex,
+    surface: "convexCircle",
+    specularOpacity: svgParams.specularOpacity,
     dpr: 1,
-  }), [glassSize, style, scaledBezelWidth, isHovered]);
+  }), [glassSize, svgParams, scaledBezelWidth]);
 
   useEffect(() => {
     const container = document.createElement("div");
@@ -250,7 +268,7 @@ function GlassBubble({ bubble, mousePos }: { bubble: Bubble; mousePos: { x: numb
 
   return (
     <div
-      className="absolute cursor-pointer"
+      className="absolute"
       style={{
         left: bubble.x - glassSize / 2 + displacement.x,
         top: bubble.y - glassSize / 2 + displacement.y,
@@ -259,22 +277,283 @@ function GlassBubble({ bubble, mousePos }: { bubble: Bubble; mousePos: { x: numb
         transform: `scale(${visualScale})`,
         transition: "transform 0.15s ease-out",
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className="w-full h-full transition-all duration-300"
+        className="w-full h-full"
         style={{
-          borderRadius: "50%", // Always perfect circle
+          borderRadius: "50%",
           overflow: "hidden",
           backdropFilter: glass.filterRef,
           WebkitBackdropFilter: glass.filterRef,
-          boxShadow: isHovered
-            ? "0 0 0 3px rgba(190, 231, 46, 0.6), 0 0 60px rgba(190, 231, 46, 0.4), 0 12px 40px rgba(0,0,0,0.5)"
-            : "0 0 0 1px rgba(255,255,255,0.25), 0 8px 32px rgba(0,0,0,0.35)",
-          transform: isHovered ? "scale(1.15)" : "scale(1)",
+          boxShadow: "0 0 0 1px rgba(255,255,255,0.2), 0 8px 32px rgba(0,0,0,0.3)",
         }}
       />
+    </div>
+  );
+}
+
+// Default SVG parameters
+const DEFAULT_SVG_PARAMS = {
+  bubbleCount: 9,
+  bezelWidth: 18,
+  glassThickness: 230,
+  blur: 3,
+  refractiveIndex: 1.9,
+  specularOpacity: 0.60,
+};
+
+// Default Shader parameters
+const DEFAULT_SHADER_PARAMS = {
+  blur: 12,
+  tintOpacity: 0.1,
+  animationSpeed: 6,
+};
+
+interface SVGParams {
+  bubbleCount: number;
+  bezelWidth: number;
+  glassThickness: number;
+  blur: number;
+  refractiveIndex: number;
+  specularOpacity: number;
+}
+
+interface ShaderParams {
+  blur: number;
+  tintOpacity: number;
+  animationSpeed: number;
+}
+
+function ControlsPanel({
+  isOpen,
+  onClose,
+  engine,
+  setEngine,
+  isPaused,
+  setIsPaused,
+  svgParams,
+  setSvgParams,
+  shaderParams,
+  setShaderParams,
+  onReset,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  engine: "svg" | "shaders";
+  setEngine: (e: "svg" | "shaders") => void;
+  isPaused: boolean;
+  setIsPaused: (p: boolean) => void;
+  svgParams: SVGParams;
+  setSvgParams: (p: SVGParams) => void;
+  shaderParams: ShaderParams;
+  setShaderParams: (p: ShaderParams) => void;
+  onReset: () => void;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-y-0 right-0 z-50 w-80 bg-slate-900/95 backdrop-blur-xl border-l border-slate-700 shadow-2xl flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
+        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+          <Settings2 size={16} className="text-lime-400" />
+          Controls
+        </h3>
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+        >
+          <X size={18} />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        {/* Engine Toggle */}
+        <div>
+          <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">Engine</label>
+          <div className="mt-2 flex items-center justify-between bg-slate-800 rounded-lg p-1">
+            <button
+              onClick={() => setEngine("svg")}
+              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                engine === "svg" ? "bg-lime-500 text-slate-900" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              SVG Refraction
+            </button>
+            <button
+              onClick={() => setEngine("shaders")}
+              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                engine === "shaders" ? "bg-lime-500 text-slate-900" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Shaders
+            </button>
+          </div>
+        </div>
+
+        {/* Animation Toggle */}
+        <div>
+          <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">Animation</label>
+          <div className="mt-2 flex items-center justify-between">
+            <span className="text-sm text-slate-300">{isPaused ? "Paused" : "Playing"}</span>
+            <button
+              onClick={() => setIsPaused(!isPaused)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                isPaused ? "bg-slate-700 text-slate-300" : "bg-lime-500/20 text-lime-400"
+              }`}
+            >
+              {isPaused ? <Play size={14} /> : <Pause size={14} />}
+              {isPaused ? "Play" : "Pause"}
+            </button>
+          </div>
+        </div>
+
+        <div className="h-px bg-slate-700" />
+
+        {/* Engine-specific params */}
+        {engine === "svg" ? (
+          <div className="space-y-4">
+            <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">SVG Parameters</label>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-xs mb-2">
+                  <span className="text-slate-300">Bubbles</span>
+                  <span className="text-slate-500 font-mono">{svgParams.bubbleCount}</span>
+                </div>
+                <Slider
+                  value={[svgParams.bubbleCount]}
+                  min={1}
+                  max={15}
+                  step={1}
+                  onValueChange={([v]) => setSvgParams({ ...svgParams, bubbleCount: v })}
+                />
+              </div>
+              <div>
+                <div className="flex justify-between text-xs mb-2">
+                  <span className="text-slate-300">Bezel Width</span>
+                  <span className="text-slate-500 font-mono">{svgParams.bezelWidth}</span>
+                </div>
+                <Slider
+                  value={[svgParams.bezelWidth]}
+                  min={5}
+                  max={60}
+                  step={1}
+                  onValueChange={([v]) => setSvgParams({ ...svgParams, bezelWidth: v })}
+                />
+              </div>
+              <div>
+                <div className="flex justify-between text-xs mb-2">
+                  <span className="text-slate-300">Glass Thickness</span>
+                  <span className="text-slate-500 font-mono">{svgParams.glassThickness}</span>
+                </div>
+                <Slider
+                  value={[svgParams.glassThickness]}
+                  min={50}
+                  max={500}
+                  step={10}
+                  onValueChange={([v]) => setSvgParams({ ...svgParams, glassThickness: v })}
+                />
+              </div>
+              <div>
+                <div className="flex justify-between text-xs mb-2">
+                  <span className="text-slate-300">Blur</span>
+                  <span className="text-slate-500 font-mono">{svgParams.blur}</span>
+                </div>
+                <Slider
+                  value={[svgParams.blur]}
+                  min={0}
+                  max={20}
+                  step={1}
+                  onValueChange={([v]) => setSvgParams({ ...svgParams, blur: v })}
+                />
+              </div>
+              <div>
+                <div className="flex justify-between text-xs mb-2">
+                  <span className="text-slate-300">Refractive Index</span>
+                  <span className="text-slate-500 font-mono">{svgParams.refractiveIndex.toFixed(1)}</span>
+                </div>
+                <Slider
+                  value={[svgParams.refractiveIndex]}
+                  min={1.0}
+                  max={3.0}
+                  step={0.1}
+                  onValueChange={([v]) => setSvgParams({ ...svgParams, refractiveIndex: v })}
+                />
+              </div>
+              <div>
+                <div className="flex justify-between text-xs mb-2">
+                  <span className="text-slate-300">Specular</span>
+                  <span className="text-slate-500 font-mono">{svgParams.specularOpacity.toFixed(2)}</span>
+                </div>
+                <Slider
+                  value={[svgParams.specularOpacity]}
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  onValueChange={([v]) => setSvgParams({ ...svgParams, specularOpacity: v })}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">Shader Parameters</label>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-xs mb-2">
+                  <span className="text-slate-300">Blur</span>
+                  <span className="text-slate-500 font-mono">{shaderParams.blur}</span>
+                </div>
+                <Slider
+                  value={[shaderParams.blur]}
+                  min={0}
+                  max={30}
+                  step={1}
+                  onValueChange={([v]) => setShaderParams({ ...shaderParams, blur: v })}
+                />
+              </div>
+              <div>
+                <div className="flex justify-between text-xs mb-2">
+                  <span className="text-slate-300">Tint Opacity</span>
+                  <span className="text-slate-500 font-mono">{shaderParams.tintOpacity.toFixed(2)}</span>
+                </div>
+                <Slider
+                  value={[shaderParams.tintOpacity]}
+                  min={0}
+                  max={0.5}
+                  step={0.01}
+                  onValueChange={([v]) => setShaderParams({ ...shaderParams, tintOpacity: v })}
+                />
+              </div>
+              <div>
+                <div className="flex justify-between text-xs mb-2">
+                  <span className="text-slate-300">Animation Speed</span>
+                  <span className="text-slate-500 font-mono">{shaderParams.animationSpeed}s</span>
+                </div>
+                <Slider
+                  value={[shaderParams.animationSpeed]}
+                  min={1}
+                  max={20}
+                  step={1}
+                  onValueChange={([v]) => setShaderParams({ ...shaderParams, animationSpeed: v })}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-slate-700">
+        <button
+          onClick={onReset}
+          className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-colors"
+        >
+          <RotateCcw size={14} />
+          Reset to defaults
+        </button>
+      </div>
     </div>
   );
 }
@@ -285,8 +564,17 @@ function HeroSection() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isPaused, setIsPaused] = useState(false);
   const [engine, setEngine] = useState<"svg" | "shaders">("svg");
+  const [svgParams, setSvgParams] = useState<SVGParams>(DEFAULT_SVG_PARAMS);
+  const [shaderParams, setShaderParams] = useState<ShaderParams>(DEFAULT_SHADER_PARAMS);
+  const [resetKey, setResetKey] = useState(0);
+  const [controlsOpen, setControlsOpen] = useState(false);
 
-  const bubbles = useAnimatedBubbles(engine === "svg" ? 8 : 0, containerSize, isPaused);
+  const bubbles = useAnimatedBubbles(
+    engine === "svg" ? svgParams.bubbleCount : 0,
+    containerSize,
+    isPaused,
+    resetKey
+  );
 
   useEffect(() => {
     const updateSize = () => {
@@ -306,6 +594,12 @@ function HeroSection() {
     setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
   }, []);
 
+  const handleReset = () => {
+    setSvgParams(DEFAULT_SVG_PARAMS);
+    setShaderParams(DEFAULT_SHADER_PARAMS);
+    setResetKey((k) => k + 1);
+  };
+
   return (
     <section className="relative">
       <div
@@ -313,37 +607,43 @@ function HeroSection() {
         className="relative overflow-hidden h-[70vh] min-h-[500px]"
         onMouseMove={handleMouseMove}
       >
-        {/* Background image with parallax - extra size to prevent gaps during movement */}
+        {/* Background image with parallax - much larger to ensure full coverage */}
         <img
           src={HERO_BG}
           alt=""
           className="absolute object-cover transition-transform duration-300 ease-out pointer-events-none"
           style={{
-            width: "120%",
-            height: "120%",
-            top: "-10%",
-            left: "-10%",
-            transform: `translate(${(mousePos.x - containerSize.width / 2) * -0.015}px, ${(mousePos.y - containerSize.height / 2) * -0.015}px)`,
+            minWidth: "150%",
+            minHeight: "150%",
+            width: "150%",
+            height: "150%",
+            top: "50%",
+            left: "50%",
+            transform: `translate(-50%, -50%) translate(${(mousePos.x - containerSize.width / 2) * -0.008}px, ${(mousePos.y - containerSize.height / 2) * -0.008}px)`,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950/80" />
 
         {/* Animated bubbles (SVG engine) */}
         {engine === "svg" && bubbles.map(bubble => (
-          <GlassBubble key={bubble.id} bubble={bubble} mousePos={mousePos} />
+          <GlassBubble key={bubble.id} bubble={bubble} mousePos={mousePos} svgParams={svgParams} />
         ))}
 
         {/* Shader effect overlay panels */}
         {engine === "shaders" && (
-          <div className="absolute inset-0 flex items-center justify-center gap-8 p-12">
-            {(["frosted", "crystal", "aurora", "prism"] as GlassEffectName[]).map((effect, i) => (
+          <div className="absolute inset-0 flex items-center justify-center gap-8 p-12 flex-wrap">
+            {(["frosted", "crystal", "aurora", "prism", "holographic", "smoke"] as GlassEffectName[]).map((effect, i) => (
               <Glass
                 key={effect}
                 effect={effect}
-                options={{ blur: 12, animationSpeed: 4 + i }}
-                className="w-40 h-40 flex items-center justify-center rounded-2xl animate-float"
+                options={{
+                  blur: shaderParams.blur,
+                  tintOpacity: shaderParams.tintOpacity,
+                  animationSpeed: shaderParams.animationSpeed + i,
+                }}
+                className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center rounded-2xl animate-float"
                 style={{
-                  animationDelay: `${i * 0.5}s`,
+                  animationDelay: `${i * 0.3}s`,
                 }}
               >
                 <span className="text-white/90 font-semibold text-sm capitalize">{effect}</span>
@@ -372,38 +672,8 @@ function HeroSection() {
 
             <p className="text-white/70 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-8">
               Animated glass bubbles with physics-based refraction.
-              Hover to interact. Watch them float and morph.
+              Watch them float and morph.
             </p>
-
-            {/* Engine switch */}
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <button
-                onClick={() => setEngine("svg")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  engine === "svg"
-                    ? "bg-lime-400 text-slate-900"
-                    : "bg-white/10 text-white/70 hover:bg-white/20"
-                }`}
-              >
-                <Zap size={14} /> SVG Refraction
-              </button>
-              <button
-                onClick={() => setEngine("shaders")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  engine === "shaders"
-                    ? "bg-lime-400 text-slate-900"
-                    : "bg-white/10 text-white/70 hover:bg-white/20"
-                }`}
-              >
-                <Sparkles size={14} /> Shaders
-              </button>
-              <button
-                onClick={() => setIsPaused(!isPaused)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-white/10 text-white/70 hover:bg-white/20 transition-all"
-              >
-                {isPaused ? <Play size={14} /> : <Pause size={14} />}
-              </button>
-            </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <NavLink
@@ -421,7 +691,31 @@ function HeroSection() {
             </div>
           </div>
         </div>
+
+        {/* Controls button - bottom right of hero */}
+        <button
+          onClick={() => setControlsOpen(true)}
+          className="absolute bottom-6 right-6 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-slate-900/80 backdrop-blur-sm border border-white/20 text-white hover:bg-slate-800 transition-all z-10"
+        >
+          <Settings2 size={16} />
+          Controls
+        </button>
       </div>
+
+      {/* Fixed Controls Panel */}
+      <ControlsPanel
+        isOpen={controlsOpen}
+        onClose={() => setControlsOpen(false)}
+        engine={engine}
+        setEngine={setEngine}
+        isPaused={isPaused}
+        setIsPaused={setIsPaused}
+        svgParams={svgParams}
+        setSvgParams={setSvgParams}
+        shaderParams={shaderParams}
+        setShaderParams={setShaderParams}
+        onReset={handleReset}
+      />
     </section>
   );
 }
@@ -656,16 +950,8 @@ function InteractivePanelGrid() {
 }
 
 export function Kitchen() {
-  console.log("[Kitchen] Rendering");
-
   return (
     <div>
-      {/* Debug header - remove later */}
-      <div className="bg-lime-500/20 border border-lime-500/50 text-lime-300 text-center py-2 text-sm">
-        <FlaskConical className="inline w-4 h-4 mr-2" />
-        Kitchen Page - Experimental Components
-      </div>
-
       <HeroSection />
       <GlassButtonsShowcase />
       <LoupeShowcase />

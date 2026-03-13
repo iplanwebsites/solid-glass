@@ -1,11 +1,17 @@
+import { useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
-import { Github, BookOpen, Layers, Box, Play, Gem, FlaskConical } from "lucide-react";
+import { Github, BookOpen, Layers, Box, Play, Gem, FlaskConical, Menu, X } from "lucide-react";
+
+const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 
 export function Layout() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const navLink = (to: string, label: string, Icon: typeof Layers, end = false) => (
     <NavLink
       to={to}
       end={end}
+      onClick={() => setMobileMenuOpen(false)}
       className={({ isActive }) =>
         `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
           isActive ? "bg-white/10 text-white" : "text-slate-400 hover:text-white hover:bg-white/5"
@@ -15,6 +21,16 @@ export function Layout() {
       <Icon size={16} />
       {label}
     </NavLink>
+  );
+
+  const navItems = (
+    <>
+      {navLink("/gallery", "Gallery", Layers)}
+      {navLink("/showcase", "Playground", Play)}
+      {navLink("/docs", "Docs", BookOpen)}
+      {navLink("/components", "Components", Box)}
+      {isLocalhost && navLink("/kitchen", "Kitchen", FlaskConical)}
+    </>
   );
 
   return (
@@ -29,12 +45,9 @@ export function Layout() {
             </div>
           </NavLink>
 
-          <nav className="flex items-center gap-1">
-            {navLink("/gallery", "Gallery", Layers)}
-            {navLink("/showcase", "Playground", Play)}
-            {navLink("/docs", "Docs", BookOpen)}
-            {navLink("/components", "Components", Box)}
-            {navLink("/kitchen", "Kitchen", FlaskConical)}
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems}
             <a
               href="https://github.com/iplanwebsites/solid-glass"
               target="_blank"
@@ -44,8 +57,55 @@ export function Layout() {
               <Github size={16} />
             </a>
           </nav>
+
+          {/* Mobile menu button */}
+          <div className="flex items-center gap-2 md:hidden">
+            <a
+              href="https://github.com/iplanwebsites/solid-glass"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <Github size={20} />
+            </a>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
+
       </header>
+
+      {/* Mobile nav overlay */}
+      {mobileMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          {/* Slide-over panel */}
+          <div className="fixed top-0 right-0 z-50 h-full w-64 bg-slate-900 border-l border-white/10 shadow-2xl md:hidden">
+            <div className="flex items-center justify-between h-16 px-4 border-b border-white/10">
+              <span className="text-sm font-semibold text-white">Menu</span>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center w-10 h-10 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                aria-label="Close menu"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <nav className="flex flex-col p-4 gap-1">
+              {navItems}
+            </nav>
+          </div>
+        </>
+      )}
 
       {/* Background orbs */}
       <div className="fixed inset-0 -z-10 overflow-hidden">

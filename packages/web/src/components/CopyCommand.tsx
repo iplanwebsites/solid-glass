@@ -62,26 +62,27 @@ export function CopyCommand({ command, className }: CopyCommandProps) {
   }, [command, fireConfetti]);
 
   return (
-    <div
+    <button
+      ref={buttonRef}
+      onClick={handleCopy}
+      aria-label="Copy command to clipboard"
       className={clsx(
-        "inline-flex items-center gap-3 bg-slate-800/80 border border-slate-700 px-5 py-3 rounded-xl",
+        "inline-flex items-center gap-3 bg-slate-800/80 border border-slate-700 px-5 py-3 rounded-xl cursor-pointer transition-colors hover:bg-slate-700/80 hover:border-slate-600",
+        copied && "border-lime-500/50",
         className
       )}
     >
       <code className="font-mono text-sm text-slate-200">{command}</code>
-      <button
-        ref={buttonRef}
-        onClick={handleCopy}
-        aria-label="Copy command to clipboard"
+      <span
         className={clsx(
-          "p-1.5 rounded-md transition-colors cursor-pointer",
+          "p-1.5 rounded-md transition-colors",
           copied
             ? "bg-lime-500/20 text-lime-400"
-            : "bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white"
+            : "bg-white/5 text-slate-400"
         )}
       >
         {copied ? <Check size={14} /> : <Copy size={14} />}
-      </button>
-    </div>
+      </span>
+    </button>
   );
 }

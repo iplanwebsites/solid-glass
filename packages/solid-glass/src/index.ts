@@ -13,7 +13,7 @@ export { thin } from "./effects/thin";
 export { effects, getEffect } from "./effects";
 
 // Presets
-export { presets, presetNames } from "./presets";
+export { presets, presetNames, liquidGlassPresets, liquidGlassPresetNames } from "./presets";
 
 // Utilities
 export { hexToRgb, rgbToHex, cn } from "./utils";
@@ -35,4 +35,4 @@ export type {
   ThinGlassOptions,
 } from "./types";
 
-export type { PresetName } from "./presets";
+export type { PresetName, LiquidGlassPresetName } from "./presets";

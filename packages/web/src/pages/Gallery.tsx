@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo, useEffect } from "react";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
+import { liquidGlassPresets } from "solid-glass";
 import { EffectGrid } from "../components/EffectGrid";
 
 const LOUPE_IMAGE = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80";
@@ -14,16 +15,11 @@ function LoupeDemoCard() {
   const glass = useMemo(
     () =>
       createLiquidGlass({
+        ...liquidGlassPresets.loupe,
         width: loupeSize,
         height: loupeSize,
         radius: loupeSize / 2,
         bezelWidth: 25,
-        glassThickness: 200,
-        blur: 0,
-        refractiveIndex: 1.5,
-        surface: "convexCircle" as SurfaceType,
-        specularOpacity: 0.7,
-        dpr: 1,
       }),
     []
   );
@@ -85,6 +81,9 @@ function LoupeDemoCard() {
   );
 }
 
+const GALLERY_PANEL_WIDTH = 260;
+const GALLERY_PANEL_HEIGHT = 160;
+
 function RefractionDemoCard() {
   const svgRef = useRef<Element | null>(null);
   const [surface, setSurface] = useState<SurfaceType>("convexSquircle");
@@ -92,17 +91,10 @@ function RefractionDemoCard() {
   const glass = useMemo(
     () =>
       createLiquidGlass({
-        width: 260,
-        height: 160,
-        radius: 20,
-        bezelWidth: 40,
-        glassThickness: 200,
-        blur: 8,
-        refractiveIndex: 1.5,
+        ...liquidGlassPresets.panel,
+        width: GALLERY_PANEL_WIDTH,
+        height: GALLERY_PANEL_HEIGHT,
         surface,
-        specularOpacity: 0.6,
-        saturation: 1.2,
-        dpr: 1,
       }),
     [surface]
   );
@@ -147,9 +139,9 @@ function RefractionDemoCard() {
         <img src={PANEL_IMAGE} alt="" className="absolute inset-0 w-[115%] h-[115%] object-cover -top-[7%] -left-[7%]" />
         <div
           style={{
-            width: 260,
-            height: 160,
-            borderRadius: 20,
+            width: GALLERY_PANEL_WIDTH,
+            height: GALLERY_PANEL_HEIGHT,
+            borderRadius: liquidGlassPresets.panel.radius,
             overflow: "hidden",
             backdropFilter: glass.filterRef,
             WebkitBackdropFilter: glass.filterRef,
