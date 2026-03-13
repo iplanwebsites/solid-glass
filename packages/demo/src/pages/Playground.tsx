@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Glass, type GlassEffectName, presets, type PresetName, presetNames } from "solid-glass";
 import { Copy, Check, RotateCcw, Image } from "lucide-react";
 
@@ -53,11 +53,13 @@ export function Playground() {
   const [effect, setEffect] = useState<GlassEffectName>("frosted");
   const [values, setValues] = useState<Record<string, number>>({});
   const [tintColor, setTintColor] = useState("#ffffff");
-  const [bgIndex, setBgIndex] = useState(-1); // -1 = gradient
+  const [bgIndex, setBgIndex] = useState(0); // default to first image
   const [gradientIndex, setGradientIndex] = useState(0);
   const [copied, setCopied] = useState(false);
   const [panelWidth, setPanelWidth] = useState(280);
   const [panelHeight, setPanelHeight] = useState(200);
+  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const previewRef = useRef<HTMLDivElement>(null);
 
   const activeSliders = SLIDERS.filter((s) => s.effects.includes(effect));
 
@@ -88,6 +90,16 @@ export function Playground() {
   const handleReset = () => {
     setValues({});
     setTintColor("#ffffff");
+  };
+
+  const handlePreviewMouseMove = (e: React.MouseEvent) => {
+    const rect = previewRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    // Normalize to -1..1 from center
+    const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    // Shift up to 30px in each direction
+    setMouseOffset({ x: nx * -30, y: ny * -30 });
   };
 
   const handlePreset = (name: PresetName) => {
@@ -142,6 +154,9 @@ export function Playground() {
 
           {/* Preview area */}
           <div
+            ref={previewRef}
+            onMouseMove={handlePreviewMouseMove}
+            onMouseLeave={() => setMouseOffset({ x: 0, y: 0 })}
             className={`relative overflow-hidden rounded-2xl h-[500px] flex items-center justify-center ${
               bgIndex === -1 ? `bg-gradient-to-br ${GRADIENT_BGS[gradientIndex]}` : ""
             }`}
@@ -150,7 +165,12 @@ export function Playground() {
               <img
                 src={BG_IMAGES[bgIndex]}
                 alt="Background"
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute w-[115%] h-[115%] object-cover transition-transform duration-150 ease-out"
+                style={{
+                  top: "-7.5%",
+                  left: "-7.5%",
+                  transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)`,
+                }}
               />
             )}
 
