@@ -1,6 +1,6 @@
 {
   "name": "solid-glass",
-  "version": "1.0.0",
+  "version": "0.0.3",
   "description": "A comprehensive glass effect toolkit — frosted, crystal, aurora, smoke, prism, and more. Works with React, Vue, and vanilla JS.",
   "type": "module",
   "main": "./dist/index.cjs",

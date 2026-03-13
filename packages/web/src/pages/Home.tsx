@@ -1,18 +1,16 @@
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
 import { NavLink } from "react-router-dom";
-import { ArrowRight, Zap, Palette, Code2, TreePine, Box, Sparkles } from "lucide-react";
+import { ArrowRight, Zap, Palette, Box, Sparkles } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { CodeBlock } from "../components/CodeBlock";
 import { CopyCommand } from "../components/CopyCommand";
 import { EffectGrid } from "../components/EffectGrid";
 
 const FEATURES = [
-  { icon: Palette, title: "7 Distinct Effects", desc: "Frosted, Crystal, Aurora, Smoke, Prism, Holographic, and Thin — each with its own visual character." },
-  { icon: Code2, title: "TypeScript-First", desc: "Full type definitions, IntelliSense support, and type-safe options for every effect." },
-  { icon: TreePine, title: "Tree-Shakeable", desc: "Import only what you use. Each effect is independently importable for minimal bundle size." },
-  { icon: Zap, title: "Zero Config", desc: "Sensible defaults for every effect. Drop in a <Glass> component and it just works." },
-  { icon: Box, title: "React, Vue & Vanilla", desc: "First-class support for React, Vue 3, and vanilla JS. Same effects everywhere." },
-  { icon: Sparkles, title: "16 Built-in Presets", desc: "Ready-made configurations for common patterns. From frostedDark to holoCard." },
+  { icon: Sparkles, title: "Physics-Based Refraction", desc: "Snell-Descartes light bending via SVG displacement maps. Not a blur filter — actual glass physics." },
+  { icon: Palette, title: "7 Effect Types", desc: "Frosted, Crystal, Aurora, Smoke, Prism, Holographic, Thin — each with distinct visual character." },
+  { icon: Box, title: "Any Framework", desc: "First-class React and Vue components, plus vanilla JS. Same API shape everywhere." },
+  { icon: Zap, title: "Tiny & Tree-Shakeable", desc: "~4KB gzipped core. Import only the effects you use. No runtime dependencies." },
 ];
 
 const REACT_SNIPPET = `import { Glass } from "solid-glass/react";
@@ -210,21 +208,22 @@ export function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="max-w-5xl mx-auto px-6 pt-24 pb-20 text-center">
+      <section className="max-w-5xl mx-auto px-6 pt-24 pb-12 text-center">
         <div className="inline-flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-full px-4 py-1.5 text-sm text-slate-300 mb-8">
           <Sparkles size={14} className="text-accent" />
-          Multiple engines, 7+ effects, React / Vue / Vanilla JS
+          Physics-based glass for React, Vue & Vanilla JS
         </div>
 
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1]">
-          <span className="bg-gradient-to-r from-white via-lime-100 to-white bg-clip-text text-transparent">Glass effects</span>
+          <span className="bg-gradient-to-r from-white via-lime-100 to-white bg-clip-text text-transparent">Real glass effects.</span>
           <br />
-          <span className="bg-gradient-to-r from-lime-300 via-yellow-300 to-lime-300 bg-clip-text text-transparent">for the web</span>
+          <span className="bg-gradient-to-r from-lime-300 via-yellow-300 to-lime-300 bg-clip-text text-transparent">Drop in, done.</span>
         </h1>
 
         <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mt-6 leading-relaxed">
-          A comprehensive toolkit of glassmorphism effects for React, Vue, and vanilla JS.
-          Frosted, Crystal, Aurora, Smoke, Prism, Holographic, and Thin — all with a simple, type-safe API.
+          CSS blur looks flat. solid-glass gives you physics-based refraction,
+          7 distinct effects, and works everywhere — from React to vanilla JS.
+          ~4KB gzipped. Zero dependencies.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
@@ -238,9 +237,39 @@ export function Home() {
         </div>
       </section>
 
-      {/* Effect showcase grid */}
+      {/* Framework logos */}
       <section className="max-w-4xl mx-auto px-6 pb-16">
-        <EffectGrid compact showDescriptions />
+        <p className="text-center text-sm text-slate-500 mb-6">Works with</p>
+        <div className="flex items-center justify-center gap-8 md:gap-12 flex-wrap">
+          {/* React */}
+          <div className="flex items-center gap-2 text-slate-400 hover:text-slate-300 transition-colors">
+            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="currentColor">
+              <path d="M12 10.11c1.03 0 1.87.84 1.87 1.89 0 1-.84 1.85-1.87 1.85S10.13 13 10.13 12c0-1.05.84-1.89 1.87-1.89M7.37 20c.63.38 2.01-.2 3.6-1.7-.52-.59-1.03-1.23-1.51-1.9a22.7 22.7 0 01-2.4-.36c-.51 2.14-.32 3.61.31 3.96m.71-5.74l-.29-.51c-.11.29-.22.58-.29.86.27.06.57.11.88.16l-.3-.51m6.54-.76l.81-1.5-.81-1.5c-.3-.53-.62-1-.91-1.47C13.17 9 12.6 9 12 9s-1.17 0-1.71.03c-.29.47-.61.94-.91 1.47L8.57 12l.81 1.5c.3.53.62 1 .91 1.47.54.03 1.11.03 1.71.03s1.17 0 1.71-.03c.29-.47.61-.94.91-1.47M12 6.78c-.19.22-.39.45-.59.72h1.18c-.2-.27-.4-.5-.59-.72m0 10.44c.19-.22.39-.45.59-.72h-1.18c.2.27.4.5.59.72M16.62 4c-.62-.38-2 .2-3.59 1.7.52.59 1.03 1.23 1.51 1.9.82.08 1.63.2 2.4.36.51-2.14.32-3.61-.32-3.96m-.7 5.74l.29.51c.11-.29.22-.58.29-.86-.27-.06-.57-.11-.88-.16l.3.51m1.45-7.05c1.47.84 1.63 3.05 1.01 5.63 2.54.75 4.37 1.99 4.37 3.68s-1.83 2.93-4.37 3.68c.62 2.58.46 4.79-1.01 5.63-1.46.84-3.45-.12-5.37-1.95-1.92 1.83-3.91 2.79-5.38 1.95-1.46-.84-1.62-3.05-1-5.63-2.54-.75-4.37-1.99-4.37-3.68s1.83-2.93 4.37-3.68c-.62-2.58-.46-4.79 1-5.63 1.47-.84 3.46.12 5.38 1.95 1.92-1.83 3.91-2.79 5.37-1.95M17.08 12c.34.75.64 1.5.89 2.26 2.1-.63 3.28-1.53 3.28-2.26s-1.18-1.63-3.28-2.26c-.25.76-.55 1.51-.89 2.26M6.92 12c-.34-.75-.64-1.5-.89-2.26-2.1.63-3.28 1.53-3.28 2.26s1.18 1.63 3.28 2.26c.25-.76.55-1.51.89-2.26m9 2.26l-.3.51c.31-.05.61-.1.88-.16-.07-.28-.18-.57-.29-.86l-.29.51m-2.89 4.04c1.59 1.5 2.97 2.08 3.59 1.7.64-.35.83-1.82.32-3.96-.77.16-1.58.28-2.4.36-.48.67-.99 1.31-1.51 1.9M8.08 9.74l.3-.51c-.31.05-.61.1-.88.16.07.28.18.57.29.86l.29-.51m2.89-4.04C9.38 4.2 8 3.62 7.37 4c-.63.35-.82 1.82-.31 3.96a22.7 22.7 0 012.4-.36c.48-.67.99-1.31 1.51-1.9z"/>
+            </svg>
+            <span className="font-medium text-sm">React</span>
+          </div>
+          {/* Vue */}
+          <div className="flex items-center gap-2 text-slate-400 hover:text-slate-300 transition-colors">
+            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="currentColor">
+              <path d="M2 3h3.5L12 15l6.5-12H22L12 21 2 3m4.5 0h3L12 7.58 14.5 3h3L12 13.08 6.5 3z"/>
+            </svg>
+            <span className="font-medium text-sm">Vue</span>
+          </div>
+          {/* shadcn/ui */}
+          <div className="flex items-center gap-2 text-slate-400 hover:text-slate-300 transition-colors">
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 3L3 21h18L12 3z"/>
+            </svg>
+            <span className="font-medium text-sm">shadcn/ui</span>
+          </div>
+          {/* Vanilla JS */}
+          <div className="flex items-center gap-2 text-slate-400 hover:text-slate-300 transition-colors">
+            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="currentColor">
+              <path d="M3 3h18v18H3V3m4.73 15.04c.4.85 1.19 1.55 2.54 1.55 1.5 0 2.53-.8 2.53-2.55v-5.78h-1.7V17c0 .86-.35 1.08-.9 1.08-.58 0-.82-.4-1.09-.87l-1.38.83m5.98-.18c.5.98 1.51 1.73 3.09 1.73 1.6 0 2.8-.83 2.8-2.36 0-1.41-.81-2.04-2.25-2.66l-.42-.18c-.73-.31-1.04-.52-1.04-1.02 0-.41.31-.73.81-.73.48 0 .8.21 1.09.73l1.31-.87c-.55-.96-1.33-1.33-2.4-1.33-1.51 0-2.48.96-2.48 2.23 0 1.38.81 2.03 2.03 2.55l.42.18c.78.34 1.24.55 1.24 1.13 0 .48-.45.83-1.15.83-.83 0-1.31-.43-1.67-1.03l-1.38.8z"/>
+            </svg>
+            <span className="font-medium text-sm">Vanilla JS</span>
+          </div>
+        </div>
       </section>
 
       {/* SVG Refraction Engine Hero */}
@@ -271,6 +300,11 @@ export function Home() {
         </div>
       </section>
 
+      {/* Effect showcase grid */}
+      <section className="max-w-4xl mx-auto px-6 pb-16">
+        <EffectGrid compact showDescriptions />
+      </section>
+
       {/* Features */}
       <section className="max-w-6xl mx-auto px-6 pb-24">
         <h2 className="text-3xl font-bold text-center mb-4">Why solid-glass?</h2>
@@ -278,7 +312,7 @@ export function Home() {
           Everything you need to add beautiful glass effects to your app, nothing you don't.
         </p>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 gap-6">
           {FEATURES.map((f) => (
             <div key={f.title} className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 hover:border-slate-600 transition-colors">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-lime-500/20 to-yellow-500/20 flex items-center justify-center mb-4">
@@ -310,33 +344,6 @@ export function Home() {
               <CodeBlock code={ex.code} lang={ex.lang} />
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* Selective imports */}
-      <section className="max-w-4xl mx-auto px-6 pb-24">
-        <div className="bg-gradient-to-r from-slate-800/60 to-slate-800/40 border border-slate-700/50 rounded-2xl p-8 md:p-12">
-          <h2 className="text-2xl font-bold mb-3">Import what you need</h2>
-          <p className="text-slate-400 mb-6">
-            solid-glass is designed for tree-shaking. Use the main import for everything,
-            or import specific sub-paths for leaner bundles.
-          </p>
-          <div className="space-y-3">
-            {[
-              { path: 'solid-glass/react', desc: 'React — Glass component + useGlass hook' },
-              { path: 'solid-glass/vue', desc: 'Vue 3 — Glass component + useGlass composable' },
-              { path: 'solid-glass/vanilla', desc: 'Vanilla JS — applyGlass() for any DOM element' },
-              { path: 'solid-glass/effects', desc: 'Just the style generators (frosted, crystal, ...)' },
-              { path: 'solid-glass/engines/svg-refraction', desc: 'Physics-based liquid glass via SVG displacement maps' },
-              { path: 'solid-glass/presets', desc: 'Pre-configured effect combos' },
-              { path: 'solid-glass/css', desc: 'The CSS file — required for visual effects' },
-            ].map((imp) => (
-              <div key={imp.path} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                <code className="font-mono text-sm text-lime-300 shrink-0">import "{imp.path}"</code>
-                <span className="text-sm text-slate-500">{imp.desc}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
