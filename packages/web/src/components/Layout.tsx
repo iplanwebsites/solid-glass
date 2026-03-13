@@ -67,7 +67,7 @@ export function Layout() {
           <div className="flex gap-6 text-sm text-slate-500">
             <a href="https://github.com/iplanwebsites/solid-glass" className="hover:text-white transition-colors">GitHub</a>
             <a href="https://www.npmjs.com/package/solid-glass" className="hover:text-white transition-colors">npm</a>
-            <span>MIT License</span>
+            <span>Apache 2.0 License</span>
           </div>
         </div>
       </footer>

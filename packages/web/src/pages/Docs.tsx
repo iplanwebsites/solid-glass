@@ -240,17 +240,19 @@ export function Docs() {
           <ul className="space-y-1 border-l border-slate-800">
             {sections.map((s) => (
               <li key={s.id}>
-                <a
-                  href={`#${s.id}`}
-                  onClick={() => setActive(s.id)}
-                  className={`block pl-4 py-1.5 text-sm border-l-2 -ml-px transition-colors ${
+                <button
+                  onClick={() => {
+                    setActive(s.id);
+                    document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className={`block pl-4 py-1.5 text-sm border-l-2 -ml-px transition-colors text-left w-full ${
                     active === s.id
                       ? "border-blue-400 text-white"
                       : "border-transparent text-slate-500 hover:text-slate-300"
                   }`}
                 >
                   {s.title}
-                </a>
+                </button>
               </li>
             ))}
           </ul>

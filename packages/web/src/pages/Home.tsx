@@ -1,7 +1,16 @@
 import { Glass, type GlassEffectName } from "solid-glass";
 import { NavLink } from "react-router-dom";
 import { ArrowRight, Zap, Palette, Code2, TreePine, Box, Sparkles, Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+
+const BG_PHOTOS = [
+  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=70",
+  "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&q=70",
+  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=70",
+  "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600&q=70",
+  "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=70",
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=70",
+];
 
 const EFFECTS: { name: string; effect: GlassEffectName; desc: string; opts: Record<string, unknown> }[] = [
   { name: "Frosted", effect: "frosted", desc: "Classic Apple-style frosted glass", opts: { blur: 14, tintOpacity: 0.1 } },
@@ -71,6 +80,74 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
+function EffectShowcaseStrip() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+  const [photoIndex, setPhotoIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPhotoIndex((prev) => (prev + 1) % BG_PHOTOS.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (rect) {
+      setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => setMousePos(null), []);
+
+  return (
+    <section className="max-w-7xl mx-auto px-6 pb-24">
+      <div
+        ref={containerRef}
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        {EFFECTS.map((e, idx) => {
+          const photo = BG_PHOTOS[(photoIndex + idx) % BG_PHOTOS.length];
+          return (
+            <div key={e.effect} className="group">
+              <div
+                className="relative overflow-hidden rounded-2xl aspect-square flex items-center justify-center"
+                style={mousePos ? {
+                  transform: `translate(${(mousePos.x / (containerRef.current?.offsetWidth || 1) - 0.5) * 6}px, ${(mousePos.y / (containerRef.current?.offsetHeight || 1) - 0.5) * 6}px)`,
+                  transition: "transform 0.15s ease-out",
+                } : { transition: "transform 0.3s ease-out" }}
+              >
+                <img
+                  src={photo}
+                  alt=""
+                  className="absolute inset-0 w-[120%] h-[120%] object-cover -top-[10%] -left-[10%] transition-transform duration-[8s] ease-linear"
+                  style={{
+                    transform: `scale(1.15) translate(${Math.sin(Date.now() / 3000 + idx) * 3}%, ${Math.cos(Date.now() / 3000 + idx) * 3}%)`,
+                    animation: `panBg${idx % 3} 12s ease-in-out infinite alternate`,
+                  }}
+                />
+                <div className="absolute inset-0 bg-slate-950/20" />
+                <Glass
+                  effect={e.effect}
+                  options={e.opts as never}
+                  className="w-full h-full flex items-center justify-center relative z-10 p-3"
+                  style={{ borderRadius: 14 }}
+                >
+                  <span className="text-white/80 text-xs font-medium text-center drop-shadow-sm">{e.name}</span>
+                </Glass>
+              </div>
+              <p className="text-[11px] text-slate-500 text-center mt-2">{e.desc}</p>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export function Home() {
   return (
     <div>
@@ -107,30 +184,7 @@ export function Home() {
       </section>
 
       {/* Effect showcase strip */}
-      <section className="max-w-7xl mx-auto px-6 pb-24">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
-          {EFFECTS.map((e) => (
-            <div key={e.effect} className="group">
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/30 via-violet-600/20 to-emerald-600/10 p-3 aspect-square flex items-center justify-center">
-                <div className="absolute inset-0 opacity-40">
-                  <div className="absolute top-2 left-2 w-8 h-8 bg-white/20 rounded-lg" />
-                  <div className="absolute bottom-3 right-2 w-6 h-6 bg-pink-400/20 rounded-full" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-yellow-400/15 rounded-lg rotate-12" />
-                </div>
-                <Glass
-                  effect={e.effect}
-                  options={e.opts as never}
-                  className="w-full h-full flex items-center justify-center"
-                  style={{ borderRadius: 14 }}
-                >
-                  <span className="text-white/70 text-xs font-medium text-center">{e.name}</span>
-                </Glass>
-              </div>
-              <p className="text-[11px] text-slate-500 text-center mt-2">{e.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <EffectShowcaseStrip />
 
       {/* Features */}
       <section className="max-w-6xl mx-auto px-6 pb-24">
