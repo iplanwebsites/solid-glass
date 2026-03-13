@@ -3,6 +3,13 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Yellow-lime accent palette */
+    --accent: 190 231 46;       /* lime-400 ish  #BEE72E */
+    --accent-light: 217 249 117; /* lime-300 ish  #D9F975 */
+    --accent-dark: 132 204 22;   /* lime-500      #84CC16 */
+  }
+
   * {
     box-sizing: border-box;
   }
