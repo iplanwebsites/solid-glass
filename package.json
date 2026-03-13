@@ -1,77 +1,37 @@
 {
-  "name": "solid-glass",
-  "version": "0.0.4",
-  "description": "A lightweight glass effect library for web apps, supporting React, Vue and plain JS.",
+  "name": "solid-glass-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A comprehensive glass effect toolkit for the web",
   "homepage": "https://iplanwebsites.github.io/solid-glass/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/iplanwebsites/solid-glass.git"
   },
-  "main": "dist/solid-glass.js",
-  "module": "dist/solid-glass.esm.js",
-  "exports": {
-    ".": {
-      "import": "./dist/solid-glass.esm.js",
-      "require": "./dist/solid-glass.js"
-    },
-    "./vanilla": {
-      "import": "./dist/vanilla.esm.js",
-      "require": "./dist/vanilla.js"
-    },
-    "./react": {
-      "import": "./dist/react.esm.js",
-      "require": "./dist/react.js"
-    },
-    "./vue": {
-      "import": "./dist/vue.esm.js",
-      "require": "./dist/vue.js"
-    },
-    "./style.css": "./dist/style.css"
-  },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "build:demo": "vite build --mode demo",
-    "preview": "vite preview",
-    "dry": "npm publish --dry-run",
-    "prepublish": " npm run build ",
-    "publish": "   npm publish && npm version patch"
+    "dev": "pnpm --filter @solid-glass/demo dev",
+    "dev:lib": "pnpm --filter solid-glass dev",
+    "build": "pnpm --filter solid-glass build && pnpm --filter @solid-glass/demo build",
+    "build:lib": "pnpm --filter solid-glass build",
+    "build:demo": "pnpm --filter @solid-glass/demo build",
+    "build:web": "pnpm --filter @solid-glass/web build",
+    "dev:web": "pnpm --filter @solid-glass/web dev",
+    "preview": "pnpm --filter @solid-glass/demo preview",
+    "test": "pnpm --filter solid-glass test",
+    "test:coverage": "pnpm --filter solid-glass test:coverage",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r clean"
   },
   "keywords": [
     "glass",
-    "apple ui",
-    "liquid glass",
-    "iOs",
-    "macOS",
-    "web",
-    "liquid",
-    "effect",
-    "ui",
+    "glassmorphism",
+    "frosted-glass",
+    "liquid-glass",
+    "apple-ui",
     "react",
-    "vue",
-    "component"
+    "css",
+    "ui-effects"
   ],
   "author": "felix_m",
-  "license": "MIT",
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^5.0.4",
-    "vite": "^5.2.0",
-    "vue": "^3.4.21"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "vue": ">=3.0.0"
-  },
-  "peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    },
-    "react-dom": {
-      "optional": true
-    },
-    "vue": {
-      "optional": true
-    }
-  }
+  "license": "MIT"
 }

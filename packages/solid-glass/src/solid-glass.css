@@ -1,0 +1,154 @@
+/* ============================================
+   solid-glass — Glass Effect Toolkit
+   ============================================ */
+
+/* --- Shared Base --- */
+[class*="sg-"] {
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--sg-radius, 16px);
+  opacity: var(--sg-opacity, 1);
+}
+
+[class*="sg-"]::before,
+[class*="sg-"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* --- Frosted Glass --- */
+.sg-frosted::before {
+  z-index: 1;
+  box-shadow: inset 0 0 var(--sg-shadow-blur, 6px) var(--sg-shadow-spread, 0px) var(--sg-shadow-color, rgba(255, 255, 255, 0.6));
+  background: rgba(var(--sg-tint-rgb, 255, 255, 255), var(--sg-tint-opacity, 0.08));
+  border: var(--sg-border-width, 1px) solid var(--sg-border-color, rgba(255, 255, 255, 0.2));
+}
+
+.sg-frosted::after {
+  z-index: -1;
+  -webkit-backdrop-filter: blur(var(--sg-blur, 12px));
+  backdrop-filter: blur(var(--sg-blur, 12px));
+}
+
+/* --- Crystal Glass (with SVG distortion) --- */
+.sg-crystal::before {
+  z-index: 1;
+  background: rgba(var(--sg-tint-rgb, 255, 255, 255), var(--sg-tint-opacity, 0.05));
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3), inset 0 -1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.sg-crystal::after {
+  z-index: -1;
+  -webkit-backdrop-filter: blur(var(--sg-blur, 8px));
+  backdrop-filter: blur(var(--sg-blur, 8px));
+  filter: var(--sg-filter-id);
+  -webkit-filter: var(--sg-filter-id);
+}
+
+/* --- Aurora Glass --- */
+.sg-aurora::before {
+  z-index: 1;
+  background: var(--sg-aurora-gradient);
+  background-size: 200% 200%;
+  opacity: var(--sg-aurora-opacity, 0.15);
+  animation: sg-aurora-shift var(--sg-aurora-speed, 8s) ease infinite;
+}
+
+.sg-aurora::after {
+  z-index: -1;
+  -webkit-backdrop-filter: blur(var(--sg-blur, 16px));
+  backdrop-filter: blur(var(--sg-blur, 16px));
+}
+
+@keyframes sg-aurora-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* --- Smoke Glass --- */
+.sg-smoke::before {
+  z-index: 1;
+  background: rgba(var(--sg-smoke-rgb, 0, 0, 0), var(--sg-smoke-density, 0.3));
+}
+
+.sg-smoke::after {
+  z-index: -1;
+  -webkit-backdrop-filter: blur(var(--sg-blur, 20px));
+  backdrop-filter: blur(var(--sg-blur, 20px));
+  filter: var(--sg-filter-id);
+  -webkit-filter: var(--sg-filter-id);
+}
+
+/* --- Prism Glass --- */
+.sg-prism::before {
+  z-index: 1;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 0, 0, 0.04),
+    rgba(0, 255, 0, 0.04),
+    rgba(0, 0, 255, 0.04)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.sg-prism::after {
+  z-index: -1;
+  -webkit-backdrop-filter:
+    blur(var(--sg-blur, 6px))
+    hue-rotate(var(--sg-prism-hue, 0deg))
+    saturate(var(--sg-prism-saturate, 1.2))
+    brightness(var(--sg-prism-brightness, 1.05))
+    contrast(var(--sg-prism-contrast, 1.1));
+  backdrop-filter:
+    blur(var(--sg-blur, 6px))
+    hue-rotate(var(--sg-prism-hue, 0deg))
+    saturate(var(--sg-prism-saturate, 1.2))
+    brightness(var(--sg-prism-brightness, 1.05))
+    contrast(var(--sg-prism-contrast, 1.1));
+}
+
+/* --- Holographic Glass --- */
+.sg-holographic::before {
+  z-index: 1;
+  background: var(--sg-holo-gradient);
+  background-size: 300% 300%;
+  opacity: var(--sg-holo-iridescence, 0.4);
+  animation: sg-holo-shift var(--sg-holo-speed, 6s) ease infinite;
+  mix-blend-mode: overlay;
+}
+
+.sg-holographic::after {
+  z-index: -1;
+  -webkit-backdrop-filter: blur(var(--sg-blur, 10px));
+  backdrop-filter: blur(var(--sg-blur, 10px));
+}
+
+@keyframes sg-holo-shift {
+  0%, 100% { background-position: 0% 50%; }
+  25% { background-position: 100% 0%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+}
+
+/* --- Thin Glass (minimal) --- */
+.sg-thin::before {
+  z-index: 1;
+  background: rgba(var(--sg-thin-bg-rgb, 255, 255, 255), var(--sg-thin-bg-opacity, 0.02));
+  border: 1px solid rgba(var(--sg-thin-bg-rgb, 255, 255, 255), var(--sg-thin-border-opacity, 0.1));
+}
+
+.sg-thin::after {
+  z-index: -1;
+  -webkit-backdrop-filter: blur(var(--sg-blur, 4px));
+  backdrop-filter: blur(var(--sg-blur, 4px));
+}
+
+/* --- Content layer sits above effects --- */
+[class*="sg-"] > * {
+  position: relative;
+  z-index: 2;
+}
