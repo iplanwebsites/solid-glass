@@ -10,16 +10,18 @@ export { smoke } from "./effects/smoke";
 export { prism } from "./effects/prism";
 export { holographic } from "./effects/holographic";
 export { thin } from "./effects/thin";
-export { effects, getEffect } from "./effects";
+export { liquid } from "./effects/liquid";
+export { effects, getEffect, effectRenderTiers } from "./effects";
 
 // Presets
 export { presets, presetNames, liquidGlassPresets, liquidGlassPresetNames } from "./presets";
 
 // Utilities
-export { hexToRgb, rgbToHex, cn } from "./utils";
+export { hexToRgb, rgbToHex, cn, detectRenderTier } from "./utils";
 
 // Types
 export type {
+  RenderTier,
   GlassBaseOptions,
   GlassEffectName,
   GlassEffectMap,
@@ -33,6 +35,7 @@ export type {
   PrismGlassOptions,
   HolographicGlassOptions,
   ThinGlassOptions,
+  LiquidGlassEffectOptions,
 } from "./types";
 
 export type { PresetName, LiquidGlassPresetName } from "./presets";

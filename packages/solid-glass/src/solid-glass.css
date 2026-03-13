@@ -147,6 +147,22 @@
   backdrop-filter: blur(var(--sg-blur, 4px));
 }
 
+/* --- Liquid Glass (physics-based SVG refraction) --- */
+.sg-liquid::before {
+  z-index: 1;
+  box-shadow:
+    rgba(0, 0, 0, 0.16) 0px 4px 9px,
+    rgba(0, 0, 0, 0.2) 0px 2px 24px inset,
+    rgba(255, 255, 255, 0.2) 0px -2px 24px inset;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sg-liquid::after {
+  z-index: -1;
+  -webkit-backdrop-filter: var(--sg-liquid-filter);
+  backdrop-filter: var(--sg-liquid-filter);
+}
+
 /* --- Content layer sits above effects --- */
 [class*="sg-"] > * {
   position: relative;

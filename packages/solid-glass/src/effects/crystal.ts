@@ -22,6 +22,7 @@ export const crystal: GlassStyleGenerator<CrystalGlassOptions> = (opts = {}) => 
 
   return {
     className: "sg-crystal",
+    renderTier: "svg-filter",
     cssVars: {
       "--sg-blur": `${o.blur}px`,
       "--sg-tint-rgb": rgb,

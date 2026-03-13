@@ -6,6 +6,7 @@ import type {
   PrismGlassOptions,
   HolographicGlassOptions,
   ThinGlassOptions,
+  LiquidGlassEffectOptions,
 } from "./types";
 import type { LiquidGlassOptions } from "./engines/svg-refraction";
 
@@ -83,6 +84,16 @@ export const presets = {
   thinDark: {
     effect: "thin" as const,
     options: { blur: 4, dark: true, backgroundOpacity: 0.05, borderRadius: 12 } satisfies ThinGlassOptions,
+  },
+
+  // --- Liquid variants (physics-based SVG refraction) ---
+  liquidPanel: {
+    effect: "liquid" as const,
+    options: { width: 300, height: 200, blur: 2, surface: "convexSquircle", bezelWidth: 22, glassThickness: 130, refractiveIndex: 2.05, specularOpacity: 0.7, borderRadius: 54 } satisfies LiquidGlassEffectOptions,
+  },
+  liquidLoupe: {
+    effect: "liquid" as const,
+    options: { width: 200, height: 200, blur: 0, surface: "convexCircle", bezelWidth: 20, glassThickness: 200, refractiveIndex: 1.5, specularOpacity: 0.7, borderRadius: 100 } satisfies LiquidGlassEffectOptions,
   },
 } as const;
 

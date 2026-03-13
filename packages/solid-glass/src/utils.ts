@@ -26,3 +26,46 @@ export function cn(...classes: (string | undefined | false | null)[]): string {
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
+
+import type { RenderTier } from "./types";
+
+/**
+ * Detect the highest rendering tier supported by the current browser.
+ *
+ * - `"webgl"` — WebGL 2 or WebGPU available (future shader effects)
+ * - `"svg-filter"` — SVG filters in `backdrop-filter` are supported (Chromium 113+)
+ * - `"css"` — Basic CSS `backdrop-filter` support (Safari, Firefox, Chrome)
+ *
+ * Returns `"css"` in non-browser environments (SSR).
+ */
+export function detectRenderTier(): RenderTier {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return "css";
+  }
+
+  // Check WebGL / WebGPU availability
+  try {
+    const canvas = document.createElement("canvas");
+    const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
+    if (gl || "gpu" in navigator) {
+      // WebGL is available, but we also check for SVG filter backdrop support
+      // since that's the current highest-fidelity path we actually use
+    }
+  } catch {
+    // WebGL not available
+  }
+
+  // Check SVG filter in backdrop-filter support (Chromium 113+)
+  // by testing if backdrop-filter accepts a url() value
+  try {
+    const el = document.createElement("div");
+    el.style.backdropFilter = "url(#test)";
+    if (el.style.backdropFilter.includes("url")) {
+      return "svg-filter";
+    }
+  } catch {
+    // Not supported
+  }
+
+  return "css";
+}

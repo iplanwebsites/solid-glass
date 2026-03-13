@@ -20,6 +20,7 @@ export const frosted: GlassStyleGenerator<FrostedGlassOptions> = (opts = {}) => 
 
   return {
     className: "sg-frosted",
+    renderTier: "css",
     cssVars: {
       "--sg-blur": `${o.blur}px`,
       "--sg-tint-rgb": rgb,

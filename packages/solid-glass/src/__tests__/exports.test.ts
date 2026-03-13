@@ -18,20 +18,28 @@ describe("main entry (solid-glass)", () => {
     expect(typeof mod.useGlass).toBe("function");
   });
 
-  it("exports all 7 effect generators", async () => {
+  it("exports all 8 effect generators", async () => {
     const mod = await import("../index");
-    const effects = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin"];
+    const effects = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin", "liquid"];
     for (const effect of effects) {
       expect(mod[effect as keyof typeof mod]).toBeDefined();
       expect(typeof mod[effect as keyof typeof mod]).toBe("function");
     }
   });
 
-  it("exports effects registry and getEffect", async () => {
+  it("exports effects registry, getEffect, and effectRenderTiers", async () => {
     const mod = await import("../index");
     expect(mod.effects).toBeDefined();
     expect(mod.getEffect).toBeDefined();
     expect(typeof mod.getEffect).toBe("function");
+    expect(mod.effectRenderTiers).toBeDefined();
+    expect(typeof mod.effectRenderTiers).toBe("object");
+  });
+
+  it("exports detectRenderTier utility", async () => {
+    const mod = await import("../index");
+    expect(mod.detectRenderTier).toBeDefined();
+    expect(typeof mod.detectRenderTier).toBe("function");
   });
 
   it("exports presets and presetNames", async () => {
@@ -51,19 +59,25 @@ describe("main entry (solid-glass)", () => {
 });
 
 describe("solid-glass/effects", () => {
-  it("exports all effect generators", async () => {
+  it("exports all effect generators including liquid", async () => {
     const mod = await import("../effects");
-    const effects = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin"];
+    const effects = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin", "liquid"];
     for (const effect of effects) {
       expect(mod[effect as keyof typeof mod]).toBeDefined();
       expect(typeof mod[effect as keyof typeof mod]).toBe("function");
     }
   });
 
-  it("exports effects registry", async () => {
+  it("exports effects registry with 8 effects", async () => {
     const mod = await import("../effects");
     expect(mod.effects).toBeDefined();
-    expect(Object.keys(mod.effects)).toHaveLength(7);
+    expect(Object.keys(mod.effects)).toHaveLength(8);
+  });
+
+  it("exports effectRenderTiers map", async () => {
+    const mod = await import("../effects");
+    expect(mod.effectRenderTiers).toBeDefined();
+    expect(Object.keys(mod.effectRenderTiers)).toHaveLength(8);
   });
 });
 

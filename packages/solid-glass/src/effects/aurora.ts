@@ -16,6 +16,7 @@ export const aurora: GlassStyleGenerator<AuroraGlassOptions> = (opts = {}) => {
 
   return {
     className: "sg-aurora",
+    renderTier: "css",
     cssVars: {
       "--sg-blur": `${o.blur}px`,
       "--sg-aurora-gradient": `linear-gradient(${o.angle}deg, ${gradient})`,

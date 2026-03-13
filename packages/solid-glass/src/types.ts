@@ -1,4 +1,18 @@
 import type { CSSProperties, HTMLAttributes } from "react";
+import type { SurfaceType } from "./engines/svg-refraction/surface-equations";
+
+/**
+ * Rendering technology tier used by an effect.
+ *
+ * - `"css"` — Pure CSS (`backdrop-filter`, `box-shadow`, gradients, animations).
+ *   Broadest browser support.
+ * - `"svg-filter"` — SVG filter primitives (`feTurbulence`, `feDisplacementMap`,
+ *   `feGaussianBlur`, `feColorMatrix`, etc.). Moderate support; some filters
+ *   in `backdrop-filter` are Chromium-only.
+ * - `"webgl"` — GPU-accelerated WebGL/WebGPU shaders. Most powerful, narrowest
+ *   support. Reserved for future use.
+ */
+export type RenderTier = "css" | "svg-filter" | "webgl";
 
 /** Base configuration shared by all glass effects */
 export interface GlassBaseOptions {
@@ -122,6 +136,30 @@ export interface ThinGlassOptions extends GlassBaseOptions {
   dark?: boolean;
 }
 
+/** Configuration for the liquid glass effect (physics-based SVG refraction) */
+export interface LiquidGlassEffectOptions extends GlassBaseOptions {
+  /** Width of the glass element in px (required for displacement map generation) */
+  width: number;
+  /** Height of the glass element in px (required for displacement map generation) */
+  height: number;
+  /** Backdrop blur in px (default: 2) */
+  blur?: number;
+  /** Surface shape profile (default: "convexSquircle") */
+  surface?: SurfaceType;
+  /** Width of the refractive bezel in px (default: 22) */
+  bezelWidth?: number;
+  /** Glass thickness for refraction depth (default: 130) */
+  glassThickness?: number;
+  /** Refractive index of the glass material (default: 2.05) */
+  refractiveIndex?: number;
+  /** Specular highlight opacity 0-1 (default: 0.7) */
+  specularOpacity?: number;
+  /** Specular light angle in radians (default: Math.PI / 3) */
+  specularAngle?: number;
+  /** Color saturation boost (default: 1.2) */
+  saturation?: number;
+}
+
 /** Union type mapping effect names to their option types */
 export type GlassEffectMap = {
   frosted: FrostedGlassOptions;
@@ -131,6 +169,7 @@ export type GlassEffectMap = {
   prism: PrismGlassOptions;
   holographic: HolographicGlassOptions;
   thin: ThinGlassOptions;
+  liquid: LiquidGlassEffectOptions;
 };
 
 export type GlassEffectName = keyof GlassEffectMap;
@@ -167,4 +206,6 @@ export type GlassStyleGenerator<T extends GlassBaseOptions = GlassBaseOptions> =
   cssVars: GlassCSSVars;
   svgFilter?: string;
   inlineStyle?: CSSProperties;
+  /** The rendering technology used by this effect */
+  renderTier?: RenderTier;
 };
