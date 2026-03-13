@@ -162,7 +162,7 @@ export function Home() {
       <section className="max-w-5xl mx-auto px-6 pt-24 pb-20 text-center">
         <div className="inline-flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-full px-4 py-1.5 text-sm text-slate-300 mb-8">
           <Sparkles size={14} className="text-violet-400" />
-          7 glass effects, 16 presets, 1 import
+          Multiple engines, 7+ effects, React / Vue / Vanilla JS
         </div>
 
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1]">
@@ -252,6 +252,7 @@ export function Home() {
               { path: 'solid-glass/vue', desc: 'Vue 3 — Glass component + useGlass composable' },
               { path: 'solid-glass/vanilla', desc: 'Vanilla JS — applyGlass() for any DOM element' },
               { path: 'solid-glass/effects', desc: 'Just the style generators (frosted, crystal, ...)' },
+              { path: 'solid-glass/engines/svg-refraction', desc: 'Physics-based liquid glass via SVG displacement maps' },
               { path: 'solid-glass/presets', desc: 'Pre-configured effect combos' },
               { path: 'solid-glass/css', desc: 'The CSS file — required for visual effects' },
             ].map((imp) => (

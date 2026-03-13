@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Glass, type GlassEffectName, presets, type PresetName, presetNames } from "solid-glass";
-import { Copy, Check, RotateCcw, Image, SlidersHorizontal, Layers } from "lucide-react";
+import { createLiquidGlass, type SurfaceType, SURFACE_EQUATIONS } from "solid-glass/engines/svg-refraction";
+import { Copy, Check, RotateCcw, Image, SlidersHorizontal, Layers, Gem } from "lucide-react";
 
 /* ─── Framework Code Generators ─── */
 type Framework = "react" | "vue" | "vanilla";
@@ -140,7 +141,7 @@ const BG_IMAGES = [
 ];
 
 export function Showcase() {
-  const [tab, setTab] = useState<"gallery" | "playground">("gallery");
+  const [tab, setTab] = useState<"gallery" | "playground" | "liquid">("gallery");
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -149,7 +150,7 @@ export function Showcase() {
           Showcase
         </h1>
         <p className="text-slate-400 mt-3 text-lg">
-          Browse the gallery or build your own in the playground.
+          Browse the gallery, build your own, or explore physics-based liquid glass.
         </p>
       </div>
 
@@ -161,9 +162,12 @@ export function Showcase() {
         <button onClick={() => setTab("playground")} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors ${tab === "playground" ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}>
           <SlidersHorizontal size={16} /> Playground
         </button>
+        <button onClick={() => setTab("liquid")} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors ${tab === "liquid" ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}>
+          <Gem size={16} /> Liquid Glass
+        </button>
       </div>
 
-      {tab === "gallery" ? <GalleryView /> : <PlaygroundView />}
+      {tab === "gallery" ? <GalleryView /> : tab === "playground" ? <PlaygroundView /> : <LiquidGlassView />}
     </div>
   );
 }
@@ -427,6 +431,201 @@ function PlaygroundView() {
                 <input type="range" min={s.min} max={s.max} step={s.step} value={getValue(s.key, s.defaultValue)} onChange={(e) => setValues((p) => ({ ...p, [s.key]: Number(e.target.value) }))} className="w-full accent-blue-500" />
               </label>
             ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Liquid Glass (SVG Refraction Engine) ─── */
+const SURFACE_TYPES: { key: SurfaceType; label: string }[] = [
+  { key: "convexCircle", label: "Circle" },
+  { key: "convexSquircle", label: "Squircle" },
+  { key: "concave", label: "Concave" },
+  { key: "lip", label: "Lip" },
+];
+
+const LIQUID_SLIDERS = [
+  { key: "bezelWidth", label: "Bezel Width", min: 10, max: 100, step: 1, defaultValue: 50 },
+  { key: "glassThickness", label: "Glass Thickness", min: 20, max: 500, step: 10, defaultValue: 200 },
+  { key: "blur", label: "Blur", min: 0, max: 20, step: 1, defaultValue: 8 },
+  { key: "refractiveIndex", label: "Refractive Index", min: 1.0, max: 2.5, step: 0.05, defaultValue: 1.5 },
+  { key: "specularOpacity", label: "Specular Opacity", min: 0, max: 1, step: 0.05, defaultValue: 0.6 },
+  { key: "saturation", label: "Saturation", min: 0.5, max: 3, step: 0.1, defaultValue: 1.2 },
+  { key: "radius", label: "Corner Radius", min: 4, max: 60, step: 1, defaultValue: 20 },
+];
+
+function LiquidGlassView() {
+  const [surface, setSurface] = useState<SurfaceType>("convexSquircle");
+  const [values, setValues] = useState<Record<string, number>>({});
+  const [bgIndex, setBgIndex] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<Element | null>(null);
+
+  const getValue = (key: string, def: number) => values[key] ?? def;
+
+  const panelWidth = 280;
+  const panelHeight = 200;
+
+  const glass = useMemo(() => {
+    return createLiquidGlass({
+      width: panelWidth,
+      height: panelHeight,
+      radius: getValue("radius", 20),
+      bezelWidth: getValue("bezelWidth", 50),
+      glassThickness: getValue("glassThickness", 200),
+      blur: getValue("blur", 8),
+      refractiveIndex: getValue("refractiveIndex", 1.5),
+      surface,
+      specularOpacity: getValue("specularOpacity", 0.6),
+      saturation: getValue("saturation", 1.2),
+      dpr: 1,
+    });
+  }, [surface, values]);
+
+  // Inject/cleanup SVG filter
+  useEffect(() => {
+    if (svgRef.current) svgRef.current.remove();
+    const container = document.createElement("div");
+    container.innerHTML = glass.svgFilter;
+    const svg = container.firstElementChild;
+    if (svg) {
+      document.body.appendChild(svg);
+      svgRef.current = svg;
+    }
+    return () => { svgRef.current?.remove(); };
+  }, [glass.svgFilter]);
+
+  const codeSnippet = useMemo(() => {
+    const opts: Record<string, unknown> = {
+      width: panelWidth,
+      height: panelHeight,
+      radius: getValue("radius", 20),
+      bezelWidth: getValue("bezelWidth", 50),
+      glassThickness: getValue("glassThickness", 200),
+      blur: getValue("blur", 8),
+      refractiveIndex: getValue("refractiveIndex", 1.5),
+      surface,
+      specularOpacity: getValue("specularOpacity", 0.6),
+    };
+    return `import { createLiquidGlass } from "solid-glass/engines/svg-refraction";
+
+const glass = createLiquidGlass(${JSON.stringify(opts, null, 2)});
+
+// Inject SVG filter into DOM
+document.body.insertAdjacentHTML("beforeend", glass.svgFilter);
+
+// Apply as backdrop-filter (Chromium only)
+element.style.backdropFilter = glass.filterRef;`;
+  }, [surface, values]);
+
+  return (
+    <div>
+      {/* Credit banner */}
+      <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 mb-8 text-center">
+        <p className="text-sm text-slate-400">
+          SVG refraction engine inspired by{" "}
+          <a href="https://kube.io/blog/liquid-glass-css-svg" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2">
+            Kube (Chris Feijoo)
+          </a>
+          {" "}&mdash; physics-based glass refraction using Snell&rsquo;s law and SVG displacement maps.
+          <span className="block text-xs text-slate-500 mt-1">Chromium-only: backdrop-filter with SVG filters requires a Chromium-based browser.</span>
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
+        {/* Preview */}
+        <div className="space-y-5">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-slate-400">Background:</span>
+            {BG_IMAGES.map((_, i) => (
+              <button key={i} onClick={() => setBgIndex(i)} className={`w-7 h-7 rounded-full border-2 transition-colors flex items-center justify-center bg-slate-700 ${bgIndex === i ? "border-white" : "border-transparent"}`}>
+                <Image size={12} className="text-slate-300" />
+              </button>
+            ))}
+          </div>
+
+          <div ref={previewRef} className="relative overflow-hidden rounded-2xl h-[460px] flex items-center justify-center">
+            <img
+              src={BG_IMAGES[bgIndex]}
+              alt=""
+              className="absolute inset-0 w-[115%] h-[115%] object-cover -top-[7%] -left-[7%]"
+              style={{ animation: "panBg0 14s ease-in-out infinite alternate" }}
+            />
+            <div
+              style={{
+                width: panelWidth,
+                height: panelHeight,
+                borderRadius: getValue("radius", 20),
+                overflow: "hidden",
+                backdropFilter: glass.filterRef,
+                WebkitBackdropFilter: glass.filterRef,
+                border: "1px solid rgba(255,255,255,0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <div className="text-center px-4 relative z-10">
+                <p className="text-white/90 text-sm font-medium">Liquid Glass</p>
+                <p className="text-white/50 text-xs mt-1">{SURFACE_EQUATIONS[surface].name}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative bg-slate-800/80 border border-slate-700 rounded-xl p-5">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-xs text-slate-400 font-medium">Generated Code</span>
+              <button onClick={() => { navigator.clipboard.writeText(codeSnippet); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors">
+                {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                {copied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+            <pre className="code-block text-slate-300 overflow-x-auto text-xs">{codeSnippet}</pre>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="space-y-5">
+          <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
+            <h3 className="text-sm font-semibold text-slate-200 mb-3">Surface Shape</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {SURFACE_TYPES.map((s) => (
+                <button key={s.key} onClick={() => setSurface(s.key)} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${surface === s.key ? "bg-white text-slate-900" : "bg-slate-700 text-slate-300 hover:bg-slate-600"}`}>
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-semibold text-slate-200">Parameters</h3>
+              <button onClick={() => setValues({})} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"><RotateCcw size={12} /> Reset</button>
+            </div>
+            <div className="space-y-4">
+              {LIQUID_SLIDERS.map((s) => (
+                <label key={s.key} className="block">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-slate-300">{s.label}</span>
+                    <span className="text-slate-500 font-mono text-xs">{getValue(s.key, s.defaultValue)}</span>
+                  </div>
+                  <input type="range" min={s.min} max={s.max} step={s.step} value={getValue(s.key, s.defaultValue)} onChange={(e) => setValues((p) => ({ ...p, [s.key]: Number(e.target.value) }))} className="w-full accent-blue-500" />
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
+            <h3 className="text-sm font-semibold text-slate-200 mb-2">About this engine</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Uses Snell-Descartes law to calculate how light bends through a curved glass surface.
+              The displacement map is generated per-pixel on a canvas, then fed into an SVG
+              <code className="text-blue-300 mx-1">feDisplacementMap</code>
+              filter with a specular highlight overlay.
+            </p>
           </div>
         </div>
       </div>

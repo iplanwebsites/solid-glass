@@ -35,6 +35,12 @@
         "default": "./dist/vanilla/index.js"
       }
     },
+    "./engines/svg-refraction": {
+      "import": {
+        "types": "./dist/engines/svg-refraction.d.ts",
+        "default": "./dist/engines/svg-refraction.js"
+      }
+    },
     "./effects": {
       "import": {
         "types": "./dist/effects/index.d.ts",

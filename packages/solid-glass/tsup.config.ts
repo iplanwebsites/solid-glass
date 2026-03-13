@@ -8,6 +8,7 @@ export default defineConfig({
     "vue/index": "src/vue/index.ts",
     "vanilla/index": "src/vanilla/index.ts",
     "effects/index": "src/effects/index.ts",
+    "engines/svg-refraction": "src/engines/svg-refraction/index.ts",
     presets: "src/presets.ts",
   },
   format: ["esm", "cjs"],
