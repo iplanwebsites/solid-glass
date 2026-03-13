@@ -17,7 +17,7 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   external: ["react", "react-dom", "vue"],
-  sourcemap: true,
+  sourcemap: false,
   onSuccess: async () => {
     copyFileSync("src/solid-glass.css", "dist/solid-glass.css");
   },
