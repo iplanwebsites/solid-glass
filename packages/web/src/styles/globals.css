@@ -22,6 +22,19 @@
   tab-size: 2;
 }
 
+@keyframes panBg0 {
+  0% { transform: scale(1.15) translate(0%, 0%); }
+  100% { transform: scale(1.15) translate(-5%, -3%); }
+}
+@keyframes panBg1 {
+  0% { transform: scale(1.15) translate(-3%, 0%); }
+  100% { transform: scale(1.15) translate(3%, -5%); }
+}
+@keyframes panBg2 {
+  0% { transform: scale(1.15) translate(0%, -3%); }
+  100% { transform: scale(1.15) translate(-4%, 4%); }
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

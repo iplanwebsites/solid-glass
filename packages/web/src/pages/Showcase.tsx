@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Glass, type GlassEffectName, presets, type PresetName, presetNames } from "solid-glass";
 import { Copy, Check, RotateCcw, Image, SlidersHorizontal, Layers } from "lucide-react";
 
@@ -54,6 +54,9 @@ const BG_IMAGES = [
   "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
   "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80",
   "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80",
+  "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&q=80",
+  "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80",
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80",
 ];
 
 export function Showcase() {
@@ -90,6 +93,22 @@ function GalleryView() {
   const [filter, setFilter] = useState<GlassEffectName | "all">("all");
   const filtered = filter === "all" ? ALL_EFFECTS : ALL_EFFECTS.filter((e) => e.effect === filter);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPhotoIndex((prev) => (prev + 1) % BG_IMAGES.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    setMousePos({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => setMousePos(null), []);
 
   return (
     <>
@@ -104,39 +123,98 @@ function GalleryView() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div
+        ref={gridRef}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
         {filtered.map((item, i) => {
           const snippet = `<Glass effect="${item.effect}" options={${JSON.stringify(item.options, null, 2)}} />`;
+          const photo = BG_IMAGES[(photoIndex + i) % BG_IMAGES.length];
           return (
-            <div key={`${item.effect}-${i}`} className="group">
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/40 via-violet-600/30 to-emerald-600/20 p-8 h-64 flex items-center justify-center">
-                <div className="absolute inset-0 opacity-30">
-                  <div className="absolute top-4 left-4 w-20 h-20 bg-white/20 rounded-xl" />
-                  <div className="absolute top-12 right-8 w-16 h-16 bg-pink-400/20 rounded-full" />
-                  <div className="absolute bottom-6 left-1/3 w-24 h-12 bg-yellow-400/20 rounded-lg" />
-                </div>
-                <Glass effect={item.effect} options={item.options as never} className="w-48 h-36 flex items-center justify-center">
-                  <span className="text-white/80 text-sm font-medium">{item.name}</span>
-                </Glass>
-              </div>
-              <div className="mt-4 flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold text-white">{item.name}</h3>
-                  <p className="text-sm text-slate-400 mt-1">{item.description}</p>
-                </div>
-                <button
-                  onClick={() => { navigator.clipboard.writeText(snippet); setCopiedIdx(i); setTimeout(() => setCopiedIdx(null), 2000); }}
-                  className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-                >
-                  {copiedIdx === i ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
-                </button>
-              </div>
-              <span className="mt-2 inline-block text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">{item.effect}</span>
-            </div>
+            <GalleryCard
+              key={`${item.effect}-${i}`}
+              item={item}
+              index={i}
+              photo={photo}
+              snippet={snippet}
+              copiedIdx={copiedIdx}
+              setCopiedIdx={setCopiedIdx}
+              mousePos={mousePos}
+            />
           );
         })}
       </div>
     </>
+  );
+}
+
+function GalleryCard({
+  item,
+  index,
+  photo,
+  snippet,
+  copiedIdx,
+  setCopiedIdx,
+  mousePos,
+}: {
+  item: typeof ALL_EFFECTS[number];
+  index: number;
+  photo: string;
+  snippet: string;
+  copiedIdx: number | null;
+  setCopiedIdx: (v: number | null) => void;
+  mousePos: { x: number; y: number } | null;
+}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const getGlassOffset = () => {
+    if (!mousePos || !cardRef.current) return {};
+    const rect = cardRef.current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = (mousePos.x - cx) / rect.width;
+    const dy = (mousePos.y - cy) / rect.height;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const maxShift = 20;
+    const falloff = Math.max(0, 1 - dist * 0.5);
+    return {
+      transform: `translate(${dx * maxShift * falloff}px, ${dy * maxShift * falloff}px)`,
+      transition: "transform 0.12s ease-out",
+    };
+  };
+
+  return (
+    <div ref={cardRef} className="group">
+      <div className="relative overflow-hidden rounded-2xl h-64 flex items-center justify-center">
+        <img
+          src={photo}
+          alt=""
+          className="absolute inset-0 w-[130%] h-[130%] object-cover -top-[15%] -left-[15%]"
+          style={{ animation: `panBg${index % 3} 14s ease-in-out infinite alternate` }}
+        />
+        <div className="absolute inset-0 bg-slate-950/10" />
+        <div style={getGlassOffset()}>
+          <Glass effect={item.effect} options={item.options as never} className="w-48 h-36 flex items-center justify-center">
+            <span className="text-white/90 text-sm font-medium drop-shadow-sm">{item.name}</span>
+          </Glass>
+        </div>
+      </div>
+      <div className="mt-4 flex items-start justify-between">
+        <div>
+          <h3 className="font-semibold text-white">{item.name}</h3>
+          <p className="text-sm text-slate-400 mt-1">{item.description}</p>
+        </div>
+        <button
+          onClick={() => { navigator.clipboard.writeText(snippet); setCopiedIdx(index); setTimeout(() => setCopiedIdx(null), 2000); }}
+          className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+        >
+          {copiedIdx === index ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
+        </button>
+      </div>
+      <span className="mt-2 inline-block text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">{item.effect}</span>
+    </div>
   );
 }
 
@@ -189,12 +267,14 @@ function PlaygroundView() {
         </div>
 
         <div className={`relative overflow-hidden rounded-2xl h-[460px] flex items-center justify-center ${bgIndex === -1 ? `bg-gradient-to-br ${GRADIENT_BGS[gradientIndex]}` : ""}`}>
-          {bgIndex >= 0 && <img src={BG_IMAGES[bgIndex]} alt="" className="absolute inset-0 w-full h-full object-cover" />}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-8 left-12 w-32 h-32 bg-white/10 rounded-2xl rotate-12" />
-            <div className="absolute top-20 right-16 w-24 h-24 bg-pink-400/15 rounded-full" />
-            <div className="absolute bottom-12 left-1/4 w-40 h-20 bg-yellow-400/10 rounded-xl" />
-          </div>
+          {bgIndex >= 0 && (
+            <img
+              src={BG_IMAGES[bgIndex]}
+              alt=""
+              className="absolute inset-0 w-[115%] h-[115%] object-cover -top-[7%] -left-[7%]"
+              style={{ animation: "panBg0 14s ease-in-out infinite alternate" }}
+            />
+          )}
           <Glass effect={effect} options={options as never} className="w-[280px] h-[200px] flex items-center justify-center transition-all duration-300">
             <div className="text-center px-4">
               <p className="text-white/90 text-sm font-medium capitalize">{effect}</p>
