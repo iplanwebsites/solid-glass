@@ -1,8 +1,7 @@
-import { NavLink } from "react-router-dom";
 import { ArrowRight, Zap, Palette, Box, Sparkles } from "lucide-react";
-import { CodeBlock } from "../components/CodeBlock";
-import { EffectGrid } from "../components/EffectGrid";
-import { GlassHero } from "../components/GlassHero";
+import { CodeBlock } from "../../src/components/CodeBlock";
+import { EffectGrid } from "../../src/components/EffectGrid";
+import { GlassHero } from "../../src/components/GlassHero";
 
 const FEATURES = [
   { icon: Sparkles, title: "Physics-Based Refraction", desc: "Snell-Descartes light bending via SVG displacement maps. Not a blur filter — actual glass physics." },
@@ -54,7 +53,7 @@ const cleanup = applyGlass(card, "frosted", {
 
 // Later: cleanup();`;
 
-export function Home() {
+export default function Page() {
   return (
     <div>
       {/* Glass Hero with animated bubbles */}
@@ -116,18 +115,18 @@ export function Home() {
           Explore the gallery or dive into the docs.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <NavLink
-            to="/gallery"
+          <a
+            href="/gallery"
             className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-lime-500 to-yellow-500 text-slate-900 px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
           >
             View Gallery <ArrowRight size={18} />
-          </NavLink>
-          <NavLink
-            to="/docs"
+          </a>
+          <a
+            href="/docs"
             className="inline-flex items-center justify-center gap-2 bg-slate-800 border border-slate-700 text-white px-6 py-3 rounded-xl font-semibold hover:bg-slate-700 transition-colors"
           >
             Read the Docs
-          </NavLink>
+          </a>
         </div>
       </section>
     </div>

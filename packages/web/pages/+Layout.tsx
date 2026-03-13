@@ -1,26 +1,20 @@
 import { useState } from "react";
-import { Outlet, NavLink } from "react-router-dom";
 import { Github, BookOpen, Layers, Box, Play, Gem, FlaskConical, Menu, X } from "lucide-react";
+import "solid-glass/css";
+import "@/styles/globals.css";
 
-const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-
-export function Layout() {
+export default function Layout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navLink = (to: string, label: string, Icon: typeof Layers, end = false) => (
-    <NavLink
-      to={to}
-      end={end}
+  const navLink = (href: string, label: string, Icon: typeof Layers) => (
+    <a
+      href={href}
       onClick={() => setMobileMenuOpen(false)}
-      className={({ isActive }) =>
-        `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-          isActive ? "bg-white/10 text-white" : "text-slate-400 hover:text-white hover:bg-white/5"
-        }`
-      }
+      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors text-slate-400 hover:text-white hover:bg-white/5"
     >
       <Icon size={16} />
       {label}
-    </NavLink>
+    </a>
   );
 
   const navItems = (
@@ -29,7 +23,6 @@ export function Layout() {
       {navLink("/showcase", "Playground", Play)}
       {navLink("/docs", "Docs", BookOpen)}
       {navLink("/components", "Components", Box)}
-      {isLocalhost && navLink("/kitchen", "Kitchen", FlaskConical)}
     </>
   );
 
@@ -37,13 +30,13 @@ export function Layout() {
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-6">
-          <NavLink to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+          <a href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
             <Gem size={28} className="text-accent" />
             <div>
               <span className="font-bold text-lg tracking-tight">solid-glass</span>
               <span className="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded-full ml-2">v0.9</span>
             </div>
-          </NavLink>
+          </a>
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
@@ -77,18 +70,15 @@ export function Layout() {
             </button>
           </div>
         </div>
-
       </header>
 
       {/* Mobile nav overlay */}
       {mobileMenuOpen && (
         <>
-          {/* Backdrop */}
           <div
             className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
             onClick={() => setMobileMenuOpen(false)}
           />
-          {/* Slide-over panel */}
           <div className="fixed top-0 right-0 z-50 h-full w-64 bg-slate-900 border-l border-white/10 shadow-2xl md:hidden">
             <div className="flex items-center justify-between h-16 px-4 border-b border-white/10">
               <span className="text-sm font-semibold text-white">Menu</span>
@@ -117,7 +107,7 @@ export function Layout() {
       </div>
 
       <main className="flex-1">
-        <Outlet />
+        {children}
       </main>
 
       <footer className="border-t border-white/5 py-8">

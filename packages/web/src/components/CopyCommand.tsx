@@ -67,8 +67,8 @@ export function CopyCommand({ command, className }: CopyCommandProps) {
       onClick={handleCopy}
       aria-label="Copy command to clipboard"
       className={clsx(
-        "inline-flex items-center gap-3 bg-slate-800/80 border border-slate-700 px-5 py-3 rounded-xl cursor-pointer transition-colors hover:bg-slate-700/80 hover:border-slate-600",
-        copied && "border-lime-500/50",
+        "inline-flex items-center gap-3 backdrop-blur-md bg-white/10 border border-white/20 px-5 py-3 rounded-xl cursor-pointer transition-all hover:bg-white/15 hover:border-white/30 shadow-lg shadow-black/10",
+        copied && "border-lime-500/40 bg-lime-500/10",
         className
       )}
     >

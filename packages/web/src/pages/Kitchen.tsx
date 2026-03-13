@@ -2,7 +2,6 @@ import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
 import { Glass, type GlassEffectName } from "solid-glass";
 import { ArrowRight, Sparkles, Play, Pause, Settings2, RotateCcw, X } from "lucide-react";
-import { NavLink } from "react-router-dom";
 import { Switch } from "../components/ui/switch";
 import { Slider } from "../components/ui/slider";
 
@@ -676,18 +675,18 @@ function HeroSection() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <NavLink
-                to="/gallery"
+              <a
+                href="/gallery"
                 className="inline-flex items-center justify-center gap-2 bg-white text-slate-900 px-6 py-3 rounded-xl font-semibold hover:bg-lime-100 transition-colors"
               >
                 Explore Gallery <ArrowRight size={18} />
-              </NavLink>
-              <NavLink
-                to="/showcase"
+              </a>
+              <a
+                href="/showcase"
                 className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition-colors"
               >
                 Open Playground
-              </NavLink>
+              </a>
             </div>
           </div>
         </div>

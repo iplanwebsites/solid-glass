@@ -2,7 +2,6 @@ import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
 import { Glass, type GlassEffectName } from "solid-glass";
 import { ArrowRight, Play, Pause, Settings2, RotateCcw, X } from "lucide-react";
-import { NavLink } from "react-router-dom";
 import { Switch } from "./ui/switch";
 import { Slider } from "./ui/slider";
 import { CopyCommand } from "./CopyCommand";
@@ -572,7 +571,7 @@ export function GlassHero({
             {title || (
               <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6">
                 <span className="bg-gradient-to-r from-white via-lime-100 to-white bg-clip-text text-transparent drop-shadow-2xl">
-                  Real glass effects.
+                  Better glass effects.
                 </span>
                 <br />
                 <span className="bg-gradient-to-r from-lime-300 via-yellow-300 to-lime-300 bg-clip-text text-transparent">
@@ -586,12 +585,12 @@ export function GlassHero({
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <NavLink
-                to="/gallery"
-                className="inline-flex items-center justify-center gap-2 bg-white text-slate-900 px-6 py-3 rounded-xl font-semibold hover:bg-lime-100 transition-colors"
+              <a
+                href="/gallery"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold backdrop-blur-md bg-white/20 border border-white/30 text-white hover:bg-white/30 hover:border-white/40 transition-all shadow-lg shadow-black/10"
               >
                 View Gallery <ArrowRight size={18} />
-              </NavLink>
+              </a>
               {showInstallCommand && (
                 <CopyCommand command="npm i solid-glass" />
               )}
@@ -603,7 +602,7 @@ export function GlassHero({
         {showControls && (
           <button
             onClick={() => setControlsOpen(true)}
-            className="absolute bottom-6 right-6 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-slate-900/80 backdrop-blur-sm border border-white/20 text-white hover:bg-slate-800 transition-all z-10"
+            className="absolute bottom-6 right-6 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium backdrop-blur-md bg-white/10 border border-white/20 text-white/80 hover:bg-white/15 hover:text-white hover:border-white/30 transition-all z-10 shadow-lg shadow-black/10"
           >
             <Settings2 size={16} />
             Controls
