@@ -1,7 +1,8 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Glass, type GlassEffectName, presets, type PresetName, presetNames } from "solid-glass";
 import { createLiquidGlass, type SurfaceType, SURFACE_EQUATIONS } from "solid-glass/engines/svg-refraction";
-import { Copy, Check, RotateCcw, Image, SlidersHorizontal, Layers, Gem } from "lucide-react";
+import { Copy, Check, RotateCcw, Image, Sparkles, Gem } from "lucide-react";
+import { CodeBlock } from "../components/CodeBlock";
 
 /* ─── Framework Code Generators ─── */
 type Framework = "react" | "vue" | "vanilla";
@@ -68,61 +69,8 @@ function FrameworkTabs({ active, onChange }: { active: Framework; onChange: (f: 
   );
 }
 
-/* ─── Gallery Data ─── */
-const ALL_EFFECTS: {
-  name: string;
-  effect: GlassEffectName;
-  options: Record<string, unknown>;
-  description: string;
-}[] = [
-  // Frosted variants
-  { name: "Frosted Light", effect: "frosted", options: { blur: 12, tintColor: "#ffffff", tintOpacity: 0.1 }, description: "Classic light frosted glass." },
-  { name: "Frosted Dark", effect: "frosted", options: { blur: 14, tintColor: "#000000", tintOpacity: 0.2, shadowColor: "rgba(0,0,0,0.3)" }, description: "Dark mode frosted variant." },
-  { name: "Frosted Blue", effect: "frosted", options: { blur: 16, tintColor: "#3b82f6", tintOpacity: 0.12 }, description: "Blue-tinted frosted glass." },
-  { name: "Frosted Rose", effect: "frosted", options: { blur: 18, tintColor: "#f43f5e", tintOpacity: 0.15, borderRadius: 32 }, description: "Soft rose-tinted frost." },
-  // Crystal variants
-  { name: "Crystal Clear", effect: "crystal", options: { blur: 6, noiseFrequency: 0.006, distortionStrength: 40 }, description: "Subtle refraction." },
-  { name: "Crystal Amber", effect: "crystal", options: { blur: 8, tintColor: "#f59e0b", tintOpacity: 0.08, distortionStrength: 70 }, description: "Warm crystal distortion." },
-  { name: "Crystal Cyan", effect: "crystal", options: { blur: 7, borderRadius: 4, tintOpacity: 0.23, noiseFrequency: 0.032, distortionStrength: 40, tintColor: "#0ad9f5" }, description: "Vivid cyan refraction with tight corners." },
-  { name: "Crystal Heavy", effect: "crystal", options: { blur: 4, noiseFrequency: 0.045, distortionStrength: 120, tintColor: "#8b5cf6", tintOpacity: 0.12 }, description: "Extreme distortion for dramatic impact." },
-  // Aurora variants
-  { name: "Aurora North", effect: "aurora", options: { colors: ["#a78bfa", "#818cf8", "#6ee7b7"] }, description: "Northern Lights gradient." },
-  { name: "Aurora Sunset", effect: "aurora", options: { colors: ["#f97316", "#ef4444", "#ec4899", "#8b5cf6"] }, description: "Warm sunset palette." },
-  { name: "Aurora Neon", effect: "aurora", options: { colors: ["#00ff87", "#60efff", "#ff1cf7"], colorOpacity: 0.25, animationSpeed: 4, blur: 20 }, description: "High-energy neon aurora." },
-  // Smoke variants
-  { name: "Smoke Noir", effect: "smoke", options: { blur: 24, density: 0.4, smokeColor: "#000000" }, description: "Deep dark smoke." },
-  { name: "Smoke Mist", effect: "smoke", options: { blur: 18, density: 0.15, smokeColor: "#ffffff" }, description: "Light misty smoke." },
-  { name: "Smoke Ember", effect: "smoke", options: { blur: 20, density: 0.35, smokeColor: "#dc2626", turbulence: 0.025, animationDuration: 8 }, description: "Fiery red smoke with fast turbulence." },
-  // Prism variants
-  { name: "Prism Rainbow", effect: "prism", options: { blur: 8, saturation: 1.4, brightness: 1.1 }, description: "Spectral splitting." },
-  { name: "Prism Warm", effect: "prism", options: { blur: 10, hueRotate: 30, saturation: 1.6, brightness: 1.15, contrast: 1.2 }, description: "Warm-shifted spectral effect." },
-  // Holographic variants
-  { name: "Holo Card", effect: "holographic", options: { blur: 8, iridescence: 0.5, animationSpeed: 4 }, description: "Iridescent shimmer." },
-  { name: "Holo Intense", effect: "holographic", options: { blur: 6, iridescence: 0.85, animationSpeed: 2, noiseOpacity: 0.12 }, description: "Maximum iridescence, fast shift." },
-  // Thin variants
-  { name: "Thin Light", effect: "thin", options: { blur: 4, backgroundOpacity: 0.03 }, description: "Barely-there glass." },
-  { name: "Thin Dark", effect: "thin", options: { blur: 6, backgroundOpacity: 0.05, dark: true, borderOpacity: 0.15 }, description: "Subtle dark panel." },
-];
-
+/* ─── Shared Data ─── */
 const EFFECT_TYPES: GlassEffectName[] = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin"];
-
-/* ─── Playground Sliders ─── */
-type SliderConfig = { key: string; label: string; min: number; max: number; step: number; defaultValue: number; effects: GlassEffectName[] };
-const SLIDERS: SliderConfig[] = [
-  { key: "blur", label: "Blur", min: 0, max: 40, step: 1, defaultValue: 12, effects: EFFECT_TYPES },
-  { key: "borderRadius", label: "Radius", min: 0, max: 50, step: 1, defaultValue: 20, effects: EFFECT_TYPES },
-  { key: "tintOpacity", label: "Tint Opacity", min: 0, max: 0.5, step: 0.01, defaultValue: 0.08, effects: ["frosted", "crystal"] },
-  { key: "shadowBlur", label: "Shadow Blur", min: 0, max: 30, step: 1, defaultValue: 6, effects: ["frosted"] },
-  { key: "noiseFrequency", label: "Noise Freq", min: 0.001, max: 0.05, step: 0.001, defaultValue: 0.008, effects: ["crystal"] },
-  { key: "distortionStrength", label: "Distortion", min: 0, max: 150, step: 1, defaultValue: 60, effects: ["crystal"] },
-  { key: "colorOpacity", label: "Color Opacity", min: 0, max: 0.5, step: 0.01, defaultValue: 0.15, effects: ["aurora"] },
-  { key: "animationSpeed", label: "Anim Speed (s)", min: 1, max: 30, step: 1, defaultValue: 8, effects: ["aurora", "holographic", "smoke"] },
-  { key: "density", label: "Density", min: 0, max: 0.8, step: 0.05, defaultValue: 0.3, effects: ["smoke"] },
-  { key: "hueRotate", label: "Hue Rotate", min: -180, max: 180, step: 5, defaultValue: 0, effects: ["prism"] },
-  { key: "saturation", label: "Saturation", min: 0.5, max: 2, step: 0.1, defaultValue: 1.2, effects: ["prism"] },
-  { key: "iridescence", label: "Iridescence", min: 0, max: 1, step: 0.05, defaultValue: 0.4, effects: ["holographic"] },
-  { key: "backgroundOpacity", label: "BG Opacity", min: 0, max: 0.2, step: 0.005, defaultValue: 0.02, effects: ["thin"] },
-];
 
 const GRADIENT_BGS = [
   "from-blue-600 via-violet-600 to-fuchsia-600",
@@ -140,184 +88,124 @@ const BG_IMAGES = [
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80",
 ];
 
+/* ─── Shader Templates ─── */
+const SHADER_TEMPLATES: {
+  name: string;
+  effect: GlassEffectName;
+  options: Record<string, unknown>;
+  description: string;
+}[] = [
+  { name: "Frosted Light", effect: "frosted", options: { blur: 12, tintColor: "#ffffff", tintOpacity: 0.1 }, description: "Classic light frosted glass." },
+  { name: "Frosted Dark", effect: "frosted", options: { blur: 14, tintColor: "#000000", tintOpacity: 0.2, shadowColor: "rgba(0,0,0,0.3)" }, description: "Dark mode frosted variant." },
+  { name: "Crystal Clear", effect: "crystal", options: { blur: 6, noiseFrequency: 0.006, distortionStrength: 40 }, description: "Subtle refraction." },
+  { name: "Crystal Cyan", effect: "crystal", options: { blur: 7, borderRadius: 4, tintOpacity: 0.23, noiseFrequency: 0.032, distortionStrength: 40, tintColor: "#0ad9f5" }, description: "Vivid cyan refraction." },
+  { name: "Aurora North", effect: "aurora", options: { colors: ["#a78bfa", "#818cf8", "#6ee7b7"] }, description: "Northern Lights gradient." },
+  { name: "Smoke Noir", effect: "smoke", options: { blur: 24, density: 0.4, smokeColor: "#000000" }, description: "Deep dark smoke." },
+  { name: "Prism Rainbow", effect: "prism", options: { blur: 8, saturation: 1.4, brightness: 1.1 }, description: "Spectral splitting." },
+  { name: "Holo Card", effect: "holographic", options: { blur: 8, iridescence: 0.5, animationSpeed: 4 }, description: "Iridescent shimmer." },
+  { name: "Thin Light", effect: "thin", options: { blur: 4, backgroundOpacity: 0.03 }, description: "Barely-there glass." },
+];
+
+/* ─── SVG Templates ─── */
+const SVG_TEMPLATES: {
+  name: string;
+  surface: SurfaceType;
+  options: Record<string, number>;
+  description: string;
+}[] = [
+  { name: "Convex Lens", surface: "convexCircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Classic magnifying glass shape." },
+  { name: "Squircle Panel", surface: "convexSquircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Rounded square glass panel." },
+  { name: "Concave Dish", surface: "concave", options: { bezelWidth: 40, glassThickness: 180, blur: 6, refractiveIndex: 1.4, specularOpacity: 0.5 }, description: "Inward-curving glass surface." },
+  { name: "Sharp Refract", surface: "convexSquircle", options: { bezelWidth: 30, glassThickness: 400, blur: 4, refractiveIndex: 2.0, specularOpacity: 0.8 }, description: "High refractive index for dramatic bending." },
+  { name: "Soft Blur", surface: "convexSquircle", options: { bezelWidth: 60, glassThickness: 150, blur: 14, refractiveIndex: 1.3, specularOpacity: 0.4 }, description: "Heavy blur with gentle refraction." },
+  { name: "Lip Edge", surface: "lip", options: { bezelWidth: 50, glassThickness: 200, blur: 6, refractiveIndex: 1.5, specularOpacity: 0.5 }, description: "Raised lip edge surface." },
+];
+
+/* ─── Playground Sliders (Shaders) ─── */
+type SliderConfig = { key: string; label: string; min: number; max: number; step: number; defaultValue: number; effects: GlassEffectName[] };
+const SLIDERS: SliderConfig[] = [
+  { key: "blur", label: "Blur", min: 0, max: 40, step: 1, defaultValue: 12, effects: EFFECT_TYPES },
+  { key: "borderRadius", label: "Radius", min: 0, max: 50, step: 1, defaultValue: 20, effects: EFFECT_TYPES },
+  { key: "tintOpacity", label: "Tint Opacity", min: 0, max: 0.5, step: 0.01, defaultValue: 0.08, effects: ["frosted", "crystal"] },
+  { key: "shadowBlur", label: "Shadow Blur", min: 0, max: 30, step: 1, defaultValue: 6, effects: ["frosted"] },
+  { key: "noiseFrequency", label: "Noise Freq", min: 0.001, max: 0.05, step: 0.001, defaultValue: 0.008, effects: ["crystal"] },
+  { key: "distortionStrength", label: "Distortion", min: 0, max: 150, step: 1, defaultValue: 60, effects: ["crystal"] },
+  { key: "colorOpacity", label: "Color Opacity", min: 0, max: 0.5, step: 0.01, defaultValue: 0.15, effects: ["aurora"] },
+  { key: "animationSpeed", label: "Anim Speed (s)", min: 1, max: 30, step: 1, defaultValue: 8, effects: ["aurora", "holographic", "smoke"] },
+  { key: "density", label: "Density", min: 0, max: 0.8, step: 0.05, defaultValue: 0.3, effects: ["smoke"] },
+  { key: "hueRotate", label: "Hue Rotate", min: -180, max: 180, step: 5, defaultValue: 0, effects: ["prism"] },
+  { key: "saturation", label: "Saturation", min: 0.5, max: 2, step: 0.1, defaultValue: 1.2, effects: ["prism"] },
+  { key: "iridescence", label: "Iridescence", min: 0, max: 1, step: 0.05, defaultValue: 0.4, effects: ["holographic"] },
+  { key: "backgroundOpacity", label: "BG Opacity", min: 0, max: 0.2, step: 0.005, defaultValue: 0.02, effects: ["thin"] },
+];
+
+/* ─── SVG Sliders ─── */
+const LIQUID_SLIDERS = [
+  { key: "bezelWidth", label: "Bezel Width", min: 10, max: 100, step: 1, defaultValue: 50 },
+  { key: "glassThickness", label: "Glass Thickness", min: 20, max: 500, step: 10, defaultValue: 200 },
+  { key: "blur", label: "Blur", min: 0, max: 20, step: 1, defaultValue: 8 },
+  { key: "refractiveIndex", label: "Refractive Index", min: 1.0, max: 2.5, step: 0.05, defaultValue: 1.5 },
+  { key: "specularOpacity", label: "Specular Opacity", min: 0, max: 1, step: 0.05, defaultValue: 0.6 },
+  { key: "saturation", label: "Saturation", min: 0.5, max: 3, step: 0.1, defaultValue: 1.2 },
+  { key: "radius", label: "Corner Radius", min: 4, max: 60, step: 1, defaultValue: 20 },
+];
+
+const SURFACE_TYPES: { key: SurfaceType; label: string }[] = [
+  { key: "convexCircle", label: "Circle" },
+  { key: "convexSquircle", label: "Squircle" },
+  { key: "concave", label: "Concave" },
+  { key: "lip", label: "Lip" },
+];
+
+/* ═══════════════════════════════════════════════ */
+/*  Main Showcase Page                             */
+/* ═══════════════════════════════════════════════ */
 export function Showcase() {
-  const [tab, setTab] = useState<"gallery" | "playground" | "liquid">("gallery");
+  const [engine, setEngine] = useState<"shaders" | "svg">("shaders");
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-blue-200 to-violet-200 bg-clip-text text-transparent">
-          Showcase
+          Playground
         </h1>
         <p className="text-slate-400 mt-3 text-lg">
-          Browse the gallery, build your own, or explore physics-based liquid glass.
+          Build custom glass effects with two rendering engines.
         </p>
       </div>
 
-      {/* Tab switcher */}
+      {/* Engine switcher */}
       <div className="flex justify-center gap-2 mb-10">
-        <button onClick={() => setTab("gallery")} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors ${tab === "gallery" ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}>
-          <Layers size={16} /> Gallery
-        </button>
-        <button onClick={() => setTab("playground")} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors ${tab === "playground" ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}>
-          <SlidersHorizontal size={16} /> Playground
-        </button>
-        <button onClick={() => setTab("liquid")} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors ${tab === "liquid" ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}>
-          <Gem size={16} /> Liquid Glass
-        </button>
-      </div>
-
-      {tab === "gallery" ? <GalleryView /> : tab === "playground" ? <PlaygroundView /> : <LiquidGlassView />}
-    </div>
-  );
-}
-
-/* ─── Gallery ─── */
-function GalleryView() {
-  const [filter, setFilter] = useState<GlassEffectName | "all">("all");
-  const filtered = filter === "all" ? ALL_EFFECTS : ALL_EFFECTS.filter((e) => e.effect === filter);
-  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
-  const [photoIndex, setPhotoIndex] = useState(0);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
-  const [framework, setFramework] = useState<Framework>("react");
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPhotoIndex((prev) => (prev + 1) % BG_IMAGES.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    setMousePos({ x: e.clientX, y: e.clientY });
-  }, []);
-
-  const handleMouseLeave = useCallback(() => setMousePos(null), []);
-
-  return (
-    <>
-      <div className="flex flex-wrap gap-2 justify-center mb-6">
-        <button onClick={() => setFilter("all")} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === "all" ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}>
-          All ({ALL_EFFECTS.length})
-        </button>
-        {EFFECT_TYPES.map((t) => (
-          <button key={t} onClick={() => setFilter(t)} className={`px-4 py-2 rounded-full text-sm font-medium capitalize transition-colors ${filter === t ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}>
-            {t}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex justify-center mb-10">
-        <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-lg px-3 py-1.5">
-          <span className="text-xs text-slate-500">Code:</span>
-          <FrameworkTabs active={framework} onChange={setFramework} />
-        </div>
-      </div>
-
-      <div
-        ref={gridRef}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      >
-        {filtered.map((item, i) => {
-          const snippet = getSnippet(framework, item.effect, item.options);
-          const photo = BG_IMAGES[(photoIndex + i) % BG_IMAGES.length];
-          return (
-            <GalleryCard
-              key={`${item.effect}-${i}`}
-              item={item}
-              index={i}
-              photo={photo}
-              snippet={snippet}
-              copiedIdx={copiedIdx}
-              setCopiedIdx={setCopiedIdx}
-              mousePos={mousePos}
-            />
-          );
-        })}
-      </div>
-    </>
-  );
-}
-
-function GalleryCard({
-  item,
-  index,
-  photo,
-  snippet,
-  copiedIdx,
-  setCopiedIdx,
-  mousePos,
-}: {
-  item: typeof ALL_EFFECTS[number];
-  index: number;
-  photo: string;
-  snippet: string;
-  copiedIdx: number | null;
-  setCopiedIdx: (v: number | null) => void;
-  mousePos: { x: number; y: number } | null;
-}) {
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  const getGlassOffset = () => {
-    if (!mousePos || !cardRef.current) return {};
-    const rect = cardRef.current.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = (mousePos.x - cx) / rect.width;
-    const dy = (mousePos.y - cy) / rect.height;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const maxShift = 20;
-    const falloff = Math.max(0, 1 - dist * 0.5);
-    return {
-      transform: `translate(${dx * maxShift * falloff}px, ${dy * maxShift * falloff}px)`,
-      transition: "transform 0.12s ease-out",
-    };
-  };
-
-  return (
-    <div ref={cardRef} className="group">
-      <div className="relative overflow-hidden rounded-2xl h-64 flex items-center justify-center">
-        <img
-          src={photo}
-          alt=""
-          className="absolute inset-0 w-[130%] h-[130%] object-cover -top-[15%] -left-[15%]"
-          style={{ animation: `panBg${index % 3} 14s ease-in-out infinite alternate` }}
-        />
-        <div className="absolute inset-0 bg-slate-950/10" />
-        <div style={getGlassOffset()}>
-          <Glass effect={item.effect} options={item.options as never} className="w-48 h-36 flex items-center justify-center">
-            <span className="text-white/90 text-sm font-medium drop-shadow-sm">{item.name}</span>
-          </Glass>
-        </div>
-      </div>
-      <div className="mt-4 flex items-start justify-between">
-        <div>
-          <h3 className="font-semibold text-white">{item.name}</h3>
-          <p className="text-sm text-slate-400 mt-1">{item.description}</p>
-        </div>
         <button
-          onClick={() => { navigator.clipboard.writeText(snippet); setCopiedIdx(index); setTimeout(() => setCopiedIdx(null), 2000); }}
-          className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+          onClick={() => setEngine("shaders")}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-colors ${engine === "shaders" ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}
         >
-          {copiedIdx === index ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
+          <Sparkles size={16} /> Shaders
+          <span className="text-[10px] opacity-60 ml-1">CSS + SVG filters</span>
+        </button>
+        <button
+          onClick={() => setEngine("svg")}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-colors ${engine === "svg" ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}
+        >
+          <Gem size={16} /> SVG Refraction
+          <span className="text-[10px] opacity-60 ml-1">Physics-based</span>
         </button>
       </div>
-      <span className="mt-2 inline-block text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">{item.effect}</span>
+
+      {engine === "shaders" ? <ShadersPlayground /> : <SVGPlayground />}
     </div>
   );
 }
 
-/* ─── Playground ─── */
-function PlaygroundView() {
+/* ═══════════════════════════════════════════════ */
+/*  Shaders Playground                             */
+/* ═══════════════════════════════════════════════ */
+function ShadersPlayground() {
   const [effect, setEffect] = useState<GlassEffectName>("frosted");
   const [values, setValues] = useState<Record<string, number>>({});
   const [tintColor, setTintColor] = useState("#ffffff");
   const [bgIndex, setBgIndex] = useState(-1);
   const [gradientIndex, setGradientIndex] = useState(0);
-  const [copied, setCopied] = useState(false);
   const [framework, setFramework] = useState<Framework>("react");
 
   const activeSliders = SLIDERS.filter((s) => s.effects.includes(effect));
@@ -337,6 +225,16 @@ function PlaygroundView() {
     setEffect(p.effect);
     const nv: Record<string, number> = {};
     for (const [k, v] of Object.entries(p.options)) {
+      if (typeof v === "number") nv[k] = v;
+      if (k === "tintColor" && typeof v === "string") setTintColor(v);
+    }
+    setValues(nv);
+  };
+
+  const loadTemplate = (t: typeof SHADER_TEMPLATES[number]) => {
+    setEffect(t.effect);
+    const nv: Record<string, number> = {};
+    for (const [k, v] of Object.entries(t.options)) {
       if (typeof v === "number") nv[k] = v;
       if (k === "tintColor" && typeof v === "string") setTintColor(v);
     }
@@ -376,15 +274,11 @@ function PlaygroundView() {
           </Glass>
         </div>
 
-        <div className="relative bg-slate-800/80 border border-slate-700 rounded-xl p-5">
-          <div className="flex justify-between items-center mb-3">
+        <div className="relative">
+          <div className="flex justify-between items-center mb-2">
             <FrameworkTabs active={framework} onChange={setFramework} />
-            <button onClick={() => { navigator.clipboard.writeText(codeSnippet); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors">
-              {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
-              {copied ? "Copied!" : "Copy"}
-            </button>
           </div>
-          <pre className="code-block text-slate-300 overflow-x-auto text-xs">{codeSnippet}</pre>
+          <CodeBlock code={codeSnippet} lang={framework === "vue" ? "vue" : "tsx"} />
         </div>
       </div>
 
@@ -402,11 +296,19 @@ function PlaygroundView() {
         </div>
 
         <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-slate-200 mb-3">Presets</h3>
+          <h3 className="text-sm font-semibold text-slate-200 mb-3">Templates</h3>
           <div className="flex flex-wrap gap-2">
-            {presetNames.filter((n) => presets[n].effect === effect).map((name) => (
-              <button key={name} onClick={() => handlePreset(name)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">{name}</button>
+            {SHADER_TEMPLATES.filter((t) => t.effect === effect).map((t) => (
+              <button key={t.name} onClick={() => loadTemplate(t)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">{t.name}</button>
             ))}
+          </div>
+          <div className="mt-3 border-t border-slate-700 pt-3">
+            <h4 className="text-xs text-slate-500 mb-2">Presets</h4>
+            <div className="flex flex-wrap gap-2">
+              {presetNames.filter((n) => presets[n].effect === effect).map((name) => (
+                <button key={name} onClick={() => handlePreset(name)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700/60 text-slate-400 hover:bg-slate-600 transition-colors">{name}</button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -438,30 +340,13 @@ function PlaygroundView() {
   );
 }
 
-/* ─── Liquid Glass (SVG Refraction Engine) ─── */
-const SURFACE_TYPES: { key: SurfaceType; label: string }[] = [
-  { key: "convexCircle", label: "Circle" },
-  { key: "convexSquircle", label: "Squircle" },
-  { key: "concave", label: "Concave" },
-  { key: "lip", label: "Lip" },
-];
-
-const LIQUID_SLIDERS = [
-  { key: "bezelWidth", label: "Bezel Width", min: 10, max: 100, step: 1, defaultValue: 50 },
-  { key: "glassThickness", label: "Glass Thickness", min: 20, max: 500, step: 10, defaultValue: 200 },
-  { key: "blur", label: "Blur", min: 0, max: 20, step: 1, defaultValue: 8 },
-  { key: "refractiveIndex", label: "Refractive Index", min: 1.0, max: 2.5, step: 0.05, defaultValue: 1.5 },
-  { key: "specularOpacity", label: "Specular Opacity", min: 0, max: 1, step: 0.05, defaultValue: 0.6 },
-  { key: "saturation", label: "Saturation", min: 0.5, max: 3, step: 0.1, defaultValue: 1.2 },
-  { key: "radius", label: "Corner Radius", min: 4, max: 60, step: 1, defaultValue: 20 },
-];
-
-function LiquidGlassView() {
+/* ═══════════════════════════════════════════════ */
+/*  SVG Refraction Playground                      */
+/* ═══════════════════════════════════════════════ */
+function SVGPlayground() {
   const [surface, setSurface] = useState<SurfaceType>("convexSquircle");
   const [values, setValues] = useState<Record<string, number>>({});
   const [bgIndex, setBgIndex] = useState(0);
-  const [copied, setCopied] = useState(false);
-  const previewRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<Element | null>(null);
 
   const getValue = (key: string, def: number) => values[key] ?? def;
@@ -485,7 +370,6 @@ function LiquidGlassView() {
     });
   }, [surface, values]);
 
-  // Inject/cleanup SVG filter
   useEffect(() => {
     if (svgRef.current) svgRef.current.remove();
     const container = document.createElement("div");
@@ -521,18 +405,17 @@ document.body.insertAdjacentHTML("beforeend", glass.svgFilter);
 element.style.backdropFilter = glass.filterRef;`;
   }, [surface, values]);
 
+  const loadTemplate = (t: typeof SVG_TEMPLATES[number]) => {
+    setSurface(t.surface);
+    setValues({ ...t.options });
+  };
+
   return (
     <div>
-      {/* Credit banner */}
-      <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 mb-8 text-center">
-        <p className="text-sm text-slate-400">
-          SVG refraction engine inspired by{" "}
-          <a href="https://kube.io/blog/liquid-glass-css-svg" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2">
-            Kube (Chris Feijoo)
-          </a>
-          {" "}&mdash; physics-based glass refraction using Snell&rsquo;s law and SVG displacement maps.
-          <span className="block text-xs text-slate-500 mt-1">Chromium-only: backdrop-filter with SVG filters requires a Chromium-based browser.</span>
-        </p>
+      <div className="text-center mb-6">
+        <span className="inline-flex items-center gap-2 text-xs text-yellow-400/80 bg-yellow-400/5 border border-yellow-400/20 rounded-full px-3 py-1">
+          Chromium only — backdrop-filter with SVG filters requires Chrome or Edge
+        </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
@@ -547,7 +430,7 @@ element.style.backdropFilter = glass.filterRef;`;
             ))}
           </div>
 
-          <div ref={previewRef} className="relative overflow-hidden rounded-2xl h-[460px] flex items-center justify-center">
+          <div className="relative overflow-hidden rounded-2xl h-[460px] flex items-center justify-center">
             <img
               src={BG_IMAGES[bgIndex]}
               alt=""
@@ -569,22 +452,13 @@ element.style.backdropFilter = glass.filterRef;`;
               }}
             >
               <div className="text-center px-4 relative z-10">
-                <p className="text-white/90 text-sm font-medium">Liquid Glass</p>
+                <p className="text-white/90 text-sm font-medium">SVG Refraction</p>
                 <p className="text-white/50 text-xs mt-1">{SURFACE_EQUATIONS[surface].name}</p>
               </div>
             </div>
           </div>
 
-          <div className="relative bg-slate-800/80 border border-slate-700 rounded-xl p-5">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-xs text-slate-400 font-medium">Generated Code</span>
-              <button onClick={() => { navigator.clipboard.writeText(codeSnippet); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors">
-                {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
-                {copied ? "Copied!" : "Copy"}
-              </button>
-            </div>
-            <pre className="code-block text-slate-300 overflow-x-auto text-xs">{codeSnippet}</pre>
-          </div>
+          <CodeBlock code={codeSnippet} lang="ts" />
         </div>
 
         {/* Controls */}
@@ -596,6 +470,15 @@ element.style.backdropFilter = glass.filterRef;`;
                 <button key={s.key} onClick={() => setSurface(s.key)} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${surface === s.key ? "bg-white text-slate-900" : "bg-slate-700 text-slate-300 hover:bg-slate-600"}`}>
                   {s.label}
                 </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
+            <h3 className="text-sm font-semibold text-slate-200 mb-3">Templates</h3>
+            <div className="flex flex-wrap gap-2">
+              {SVG_TEMPLATES.map((t) => (
+                <button key={t.name} onClick={() => loadTemplate(t)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">{t.name}</button>
               ))}
             </div>
           </div>

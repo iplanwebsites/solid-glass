@@ -2,6 +2,7 @@ import { Glass, type GlassEffectName } from "solid-glass";
 import { NavLink } from "react-router-dom";
 import { ArrowRight, Zap, Palette, Code2, TreePine, Box, Sparkles, Copy, Check } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { CodeBlock } from "../components/CodeBlock";
 
 const BG_PHOTOS = [
   "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=70",
@@ -181,7 +182,7 @@ export function Home() {
             to="/showcase"
             className="inline-flex items-center justify-center gap-2 bg-white text-slate-900 px-6 py-3 rounded-xl font-semibold hover:bg-slate-100 transition-colors"
           >
-            View Showcase <ArrowRight size={18} />
+            Open Playground <ArrowRight size={18} />
           </NavLink>
           <div className="inline-flex items-center gap-3 bg-slate-800/80 border border-slate-700 px-6 py-3 rounded-xl">
             <code className="font-mono text-sm text-slate-200">{INSTALL_SNIPPET}</code>
@@ -222,17 +223,14 @@ export function Home() {
 
         <div className="grid md:grid-cols-3 gap-6">
           {[
-            { title: "React", desc: "Component & hook API", code: REACT_SNIPPET },
-            { title: "Vue", desc: "Composition API component", code: VUE_SNIPPET },
-            { title: "Vanilla JS", desc: "Zero-framework, pure DOM", code: VANILLA_SNIPPET },
+            { title: "React", desc: "Component & hook API", code: REACT_SNIPPET, lang: "tsx" },
+            { title: "Vue", desc: "Composition API component", code: VUE_SNIPPET, lang: "vue" },
+            { title: "Vanilla JS", desc: "Zero-framework, pure DOM", code: VANILLA_SNIPPET, lang: "ts" },
           ].map((ex) => (
             <div key={ex.title} className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 relative">
               <h3 className="font-semibold text-white mb-1">{ex.title}</h3>
               <p className="text-xs text-slate-500 mb-4">{ex.desc}</p>
-              <div className="bg-slate-900/80 rounded-xl p-4 relative">
-                <CopyButton text={ex.code} />
-                <pre className="code-block text-slate-300 overflow-x-auto text-[11px] leading-relaxed">{ex.code}</pre>
-              </div>
+              <CodeBlock code={ex.code} lang={ex.lang} />
             </div>
           ))}
         </div>
@@ -276,7 +274,7 @@ export function Home() {
             to="/showcase"
             className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-violet-500 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
           >
-            Interactive Showcase <ArrowRight size={18} />
+            Open Playground <ArrowRight size={18} />
           </NavLink>
           <NavLink
             to="/docs"

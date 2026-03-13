@@ -1,27 +1,22 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Glass } from "solid-glass";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
-import { Copy, Check } from "lucide-react";
+import { Sparkles, Gem } from "lucide-react";
+import { CodeBlock } from "../components/CodeBlock";
 
-/* ─── Helpers ─── */
-function CopyBtn({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
+/* ─── Engine Badge ─── */
+function EngineBadge({ engine }: { engine: "shaders" | "svg" }) {
+  if (engine === "svg") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">
+        <Gem size={10} /> SVG Refraction
+      </span>
+    );
+  }
   return (
-    <button
-      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="absolute top-3 right-3 p-1.5 rounded-md bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-    >
-      {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
-    </button>
-  );
-}
-
-function CodeBlock({ code }: { code: string }) {
-  return (
-    <div className="relative bg-slate-900/80 rounded-xl p-4 my-4">
-      <CopyBtn text={code} />
-      <pre className="code-block text-slate-300 overflow-x-auto text-xs">{code}</pre>
-    </div>
+    <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-full px-2 py-0.5">
+      <Sparkles size={10} /> Shaders
+    </span>
   );
 }
 
@@ -32,7 +27,10 @@ function GlassCardDemo() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-xl font-bold text-white mb-2">GlassCard</h3>
+        <div className="flex items-center gap-3 mb-2">
+          <h3 className="text-xl font-bold text-white">GlassCard</h3>
+          <EngineBadge engine="shaders" />
+        </div>
         <p className="text-slate-400 text-sm">A ready-to-use frosted glass card with title, subtitle, and content slots.</p>
       </div>
 
@@ -73,7 +71,10 @@ function GlassButtonDemo() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-xl font-bold text-white mb-2">GlassButton</h3>
+        <div className="flex items-center gap-3 mb-2">
+          <h3 className="text-xl font-bold text-white">GlassButton</h3>
+          <EngineBadge engine="shaders" />
+        </div>
         <p className="text-slate-400 text-sm">Interactive glass-styled buttons with hover and active states.</p>
       </div>
 
@@ -158,9 +159,12 @@ function LoupeDemo() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-xl font-bold text-white mb-2">Loupe</h3>
+        <div className="flex items-center gap-3 mb-2">
+          <h3 className="text-xl font-bold text-white">Loupe</h3>
+          <EngineBadge engine="svg" />
+        </div>
         <p className="text-slate-400 text-sm">
-          A magnifying glass component using the physics-based SVG refraction engine. Move your mouse over the image.
+          A magnifying glass component using the SVG refraction engine. Move your mouse over the image.
           <span className="text-yellow-400/80 ml-1">(Chromium only)</span>
         </p>
       </div>
@@ -175,7 +179,6 @@ function LoupeDemo() {
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
         />
-        {/* Loupe */}
         <div
           style={{
             position: "absolute",
@@ -241,9 +244,12 @@ function LiquidGlassPanelDemo() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-xl font-bold text-white mb-2">LiquidGlassPanel</h3>
+        <div className="flex items-center gap-3 mb-2">
+          <h3 className="text-xl font-bold text-white">LiquidGlassPanel</h3>
+          <EngineBadge engine="svg" />
+        </div>
         <p className="text-slate-400 text-sm">
-          A panel using the physics-based SVG refraction engine with Snell-Descartes law.
+          A panel using the SVG refraction engine with Snell-Descartes law.
           <span className="text-yellow-400/80 ml-1">(Chromium only)</span>
         </p>
       </div>
@@ -303,10 +309,10 @@ function LiquidGlassPanelDemo() {
 
 /* ─── Main Page ─── */
 const COMPONENTS = [
-  { id: "glass-card", label: "GlassCard", Component: GlassCardDemo },
-  { id: "glass-button", label: "GlassButton", Component: GlassButtonDemo },
-  { id: "loupe", label: "Loupe", Component: LoupeDemo },
-  { id: "liquid-glass-panel", label: "LiquidGlassPanel", Component: LiquidGlassPanelDemo },
+  { id: "glass-card", label: "GlassCard", engine: "shaders" as const, Component: GlassCardDemo },
+  { id: "glass-button", label: "GlassButton", engine: "shaders" as const, Component: GlassButtonDemo },
+  { id: "loupe", label: "Loupe", engine: "svg" as const, Component: LoupeDemo },
+  { id: "liquid-glass-panel", label: "LiquidGlassPanel", engine: "svg" as const, Component: LiquidGlassPanelDemo },
 ];
 
 export function Components() {
@@ -335,13 +341,16 @@ export function Components() {
                     setActive(c.id);
                     document.getElementById(c.id)?.scrollIntoView({ behavior: "smooth" });
                   }}
-                  className={`block pl-4 py-1.5 text-sm border-l-2 -ml-px transition-colors text-left w-full font-mono ${
+                  className={`block pl-4 py-1.5 text-sm border-l-2 -ml-px transition-colors text-left w-full ${
                     active === c.id
                       ? "border-blue-400 text-white"
                       : "border-transparent text-slate-500 hover:text-slate-300"
                   }`}
                 >
-                  {c.label}
+                  <span className="font-mono">{c.label}</span>
+                  <span className={`ml-2 text-[9px] ${c.engine === "svg" ? "text-emerald-500" : "text-violet-400"}`}>
+                    {c.engine === "svg" ? "SVG" : "Shaders"}
+                  </span>
                 </button>
               </li>
             ))}
@@ -355,17 +364,6 @@ export function Components() {
               <c.Component />
             </section>
           ))}
-
-          {/* Attribution */}
-          <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 text-center">
-            <p className="text-sm text-slate-400">
-              The Loupe and LiquidGlassPanel components use the SVG refraction engine inspired by{" "}
-              <a href="https://kube.io/blog/liquid-glass-css-svg" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2">
-                Kube (Chris Feijoo)
-              </a>.
-              See <a href="https://solidglass.dev/#/showcase" className="text-blue-400 hover:text-blue-300 underline underline-offset-2">Showcase</a> for the full interactive playground.
-            </p>
-          </div>
         </div>
       </div>
     </div>

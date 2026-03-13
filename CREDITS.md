@@ -1,26 +1,18 @@
 # Credits & Acknowledgments
 
-[solidglass.dev](https://solidglass.dev) aims to be a comprehensive hub for glass effects on the web,
-bringing together multiple approaches and engines under one roof.
-We stand on the shoulders of excellent work by the community.
+[solidglass.dev](https://solidglass.dev) — A comprehensive glass effect toolkit for the web,
+with multiple rendering engines under one roof.
 
 ## SVG Refraction Engine
 
-The physics-based SVG refraction engine (`solid-glass/engines/svg-refraction`)
-is directly inspired by the outstanding work of **Kube (Chris Feijoo)**:
+The solid-glass SVG refraction engine (`solid-glass/engines/svg-refraction`) uses
+physics-based rendering with Snell-Descartes law and SVG displacement maps.
+The approach is based on techniques from [Chris Feijoo's blog post](https://kube.io/blog/liquid-glass-css-svg)
+on liquid glass in the browser.
 
-- **Blog post:** [Liquid Glass in the Browser: Refraction with CSS and SVG](https://kube.io/blog/liquid-glass-css-svg)
-- **Source code:** [github.com/kube/kube.io](https://github.com/kube/kube.io/tree/main/app/data/articles/2025_10_04_liquid_glass_css_svg)
-- **Author:** [Chris Feijoo](https://github.com/kube) — freelance software developer (TypeScript & GraphQL)
+## Community
 
-Chris's article provides an exceptional deep-dive into simulating glass refraction
-on the web using Snell-Descartes law, SVG displacement maps, and specular highlights.
-The surface equation functions, displacement map generation approach, and specular
-highlight calculations in our engine are adapted from his implementation.
-
-## Comparable Projects
-
-Other notable glass effect implementations in the community:
+Other notable glass effect projects:
 
 | Project | Author | Approach |
 |---------|--------|----------|
@@ -31,6 +23,4 @@ Other notable glass effect implementations in the community:
 
 ## License
 
-solid-glass is licensed under Apache 2.0. The SVG refraction engine
-is an original implementation inspired by the techniques described in
-the referenced works above.
+solid-glass is licensed under Apache 2.0 — [solidglass.dev](https://solidglass.dev)

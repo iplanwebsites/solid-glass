@@ -1,26 +1,5 @@
 import { useState } from "react";
-import { Copy, Check } from "lucide-react";
-
-function CopyBtn({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="absolute top-3 right-3 p-1.5 rounded-md bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-    >
-      {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
-    </button>
-  );
-}
-
-function CodeBlock({ code, lang = "tsx" }: { code: string; lang?: string }) {
-  return (
-    <div className="relative bg-slate-900/80 rounded-xl p-4 my-4">
-      <CopyBtn text={code} />
-      <pre className="code-block text-slate-300 overflow-x-auto text-xs">{code}</pre>
-    </div>
-  );
-}
+import { CodeBlock } from "../components/CodeBlock";
 
 const sections = [
   {
@@ -290,10 +269,8 @@ document.body.insertAdjacentHTML("beforeend", glass.svgFilter);
 // Apply as backdrop-filter
 element.style.backdropFilter = glass.filterRef;`} />
         <p className="text-slate-400 mt-4 text-sm">
-          Inspired by{" "}
-          <a href="https://kube.io/blog/liquid-glass-css-svg" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
-            Kube (Chris Feijoo)
-          </a>. See the <a href="#/showcase" className="text-blue-400 hover:text-blue-300 underline">Showcase &rarr; Liquid Glass</a> tab for an interactive playground.
+          Physics approach based on <a href="https://kube.io/blog/liquid-glass-css-svg" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">Chris Feijoo's blog post</a>.
+          Try it in the <a href="#/showcase" className="text-blue-400 hover:text-blue-300 underline">Playground</a>.
         </p>
       </>
     ),
@@ -316,10 +293,10 @@ element.style.backdropFilter = glass.filterRef;`} />
               </tr>
             </thead>
             <tbody className="text-slate-400">
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassCard</td><td>Frosted glass card with title/subtitle slots</td><td>CSS effects</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassButton</td><td>Interactive glass button with hover states</td><td>CSS effects</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">Loupe</td><td>Magnifying glass overlay</td><td>SVG refraction</td></tr>
-              <tr><td className="py-3 text-white font-mono">LiquidGlassPanel</td><td>Physics-based glass panel wrapper</td><td>SVG refraction</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassCard</td><td>Frosted glass card with title/subtitle slots</td><td><span className="text-violet-400">Shaders</span></td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassButton</td><td>Interactive glass button with hover states</td><td><span className="text-violet-400">Shaders</span></td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">Loupe</td><td>Magnifying glass overlay</td><td><span className="text-emerald-400">SVG Refraction</span></td></tr>
+              <tr><td className="py-3 text-white font-mono">LiquidGlassPanel</td><td>Physics-based glass panel wrapper</td><td><span className="text-emerald-400">SVG Refraction</span></td></tr>
             </tbody>
           </table>
         </div>
