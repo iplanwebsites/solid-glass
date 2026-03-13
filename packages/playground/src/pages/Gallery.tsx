@@ -324,7 +324,7 @@ export function Gallery() {
     <div className="max-w-7xl mx-auto px-6 py-12">
       {/* Hero */}
       <div className="text-center mb-16">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-white via-blue-200 to-violet-200 bg-clip-text text-transparent">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-white via-lime-200 to-yellow-200 bg-clip-text text-transparent">
           Glass Effect Gallery
         </h1>
         <p className="text-slate-400 mt-4 text-lg max-w-2xl mx-auto">
@@ -391,7 +391,7 @@ export function Gallery() {
       {/* SVG Engine Showcase */}
       <div className="mt-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-emerald-200 to-cyan-200 bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-lime-200 to-yellow-200 bg-clip-text text-transparent">
             SVG Refraction Engine
           </h2>
           <p className="text-slate-400 mt-3 max-w-2xl mx-auto">

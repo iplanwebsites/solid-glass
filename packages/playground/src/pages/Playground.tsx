@@ -11,9 +11,9 @@ const BG_IMAGES = [
 ];
 
 const GRADIENT_BGS = [
-  "from-blue-600 via-violet-600 to-fuchsia-600",
-  "from-emerald-600 via-teal-600 to-cyan-600",
-  "from-orange-600 via-red-600 to-pink-600",
+  "from-lime-600 via-yellow-600 to-amber-600",
+  "from-lime-700 via-emerald-700 to-teal-700",
+  "from-amber-600 via-orange-600 to-red-600",
   "from-slate-700 via-slate-800 to-slate-900",
 ];
 
@@ -116,7 +116,7 @@ export function Playground() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-blue-200 to-violet-200 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-lime-200 to-yellow-200 bg-clip-text text-transparent">
           Interactive Playground
         </h1>
         <p className="text-slate-400 mt-3 text-lg">
@@ -205,7 +205,7 @@ export function Playground() {
                 max={500}
                 value={panelWidth}
                 onChange={(e) => setPanelWidth(Number(e.target.value))}
-                className="accent-blue-500"
+                className="accent-lime-500"
               />
               <span className="text-slate-300 w-10 text-right">{panelWidth}</span>
             </label>
@@ -217,7 +217,7 @@ export function Playground() {
                 max={400}
                 value={panelHeight}
                 onChange={(e) => setPanelHeight(Number(e.target.value))}
-                className="accent-blue-500"
+                className="accent-lime-500"
               />
               <span className="text-slate-300 w-10 text-right">{panelHeight}</span>
             </label>
@@ -321,7 +321,7 @@ export function Playground() {
                     onChange={(e) =>
                       setValues((prev) => ({ ...prev, [s.key]: Number(e.target.value) }))
                     }
-                    className="w-full accent-blue-500"
+                    className="w-full accent-lime-500"
                   />
                 </label>
               ))}

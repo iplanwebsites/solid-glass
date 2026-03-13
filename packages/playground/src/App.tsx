@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Layers, SlidersHorizontal, Github } from "lucide-react";
+import { Layers, SlidersHorizontal, Github, Gem } from "lucide-react";
 
 export function App() {
   return (
@@ -8,8 +8,8 @@ export function App() {
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-violet-500 flex items-center justify-center text-sm font-bold">
-              SG
+            <div className="w-8 h-8 rounded-lg bg-accent/15 border border-accent/30 flex items-center justify-center">
+              <Gem size={18} className="text-accent" />
             </div>
             <span className="font-semibold text-lg tracking-tight">solid-glass</span>
             <span className="text-xs text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full ml-1">v1.0</span>
@@ -54,9 +54,9 @@ export function App() {
       {/* Background */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-violet-500/15 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-lime-400/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-yellow-400/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-lime-300/5 rounded-full blur-3xl" />
       </div>
 
       {/* Main content */}
