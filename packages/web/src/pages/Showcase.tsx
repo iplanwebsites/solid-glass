@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
-import { Glass, type GlassEffectName, presets, type PresetName, presetNames } from "solid-glass";
+import { Glass, type GlassEffectName, presets, type PresetName, presetNames, effectRenderTiers } from "solid-glass";
 import { createLiquidGlass, type SurfaceType, SURFACE_EQUATIONS } from "solid-glass/engines/svg-refraction";
 import { Copy, Check, RotateCcw, Image, Sparkles, Gem } from "lucide-react";
 import { CodeBlock } from "../components/CodeBlock";
@@ -40,6 +40,18 @@ const cleanup = applyGlass(el, "${effect}", ${JSON.stringify(options, null, 2)})
 // Later: cleanup();`;
 }
 
+function generateLiquidSnippet(liquidOpts: Record<string, unknown>) {
+  return `import { createLiquidGlass } from "solid-glass/engines/svg-refraction";
+
+const glass = createLiquidGlass(${JSON.stringify(liquidOpts, null, 2)});
+
+// Inject SVG filter into DOM
+document.body.insertAdjacentHTML("beforeend", glass.svgFilter);
+
+// Apply as backdrop-filter (Chromium only)
+element.style.backdropFilter = glass.filterRef;`;
+}
+
 function getSnippet(framework: Framework, effect: string, options: Record<string, unknown>) {
   if (framework === "vue") return generateVueSnippet(effect, options);
   if (framework === "vanilla") return generateVanillaSnippet(effect, options);
@@ -69,8 +81,26 @@ function FrameworkTabs({ active, onChange }: { active: Framework; onChange: (f: 
   );
 }
 
+/* ─── Render Tier Badge ─── */
+function TierBadge({ effect }: { effect: GlassEffectName }) {
+  const tier = effectRenderTiers[effect];
+  if (tier === "svg-filter") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">
+        <Gem size={10} /> SVG Filter
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-full px-2 py-0.5">
+      <Sparkles size={10} /> CSS
+    </span>
+  );
+}
+
 /* ─── Shared Data ─── */
-const EFFECT_TYPES: GlassEffectName[] = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin"];
+const ALL_EFFECTS: GlassEffectName[] = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin", "liquid"];
+const CSS_EFFECTS: GlassEffectName[] = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin"];
 
 const GRADIENT_BGS = [
   "from-blue-600 via-violet-600 to-fuchsia-600",
@@ -88,11 +118,12 @@ const BG_IMAGES = [
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80",
 ];
 
-/* ─── Effect Templates ─── */
-const EFFECT_TEMPLATES: {
+/* ─── Templates (all effects including liquid) ─── */
+const TEMPLATES: {
   name: string;
   effect: GlassEffectName;
   options: Record<string, unknown>;
+  surface?: SurfaceType;
   description: string;
 }[] = [
   { name: "Frosted Light", effect: "frosted", options: { blur: 12, tintColor: "#ffffff", tintOpacity: 0.1 }, description: "Classic light frosted glass." },
@@ -104,28 +135,21 @@ const EFFECT_TEMPLATES: {
   { name: "Prism Rainbow", effect: "prism", options: { blur: 8, saturation: 1.4, brightness: 1.1 }, description: "Spectral splitting." },
   { name: "Holo Card", effect: "holographic", options: { blur: 8, iridescence: 0.5, animationSpeed: 4 }, description: "Iridescent shimmer." },
   { name: "Thin Light", effect: "thin", options: { blur: 4, backgroundOpacity: 0.03 }, description: "Barely-there glass." },
+  // Liquid templates
+  { name: "Convex Lens", effect: "liquid", surface: "convexCircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Classic magnifying glass shape." },
+  { name: "Squircle Panel", effect: "liquid", surface: "convexSquircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Rounded square glass panel." },
+  { name: "Concave Dish", effect: "liquid", surface: "concave", options: { bezelWidth: 40, glassThickness: 180, blur: 6, refractiveIndex: 1.4, specularOpacity: 0.5 }, description: "Inward-curving glass surface." },
+  { name: "Sharp Refract", effect: "liquid", surface: "convexSquircle", options: { bezelWidth: 30, glassThickness: 400, blur: 4, refractiveIndex: 2.0, specularOpacity: 0.8 }, description: "High refractive index for dramatic bending." },
+  { name: "Soft Blur", effect: "liquid", surface: "convexSquircle", options: { bezelWidth: 60, glassThickness: 150, blur: 14, refractiveIndex: 1.3, specularOpacity: 0.4 }, description: "Heavy blur with gentle refraction." },
+  { name: "Lip Edge", effect: "liquid", surface: "lip", options: { bezelWidth: 50, glassThickness: 200, blur: 6, refractiveIndex: 1.5, specularOpacity: 0.5 }, description: "Raised lip edge surface." },
 ];
 
-/* ─── SVG Templates ─── */
-const SVG_TEMPLATES: {
-  name: string;
-  surface: SurfaceType;
-  options: Record<string, number>;
-  description: string;
-}[] = [
-  { name: "Convex Lens", surface: "convexCircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Classic magnifying glass shape." },
-  { name: "Squircle Panel", surface: "convexSquircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Rounded square glass panel." },
-  { name: "Concave Dish", surface: "concave", options: { bezelWidth: 40, glassThickness: 180, blur: 6, refractiveIndex: 1.4, specularOpacity: 0.5 }, description: "Inward-curving glass surface." },
-  { name: "Sharp Refract", surface: "convexSquircle", options: { bezelWidth: 30, glassThickness: 400, blur: 4, refractiveIndex: 2.0, specularOpacity: 0.8 }, description: "High refractive index for dramatic bending." },
-  { name: "Soft Blur", surface: "convexSquircle", options: { bezelWidth: 60, glassThickness: 150, blur: 14, refractiveIndex: 1.3, specularOpacity: 0.4 }, description: "Heavy blur with gentle refraction." },
-  { name: "Lip Edge", surface: "lip", options: { bezelWidth: 50, glassThickness: 200, blur: 6, refractiveIndex: 1.5, specularOpacity: 0.5 }, description: "Raised lip edge surface." },
-];
-
-/* ─── Playground Sliders (Effects) ─── */
+/* ─── Unified Sliders ─── */
 type SliderConfig = { key: string; label: string; min: number; max: number; step: number; defaultValue: number; effects: GlassEffectName[] };
 const SLIDERS: SliderConfig[] = [
-  { key: "blur", label: "Blur", min: 0, max: 40, step: 1, defaultValue: 12, effects: EFFECT_TYPES },
-  { key: "borderRadius", label: "Radius", min: 0, max: 50, step: 1, defaultValue: 20, effects: EFFECT_TYPES },
+  // CSS effect sliders
+  { key: "blur", label: "Blur", min: 0, max: 40, step: 1, defaultValue: 12, effects: CSS_EFFECTS },
+  { key: "borderRadius", label: "Radius", min: 0, max: 50, step: 1, defaultValue: 20, effects: CSS_EFFECTS },
   { key: "tintOpacity", label: "Tint Opacity", min: 0, max: 0.5, step: 0.01, defaultValue: 0.08, effects: ["frosted", "crystal"] },
   { key: "shadowBlur", label: "Shadow Blur", min: 0, max: 30, step: 1, defaultValue: 6, effects: ["frosted"] },
   { key: "noiseFrequency", label: "Noise Freq", min: 0.001, max: 0.05, step: 0.001, defaultValue: 0.008, effects: ["crystal"] },
@@ -137,17 +161,14 @@ const SLIDERS: SliderConfig[] = [
   { key: "saturation", label: "Saturation", min: 0.5, max: 2, step: 0.1, defaultValue: 1.2, effects: ["prism"] },
   { key: "iridescence", label: "Iridescence", min: 0, max: 1, step: 0.05, defaultValue: 0.4, effects: ["holographic"] },
   { key: "backgroundOpacity", label: "BG Opacity", min: 0, max: 0.2, step: 0.005, defaultValue: 0.02, effects: ["thin"] },
-];
-
-/* ─── SVG Sliders ─── */
-const LIQUID_SLIDERS = [
-  { key: "bezelWidth", label: "Bezel Width", min: 10, max: 100, step: 1, defaultValue: 50 },
-  { key: "glassThickness", label: "Glass Thickness", min: 20, max: 500, step: 10, defaultValue: 200 },
-  { key: "blur", label: "Blur", min: 0, max: 20, step: 1, defaultValue: 8 },
-  { key: "refractiveIndex", label: "Refractive Index", min: 1.0, max: 2.5, step: 0.05, defaultValue: 1.5 },
-  { key: "specularOpacity", label: "Specular Opacity", min: 0, max: 1, step: 0.05, defaultValue: 0.6 },
-  { key: "saturation", label: "Saturation", min: 0.5, max: 3, step: 0.1, defaultValue: 1.2 },
-  { key: "radius", label: "Corner Radius", min: 4, max: 60, step: 1, defaultValue: 20 },
+  // Liquid-specific sliders
+  { key: "bezelWidth", label: "Bezel Width", min: 10, max: 100, step: 1, defaultValue: 50, effects: ["liquid"] },
+  { key: "glassThickness", label: "Glass Thickness", min: 20, max: 500, step: 10, defaultValue: 200, effects: ["liquid"] },
+  { key: "blur", label: "Blur", min: 0, max: 20, step: 1, defaultValue: 8, effects: ["liquid"] },
+  { key: "refractiveIndex", label: "Refractive Index", min: 1.0, max: 2.5, step: 0.05, defaultValue: 1.5, effects: ["liquid"] },
+  { key: "specularOpacity", label: "Specular", min: 0, max: 1, step: 0.05, defaultValue: 0.6, effects: ["liquid"] },
+  { key: "liquidSaturation", label: "Saturation", min: 0.5, max: 3, step: 0.1, defaultValue: 1.2, effects: ["liquid"] },
+  { key: "radius", label: "Corner Radius", min: 4, max: 60, step: 1, defaultValue: 20, effects: ["liquid"] },
 ];
 
 const SURFACE_TYPES: { key: SurfaceType; label: string }[] = [
@@ -157,228 +178,27 @@ const SURFACE_TYPES: { key: SurfaceType; label: string }[] = [
   { key: "lip", label: "Lip" },
 ];
 
-/* ═══════════════════════════════════════════════ */
-/*  Main Showcase Page                             */
-/* ═══════════════════════════════════════════════ */
-export function Showcase() {
-  const [engine, setEngine] = useState<"css" | "svg">("css");
-
-  return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <div className="text-center mb-10">
-        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-blue-200 to-violet-200 bg-clip-text text-transparent">
-          Playground
-        </h1>
-        <p className="text-slate-400 mt-3 text-lg">
-          Build custom glass effects with two rendering tiers.
-        </p>
-      </div>
-
-      {/* Engine switcher */}
-      <div className="flex justify-center gap-2 mb-10">
-        <button
-          onClick={() => setEngine("css")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-colors ${engine === "css" ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}
-        >
-          <Sparkles size={16} /> CSS + SVG Filters
-        </button>
-        <button
-          onClick={() => setEngine("svg")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-colors ${engine === "svg" ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}
-        >
-          <Gem size={16} /> SVG Refraction
-          <span className="text-[10px] opacity-60 ml-1">Physics-based</span>
-        </button>
-      </div>
-
-      {engine === "css" ? <EffectsPlayground /> : <SVGPlayground />}
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════ */
-/*  Effects Playground (CSS + SVG Filters)         */
-/* ═══════════════════════════════════════════════ */
-function EffectsPlayground() {
-  const [effect, setEffect] = useState<GlassEffectName>("frosted");
-  const [values, setValues] = useState<Record<string, number>>({});
-  const [tintColor, setTintColor] = useState("#ffffff");
-  const [bgIndex, setBgIndex] = useState(0); // Default to first image
-  const [gradientIndex, setGradientIndex] = useState(0);
-  const [framework, setFramework] = useState<Framework>("react");
-  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
-  const previewRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const rect = previewRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-    const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-    setMouseOffset({ x: nx * -20, y: ny * -20 });
-  }, []);
-
-  const activeSliders = SLIDERS.filter((s) => s.effects.includes(effect));
-  const getValue = (key: string, def: number) => values[key] ?? def;
-
-  const options = useMemo(() => {
-    const o: Record<string, unknown> = {};
-    activeSliders.forEach((s) => { o[s.key] = getValue(s.key, s.defaultValue); });
-    if (["frosted", "crystal"].includes(effect)) o.tintColor = tintColor;
-    return o;
-  }, [effect, values, tintColor, activeSliders]);
-
-  const codeSnippet = useMemo(() => getSnippet(framework, effect, options), [framework, effect, options]);
-
-  const handlePreset = (name: PresetName) => {
-    const p = presets[name];
-    setEffect(p.effect);
-    const nv: Record<string, number> = {};
-    for (const [k, v] of Object.entries(p.options)) {
-      if (typeof v === "number") nv[k] = v;
-      if (k === "tintColor" && typeof v === "string") setTintColor(v);
-    }
-    setValues(nv);
-  };
-
-  const loadTemplate = (t: typeof EFFECT_TEMPLATES[number]) => {
-    setEffect(t.effect);
-    const nv: Record<string, number> = {};
-    for (const [k, v] of Object.entries(t.options)) {
-      if (typeof v === "number") nv[k] = v;
-      if (k === "tintColor" && typeof v === "string") setTintColor(v);
-    }
-    setValues(nv);
-  };
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
-      {/* Preview */}
-      <div className="space-y-5">
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-400">Background:</span>
-          {GRADIENT_BGS.map((g, i) => (
-            <button key={g} onClick={() => { setBgIndex(-1); setGradientIndex(i); }} className={`w-7 h-7 rounded-full bg-gradient-to-br ${g} border-2 transition-colors ${bgIndex === -1 && gradientIndex === i ? "border-white" : "border-transparent"}`} />
-          ))}
-          {BG_IMAGES.map((_, i) => (
-            <button key={i} onClick={() => setBgIndex(i)} className={`w-7 h-7 rounded-full border-2 transition-colors flex items-center justify-center bg-slate-700 ${bgIndex === i ? "border-white" : "border-transparent"}`}>
-              <Image size={12} className="text-slate-300" />
-            </button>
-          ))}
-        </div>
-
-        <div
-          ref={previewRef}
-          className={`relative overflow-hidden rounded-2xl h-[460px] flex items-center justify-center ${bgIndex === -1 ? `bg-gradient-to-br ${GRADIENT_BGS[gradientIndex]}` : ""}`}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => setMouseOffset({ x: 0, y: 0 })}
-        >
-          {bgIndex >= 0 && (
-            <img
-              src={BG_IMAGES[bgIndex]}
-              alt=""
-              className="absolute w-[115%] h-[115%] object-cover transition-transform duration-150 ease-out pointer-events-none"
-              style={{
-                top: "-7.5%",
-                left: "-7.5%",
-                transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)`,
-              }}
-            />
-          )}
-          <Glass effect={effect} options={options as never} className="w-[280px] h-[200px] flex items-center justify-center transition-all duration-300">
-            <div className="text-center px-4">
-              <p className="text-white/90 text-sm font-medium capitalize">{effect}</p>
-              <p className="text-white/50 text-xs mt-1">Customize with sliders</p>
-            </div>
-          </Glass>
-        </div>
-
-        <div className="relative">
-          <div className="flex justify-between items-center mb-2">
-            <FrameworkTabs active={framework} onChange={setFramework} />
-          </div>
-          <CodeBlock code={codeSnippet} lang={framework === "vue" ? "vue" : "tsx"} />
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="space-y-5">
-        <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-slate-200 mb-3">Effect</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {EFFECT_TYPES.map((e) => (
-              <button key={e} onClick={() => { setEffect(e); setValues({}); }} className={`px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${effect === e ? "bg-white text-slate-900" : "bg-slate-700 text-slate-300 hover:bg-slate-600"}`}>
-                {e}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-slate-200 mb-3">Templates</h3>
-          <div className="flex flex-wrap gap-2">
-            {EFFECT_TEMPLATES.filter((t) => t.effect === effect).map((t) => (
-              <button key={t.name} onClick={() => loadTemplate(t)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">{t.name}</button>
-            ))}
-          </div>
-          <div className="mt-3 border-t border-slate-700 pt-3">
-            <h4 className="text-xs text-slate-500 mb-2">Presets</h4>
-            <div className="flex flex-wrap gap-2">
-              {presetNames.filter((n) => presets[n].effect === effect).map((name) => (
-                <button key={name} onClick={() => handlePreset(name)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700/60 text-slate-400 hover:bg-slate-600 transition-colors">{name}</button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-sm font-semibold text-slate-200">Parameters</h3>
-            <button onClick={() => { setValues({}); setTintColor("#ffffff"); }} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"><RotateCcw size={12} /> Reset</button>
-          </div>
-          <div className="space-y-4">
-            {["frosted", "crystal"].includes(effect) && (
-              <label className="flex items-center justify-between">
-                <span className="text-sm text-slate-300">Tint Color</span>
-                <input type="color" value={tintColor} onChange={(e) => setTintColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer bg-transparent border-0" />
-              </label>
-            )}
-            {activeSliders.map((s) => (
-              <label key={s.key} className="block">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-300">{s.label}</span>
-                  <span className="text-slate-500 font-mono text-xs">{getValue(s.key, s.defaultValue)}</span>
-                </div>
-                <input type="range" min={s.min} max={s.max} step={s.step} value={getValue(s.key, s.defaultValue)} onChange={(e) => setValues((p) => ({ ...p, [s.key]: Number(e.target.value) }))} className="w-full accent-blue-500" />
-              </label>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════ */
-/*  SVG Refraction Playground                      */
-/* ═══════════════════════════════════════════════ */
-function SVGPlayground() {
-  const [surface, setSurface] = useState<SurfaceType>("convexSquircle");
-  const [values, setValues] = useState<Record<string, number>>({});
-  const [bgIndex, setBgIndex] = useState(0);
-  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+/* ─── Liquid Glass Preview ─── */
+function LiquidPreview({
+  surface,
+  values,
+  getValue,
+  mouseOffset,
+  bgIndex,
+  gradientIndex,
+  previewRef,
+  onMouseMove,
+}: {
+  surface: SurfaceType;
+  values: Record<string, number>;
+  getValue: (key: string, def: number) => number;
+  mouseOffset: { x: number; y: number };
+  bgIndex: number;
+  gradientIndex: number;
+  previewRef: React.RefObject<HTMLDivElement | null>;
+  onMouseMove: (e: React.MouseEvent) => void;
+}) {
   const svgRef = useRef<Element | null>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const rect = previewRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-    const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-    setMouseOffset({ x: nx * -20, y: ny * -20 });
-  }, []);
-
-  const getValue = (key: string, def: number) => values[key] ?? def;
-
   const panelWidth = 280;
   const panelHeight = 200;
 
@@ -393,7 +213,7 @@ function SVGPlayground() {
       refractiveIndex: getValue("refractiveIndex", 1.5),
       surface,
       specularOpacity: getValue("specularOpacity", 0.6),
-      saturation: getValue("saturation", 1.2),
+      saturation: getValue("liquidSaturation", 1.2),
       dpr: 1,
     });
   }, [surface, values]);
@@ -410,123 +230,291 @@ function SVGPlayground() {
     return () => { svgRef.current?.remove(); };
   }, [glass.svgFilter]);
 
+  return (
+    <div
+      ref={previewRef}
+      className={`relative overflow-hidden rounded-2xl h-[460px] flex items-center justify-center ${bgIndex === -1 ? `bg-gradient-to-br ${GRADIENT_BGS[gradientIndex]}` : ""}`}
+      onMouseMove={onMouseMove}
+      onMouseLeave={() => {}}
+    >
+      {bgIndex >= 0 && (
+        <img
+          src={BG_IMAGES[bgIndex]}
+          alt=""
+          className="absolute w-[115%] h-[115%] object-cover transition-transform duration-150 ease-out pointer-events-none"
+          style={{
+            top: "-7.5%",
+            left: "-7.5%",
+            transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)`,
+          }}
+        />
+      )}
+      <div
+        style={{
+          width: panelWidth,
+          height: panelHeight,
+          borderRadius: getValue("radius", 20),
+          overflow: "hidden",
+          backdropFilter: glass.filterRef,
+          WebkitBackdropFilter: glass.filterRef,
+          border: "1px solid rgba(255,255,255,0.15)",
+          boxShadow: "rgba(0, 0, 0, 0.16) 0px 4px 9px, rgba(0, 0, 0, 0.2) 0px 2px 24px inset, rgba(255, 255, 255, 0.2) 0px -2px 24px inset",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div className="text-center px-4 relative z-10">
+          <p className="text-white/90 text-sm font-medium">Liquid Glass</p>
+          <p className="text-white/50 text-xs mt-1">{SURFACE_EQUATIONS[surface].name}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════ */
+/*  Unified Playground                             */
+/* ═══════════════════════════════════════════════ */
+export function Showcase() {
+  const [effect, setEffect] = useState<GlassEffectName>("frosted");
+  const [values, setValues] = useState<Record<string, number>>({});
+  const [tintColor, setTintColor] = useState("#ffffff");
+  const [surface, setSurface] = useState<SurfaceType>("convexSquircle");
+  const [bgIndex, setBgIndex] = useState(0);
+  const [gradientIndex, setGradientIndex] = useState(0);
+  const [framework, setFramework] = useState<Framework>("react");
+  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  const isLiquid = effect === "liquid";
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const rect = previewRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    setMouseOffset({ x: nx * -20, y: ny * -20 });
+  }, []);
+
+  const activeSliders = SLIDERS.filter((s) => s.effects.includes(effect));
+  const getValue = (key: string, def: number) => values[key] ?? def;
+
+  const options = useMemo(() => {
+    const o: Record<string, unknown> = {};
+    activeSliders.forEach((s) => { o[s.key] = getValue(s.key, s.defaultValue); });
+    if (["frosted", "crystal"].includes(effect)) o.tintColor = tintColor;
+    // Remap liquidSaturation → saturation for the liquid engine
+    if (isLiquid && o.liquidSaturation !== undefined) {
+      o.saturation = o.liquidSaturation;
+      delete o.liquidSaturation;
+    }
+    return o;
+  }, [effect, values, tintColor, activeSliders, isLiquid]);
+
   const codeSnippet = useMemo(() => {
-    const opts: Record<string, unknown> = {
-      width: panelWidth,
-      height: panelHeight,
-      radius: getValue("radius", 20),
-      bezelWidth: getValue("bezelWidth", 50),
-      glassThickness: getValue("glassThickness", 200),
-      blur: getValue("blur", 8),
-      refractiveIndex: getValue("refractiveIndex", 1.5),
-      surface,
-      specularOpacity: getValue("specularOpacity", 0.6),
-    };
-    return `import { createLiquidGlass } from "solid-glass/engines/svg-refraction";
+    if (isLiquid) {
+      const liquidOpts: Record<string, unknown> = {
+        width: 280,
+        height: 200,
+        radius: getValue("radius", 20),
+        bezelWidth: getValue("bezelWidth", 50),
+        glassThickness: getValue("glassThickness", 200),
+        blur: getValue("blur", 8),
+        refractiveIndex: getValue("refractiveIndex", 1.5),
+        surface,
+        specularOpacity: getValue("specularOpacity", 0.6),
+      };
+      return generateLiquidSnippet(liquidOpts);
+    }
+    return getSnippet(framework, effect, options);
+  }, [framework, effect, options, isLiquid, surface, values]);
 
-const glass = createLiquidGlass(${JSON.stringify(opts, null, 2)});
-
-// Inject SVG filter into DOM
-document.body.insertAdjacentHTML("beforeend", glass.svgFilter);
-
-// Apply as backdrop-filter (Chromium only)
-element.style.backdropFilter = glass.filterRef;`;
-  }, [surface, values]);
-
-  const loadTemplate = (t: typeof SVG_TEMPLATES[number]) => {
-    setSurface(t.surface);
-    setValues({ ...t.options });
+  const handlePreset = (name: PresetName) => {
+    const p = presets[name];
+    if (p.effect === "liquid") return; // liquid presets have fixed dimensions, skip for playground
+    setEffect(p.effect);
+    const nv: Record<string, number> = {};
+    for (const [k, v] of Object.entries(p.options)) {
+      if (typeof v === "number") nv[k] = v;
+      if (k === "tintColor" && typeof v === "string") setTintColor(v);
+    }
+    setValues(nv);
   };
 
+  const loadTemplate = (t: typeof TEMPLATES[number]) => {
+    setEffect(t.effect);
+    const nv: Record<string, number> = {};
+    for (const [k, v] of Object.entries(t.options)) {
+      if (typeof v === "number") nv[k] = v;
+      if (k === "tintColor" && typeof v === "string") setTintColor(v);
+    }
+    setValues(nv);
+    if (t.surface) setSurface(t.surface);
+  };
+
+  const effectTemplates = TEMPLATES.filter((t) => t.effect === effect);
+  const effectPresets = presetNames.filter((n) => presets[n].effect === effect);
+
   return (
-    <div>
-      <div className="text-center mb-6">
-        <span className="inline-flex items-center gap-2 text-xs text-yellow-400/80 bg-yellow-400/5 border border-yellow-400/20 rounded-full px-3 py-1">
-          Chromium only — backdrop-filter with SVG filters requires Chrome or Edge
-        </span>
+    <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="text-center mb-10">
+        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-blue-200 to-violet-200 bg-clip-text text-transparent">
+          Playground
+        </h1>
+        <p className="text-slate-400 mt-3 text-lg">
+          Build custom glass effects. Pick an effect, tweak the parameters, copy the code.
+        </p>
       </div>
+
+      {/* Chromium notice — only for liquid */}
+      {isLiquid && (
+        <div className="text-center mb-6">
+          <span className="inline-flex items-center gap-2 text-xs text-yellow-400/80 bg-yellow-400/5 border border-yellow-400/20 rounded-full px-3 py-1">
+            Chromium only — backdrop-filter with SVG filters requires Chrome or Edge
+          </span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
         {/* Preview */}
         <div className="space-y-5">
           <div className="flex items-center gap-3">
             <span className="text-sm text-slate-400">Background:</span>
-            {BG_IMAGES.map((_, i) => (
+            {GRADIENT_BGS.map((g, i) => (
+              <button key={g} onClick={() => { setBgIndex(-1); setGradientIndex(i); }} className={`w-7 h-7 rounded-full bg-gradient-to-br ${g} border-2 transition-colors ${bgIndex === -1 && gradientIndex === i ? "border-white" : "border-transparent"}`} />
+            ))}
+            {BG_IMAGES.slice(0, 4).map((_, i) => (
               <button key={i} onClick={() => setBgIndex(i)} className={`w-7 h-7 rounded-full border-2 transition-colors flex items-center justify-center bg-slate-700 ${bgIndex === i ? "border-white" : "border-transparent"}`}>
                 <Image size={12} className="text-slate-300" />
               </button>
             ))}
           </div>
 
-          <div
-            ref={previewRef}
-            className="relative overflow-hidden rounded-2xl h-[460px] flex items-center justify-center"
-            onMouseMove={handleMouseMove}
-            onMouseLeave={() => setMouseOffset({ x: 0, y: 0 })}
-          >
-            <img
-              src={BG_IMAGES[bgIndex]}
-              alt=""
-              className="absolute w-[115%] h-[115%] object-cover transition-transform duration-150 ease-out pointer-events-none"
-              style={{
-                top: "-7.5%",
-                left: "-7.5%",
-                transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)`,
-              }}
+          {isLiquid ? (
+            <LiquidPreview
+              surface={surface}
+              values={values}
+              getValue={getValue}
+              mouseOffset={mouseOffset}
+              bgIndex={bgIndex}
+              gradientIndex={gradientIndex}
+              previewRef={previewRef}
+              onMouseMove={handleMouseMove}
             />
+          ) : (
             <div
-              style={{
-                width: panelWidth,
-                height: panelHeight,
-                borderRadius: getValue("radius", 20),
-                overflow: "hidden",
-                backdropFilter: glass.filterRef,
-                WebkitBackdropFilter: glass.filterRef,
-                border: "1px solid rgba(255,255,255,0.15)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              ref={previewRef}
+              className={`relative overflow-hidden rounded-2xl h-[460px] flex items-center justify-center ${bgIndex === -1 ? `bg-gradient-to-br ${GRADIENT_BGS[gradientIndex]}` : ""}`}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={() => setMouseOffset({ x: 0, y: 0 })}
             >
-              <div className="text-center px-4 relative z-10">
-                <p className="text-white/90 text-sm font-medium">SVG Refraction</p>
-                <p className="text-white/50 text-xs mt-1">{SURFACE_EQUATIONS[surface].name}</p>
-              </div>
+              {bgIndex >= 0 && (
+                <img
+                  src={BG_IMAGES[bgIndex]}
+                  alt=""
+                  className="absolute w-[115%] h-[115%] object-cover transition-transform duration-150 ease-out pointer-events-none"
+                  style={{
+                    top: "-7.5%",
+                    left: "-7.5%",
+                    transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)`,
+                  }}
+                />
+              )}
+              <Glass effect={effect} options={options as never} className="w-[280px] h-[200px] flex items-center justify-center transition-all duration-300">
+                <div className="text-center px-4">
+                  <p className="text-white/90 text-sm font-medium capitalize">{effect}</p>
+                  <p className="text-white/50 text-xs mt-1">Customize with sliders</p>
+                </div>
+              </Glass>
             </div>
-          </div>
+          )}
 
-          <CodeBlock code={codeSnippet} lang="ts" />
+          <div className="relative">
+            <div className="flex justify-between items-center mb-2">
+              {isLiquid ? (
+                <span className="text-xs text-slate-500">createLiquidGlass API</span>
+              ) : (
+                <FrameworkTabs active={framework} onChange={setFramework} />
+              )}
+            </div>
+            <CodeBlock code={codeSnippet} lang={isLiquid ? "ts" : framework === "vue" ? "vue" : "tsx"} />
+          </div>
         </div>
 
         {/* Controls */}
         <div className="space-y-5">
+          {/* Effect picker */}
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
-            <h3 className="text-sm font-semibold text-slate-200 mb-3">Surface Shape</h3>
+            <h3 className="text-sm font-semibold text-slate-200 mb-3">Effect</h3>
             <div className="grid grid-cols-2 gap-2">
-              {SURFACE_TYPES.map((s) => (
-                <button key={s.key} onClick={() => setSurface(s.key)} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${surface === s.key ? "bg-white text-slate-900" : "bg-slate-700 text-slate-300 hover:bg-slate-600"}`}>
-                  {s.label}
+              {ALL_EFFECTS.map((e) => (
+                <button
+                  key={e}
+                  onClick={() => { setEffect(e); setValues({}); }}
+                  className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${effect === e ? "bg-white text-slate-900" : "bg-slate-700 text-slate-300 hover:bg-slate-600"}`}
+                >
+                  <span>{e}</span>
+                  {effect !== e && (
+                    <span className={`text-[9px] ${effectRenderTiers[e] === "svg-filter" ? "text-emerald-400" : "text-violet-400"}`}>
+                      {effectRenderTiers[e] === "svg-filter" ? "SVG" : "CSS"}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
-            <h3 className="text-sm font-semibold text-slate-200 mb-3">Templates</h3>
-            <div className="flex flex-wrap gap-2">
-              {SVG_TEMPLATES.map((t) => (
-                <button key={t.name} onClick={() => loadTemplate(t)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">{t.name}</button>
-              ))}
+          {/* Surface type picker (liquid only) */}
+          {isLiquid && (
+            <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-slate-200 mb-3">Surface Shape</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {SURFACE_TYPES.map((s) => (
+                  <button key={s.key} onClick={() => setSurface(s.key)} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${surface === s.key ? "bg-white text-slate-900" : "bg-slate-700 text-slate-300 hover:bg-slate-600"}`}>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
+          {/* Templates & Presets */}
+          {(effectTemplates.length > 0 || effectPresets.length > 0) && (
+            <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-slate-200 mb-3">Templates</h3>
+              <div className="flex flex-wrap gap-2">
+                {effectTemplates.map((t) => (
+                  <button key={t.name} onClick={() => loadTemplate(t)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">{t.name}</button>
+                ))}
+              </div>
+              {effectPresets.length > 0 && (
+                <div className="mt-3 border-t border-slate-700 pt-3">
+                  <h4 className="text-xs text-slate-500 mb-2">Presets</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {effectPresets.map((name) => (
+                      <button key={name} onClick={() => handlePreset(name)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700/60 text-slate-400 hover:bg-slate-600 transition-colors">{name}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Parameters */}
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-semibold text-slate-200">Parameters</h3>
-              <button onClick={() => setValues({})} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"><RotateCcw size={12} /> Reset</button>
+              <button onClick={() => { setValues({}); setTintColor("#ffffff"); }} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"><RotateCcw size={12} /> Reset</button>
             </div>
             <div className="space-y-4">
-              {LIQUID_SLIDERS.map((s) => (
+              {!isLiquid && ["frosted", "crystal"].includes(effect) && (
+                <label className="flex items-center justify-between">
+                  <span className="text-sm text-slate-300">Tint Color</span>
+                  <input type="color" value={tintColor} onChange={(e) => setTintColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer bg-transparent border-0" />
+                </label>
+              )}
+              {activeSliders.map((s) => (
                 <label key={s.key} className="block">
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-slate-300">{s.label}</span>
@@ -538,13 +526,34 @@ element.style.backdropFilter = glass.filterRef;`;
             </div>
           </div>
 
+          {/* Render tier info */}
           <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-slate-200 mb-2">About this engine</h3>
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="text-sm font-semibold text-slate-200">Render Tier</h3>
+              <TierBadge effect={effect} />
+            </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Uses Snell-Descartes law to calculate how light bends through a curved glass surface.
-              The displacement map is generated per-pixel on a canvas, then fed into an SVG
-              <code className="text-blue-300 mx-1">feDisplacementMap</code>
-              filter with a specular highlight overlay.
+              {isLiquid ? (
+                <>
+                  Uses Snell-Descartes law to calculate how light bends through a curved glass surface.
+                  The displacement map is generated per-pixel on a canvas, then fed into an SVG
+                  <code className="text-blue-300 mx-1">feDisplacementMap</code>
+                  filter with a specular highlight overlay.
+                </>
+              ) : effectRenderTiers[effect] === "svg-filter" ? (
+                <>
+                  This effect uses SVG filter primitives
+                  (<code className="text-blue-300 mx-0.5">feTurbulence</code>,
+                  <code className="text-blue-300 mx-0.5">feDisplacementMap</code>)
+                  applied via <code className="text-blue-300 mx-0.5">backdrop-filter</code>.
+                </>
+              ) : (
+                <>
+                  This effect uses pure CSS — <code className="text-blue-300 mx-0.5">backdrop-filter</code>,
+                  <code className="text-blue-300 mx-0.5">box-shadow</code>, and CSS animations.
+                  Works across all modern browsers.
+                </>
+              )}
             </p>
           </div>
         </div>

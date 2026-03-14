@@ -170,7 +170,7 @@ export function Gallery() {
           Glass Effect Gallery
         </h1>
         <p className="text-slate-400 mt-4 text-lg max-w-2xl mx-auto">
-          7 glass effects. Hover to see them in action. Click to copy code.
+          8 glass effects. Hover to see them in action. Click to copy code.
         </p>
       </div>
 
