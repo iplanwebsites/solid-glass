@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Glass, type GlassEffectName, presets, type PresetName, presetNames, effectRenderTiers } from "solid-glass";
 import { createLiquidGlass, type SurfaceType, SURFACE_EQUATIONS } from "solid-glass/engines/svg-refraction";
-import { Copy, Check, RotateCcw, Image, Sparkles, Gem } from "lucide-react";
+import { RotateCcw, Image, Sparkles, Gem, ChevronLeft, ChevronDown } from "lucide-react";
 import { CodeBlock } from "../components/CodeBlock";
 
 /* ─── Framework Code Generators ─── */
@@ -82,8 +82,7 @@ function FrameworkTabs({ active, onChange }: { active: Framework; onChange: (f: 
 }
 
 /* ─── Render Tier Badge ─── */
-function TierBadge({ effect }: { effect: GlassEffectName }) {
-  const tier = effectRenderTiers[effect];
+function TierBadge({ tier }: { tier: string }) {
   if (tier === "svg-filter") {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">
@@ -99,7 +98,6 @@ function TierBadge({ effect }: { effect: GlassEffectName }) {
 }
 
 /* ─── Shared Data ─── */
-const ALL_EFFECTS: GlassEffectName[] = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin", "liquid"];
 const CSS_EFFECTS: GlassEffectName[] = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin"];
 
 const GRADIENT_BGS = [
@@ -118,14 +116,16 @@ const BG_IMAGES = [
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80",
 ];
 
-/* ─── Templates (all effects including liquid) ─── */
-const TEMPLATES: {
+/* ─── Templates ─── */
+type Template = {
   name: string;
   effect: GlassEffectName;
   options: Record<string, unknown>;
   surface?: SurfaceType;
   description: string;
-}[] = [
+};
+
+const TEMPLATES: Template[] = [
   { name: "Frosted Light", effect: "frosted", options: { blur: 12, tintColor: "#ffffff", tintOpacity: 0.1 }, description: "Classic light frosted glass." },
   { name: "Frosted Dark", effect: "frosted", options: { blur: 14, tintColor: "#000000", tintOpacity: 0.2, shadowColor: "rgba(0,0,0,0.3)" }, description: "Dark mode frosted variant." },
   { name: "Crystal Clear", effect: "crystal", options: { blur: 6, noiseFrequency: 0.006, distortionStrength: 40 }, description: "Subtle refraction." },
@@ -136,18 +136,17 @@ const TEMPLATES: {
   { name: "Holo Card", effect: "holographic", options: { blur: 8, iridescence: 0.5, animationSpeed: 4 }, description: "Iridescent shimmer." },
   { name: "Thin Light", effect: "thin", options: { blur: 4, backgroundOpacity: 0.03 }, description: "Barely-there glass." },
   // Liquid templates
-  { name: "Convex Lens", effect: "liquid", surface: "convexCircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Classic magnifying glass shape." },
-  { name: "Squircle Panel", effect: "liquid", surface: "convexSquircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Rounded square glass panel." },
-  { name: "Concave Dish", effect: "liquid", surface: "concave", options: { bezelWidth: 40, glassThickness: 180, blur: 6, refractiveIndex: 1.4, specularOpacity: 0.5 }, description: "Inward-curving glass surface." },
-  { name: "Sharp Refract", effect: "liquid", surface: "convexSquircle", options: { bezelWidth: 30, glassThickness: 400, blur: 4, refractiveIndex: 2.0, specularOpacity: 0.8 }, description: "High refractive index for dramatic bending." },
-  { name: "Soft Blur", effect: "liquid", surface: "convexSquircle", options: { bezelWidth: 60, glassThickness: 150, blur: 14, refractiveIndex: 1.3, specularOpacity: 0.4 }, description: "Heavy blur with gentle refraction." },
-  { name: "Lip Edge", effect: "liquid", surface: "lip", options: { bezelWidth: 50, glassThickness: 200, blur: 6, refractiveIndex: 1.5, specularOpacity: 0.5 }, description: "Raised lip edge surface." },
+  { name: "Convex Lens", effect: "liquid", surface: "convexCircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Classic magnifying glass." },
+  { name: "Squircle Panel", effect: "liquid", surface: "convexSquircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Rounded square glass." },
+  { name: "Concave Dish", effect: "liquid", surface: "concave", options: { bezelWidth: 40, glassThickness: 180, blur: 6, refractiveIndex: 1.4, specularOpacity: 0.5 }, description: "Inward-curving surface." },
+  { name: "Sharp Refract", effect: "liquid", surface: "convexSquircle", options: { bezelWidth: 30, glassThickness: 400, blur: 4, refractiveIndex: 2.0, specularOpacity: 0.8 }, description: "Dramatic light bending." },
+  { name: "Soft Blur", effect: "liquid", surface: "convexSquircle", options: { bezelWidth: 60, glassThickness: 150, blur: 14, refractiveIndex: 1.3, specularOpacity: 0.4 }, description: "Heavy blur, gentle refraction." },
+  { name: "Lip Edge", effect: "liquid", surface: "lip", options: { bezelWidth: 50, glassThickness: 200, blur: 6, refractiveIndex: 1.5, specularOpacity: 0.5 }, description: "Raised lip edge." },
 ];
 
-/* ─── Unified Sliders ─── */
+/* ─── Sliders ─── */
 type SliderConfig = { key: string; label: string; min: number; max: number; step: number; defaultValue: number; effects: GlassEffectName[] };
 const SLIDERS: SliderConfig[] = [
-  // CSS effect sliders
   { key: "blur", label: "Blur", min: 0, max: 40, step: 1, defaultValue: 12, effects: CSS_EFFECTS },
   { key: "borderRadius", label: "Radius", min: 0, max: 50, step: 1, defaultValue: 20, effects: CSS_EFFECTS },
   { key: "tintOpacity", label: "Tint Opacity", min: 0, max: 0.5, step: 0.01, defaultValue: 0.08, effects: ["frosted", "crystal"] },
@@ -161,7 +160,7 @@ const SLIDERS: SliderConfig[] = [
   { key: "saturation", label: "Saturation", min: 0.5, max: 2, step: 0.1, defaultValue: 1.2, effects: ["prism"] },
   { key: "iridescence", label: "Iridescence", min: 0, max: 1, step: 0.05, defaultValue: 0.4, effects: ["holographic"] },
   { key: "backgroundOpacity", label: "BG Opacity", min: 0, max: 0.2, step: 0.005, defaultValue: 0.02, effects: ["thin"] },
-  // Liquid-specific sliders
+  // Liquid-specific
   { key: "bezelWidth", label: "Bezel Width", min: 10, max: 100, step: 1, defaultValue: 50, effects: ["liquid"] },
   { key: "glassThickness", label: "Glass Thickness", min: 20, max: 500, step: 10, defaultValue: 200, effects: ["liquid"] },
   { key: "blur", label: "Blur", min: 0, max: 20, step: 1, defaultValue: 8, effects: ["liquid"] },
@@ -178,7 +177,90 @@ const SURFACE_TYPES: { key: SurfaceType; label: string }[] = [
   { key: "lip", label: "Lip" },
 ];
 
-/* ─── Liquid Glass Preview ─── */
+type FilterTab = "all" | "css" | "svg-filter";
+
+/* ═══════════════════════════════════════════════ */
+/*  Browse Mode — template gallery                  */
+/* ═══════════════════════════════════════════════ */
+function BrowseView({ onSelect }: { onSelect: (index: number) => void }) {
+  const [filter, setFilter] = useState<FilterTab>("all");
+
+  const filtered = TEMPLATES.filter((t) => {
+    if (filter === "all") return true;
+    return effectRenderTiers[t.effect] === filter;
+  });
+
+  const tabs: { key: FilterTab; label: string; count: number }[] = [
+    { key: "all", label: "All", count: TEMPLATES.length },
+    { key: "css", label: "CSS", count: TEMPLATES.filter((t) => effectRenderTiers[t.effect] === "css").length },
+    { key: "svg-filter", label: "SVG Filter", count: TEMPLATES.filter((t) => effectRenderTiers[t.effect] === "svg-filter").length },
+  ];
+
+  return (
+    <div>
+      {/* Filter tabs */}
+      <div className="flex items-center gap-2 mb-6">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setFilter(tab.key)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              filter === tab.key
+                ? "bg-white text-slate-900"
+                : "bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700"
+            }`}
+          >
+            {tab.label}
+            <span className={`ml-1.5 text-xs ${filter === tab.key ? "text-slate-500" : "text-slate-600"}`}>
+              {tab.count}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Template grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map((t) => {
+          const idx = TEMPLATES.indexOf(t);
+          const tier = effectRenderTiers[t.effect];
+          return (
+            <button
+              key={idx}
+              onClick={() => onSelect(idx)}
+              className="group text-left bg-slate-800/60 border border-slate-700/50 rounded-xl overflow-hidden hover:border-slate-500 transition-all hover:scale-[1.02]"
+            >
+              {/* Mini preview */}
+              <div className="relative h-32 bg-gradient-to-br from-blue-600 via-violet-600 to-fuchsia-600 flex items-center justify-center overflow-hidden">
+                {t.effect !== "liquid" ? (
+                  <Glass effect={t.effect} options={t.options as never} className="w-[160px] h-[80px] flex items-center justify-center">
+                    <span className="text-white/60 text-xs">Preview</span>
+                  </Glass>
+                ) : (
+                  <div className="w-[160px] h-[80px] rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                    <span className="text-white/60 text-xs">SVG Refraction</span>
+                  </div>
+                )}
+              </div>
+              {/* Info */}
+              <div className="p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-semibold text-slate-200 group-hover:text-white">{t.name}</span>
+                  <TierBadge tier={tier} />
+                </div>
+                <p className="text-xs text-slate-500">{t.description}</p>
+                <p className="text-[10px] text-slate-600 mt-1 capitalize">{t.effect}</p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════ */
+/*  Liquid Glass Preview (tweak mode)               */
+/* ═══════════════════════════════════════════════ */
 function LiquidPreview({
   surface,
   values,
@@ -242,11 +324,7 @@ function LiquidPreview({
           src={BG_IMAGES[bgIndex]}
           alt=""
           className="absolute w-[115%] h-[115%] object-cover transition-transform duration-150 ease-out pointer-events-none"
-          style={{
-            top: "-7.5%",
-            left: "-7.5%",
-            transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)`,
-          }}
+          style={{ top: "-7.5%", left: "-7.5%", transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)` }}
         />
       )}
       <div
@@ -258,10 +336,8 @@ function LiquidPreview({
           backdropFilter: glass.filterRef,
           WebkitBackdropFilter: glass.filterRef,
           border: "1px solid rgba(255,255,255,0.15)",
-          boxShadow: "rgba(0, 0, 0, 0.16) 0px 4px 9px, rgba(0, 0, 0, 0.2) 0px 2px 24px inset, rgba(255, 255, 255, 0.2) 0px -2px 24px inset",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          boxShadow: "rgba(0,0,0,0.16) 0px 4px 9px, rgba(0,0,0,0.2) 0px 2px 24px inset, rgba(255,255,255,0.2) 0px -2px 24px inset",
+          display: "flex", alignItems: "center", justifyContent: "center",
         }}
       >
         <div className="text-center px-4 relative z-10">
@@ -274,20 +350,60 @@ function LiquidPreview({
 }
 
 /* ═══════════════════════════════════════════════ */
-/*  Unified Playground                             */
+/*  Tweak Mode — edit a single template             */
 /* ═══════════════════════════════════════════════ */
-export function Showcase() {
-  const [effect, setEffect] = useState<GlassEffectName>("frosted");
-  const [values, setValues] = useState<Record<string, number>>({});
-  const [tintColor, setTintColor] = useState("#ffffff");
-  const [surface, setSurface] = useState<SurfaceType>("convexSquircle");
+function TweakView({
+  templateIndex,
+  onBack,
+  onSwitch,
+}: {
+  templateIndex: number;
+  onBack: () => void;
+  onSwitch: (index: number) => void;
+}) {
+  const template = TEMPLATES[templateIndex];
+  const [values, setValues] = useState<Record<string, number>>(() => {
+    const nv: Record<string, number> = {};
+    for (const [k, v] of Object.entries(template.options)) {
+      if (typeof v === "number") nv[k] = v;
+    }
+    return nv;
+  });
+  const [tintColor, setTintColor] = useState(() => {
+    const tc = template.options.tintColor;
+    return typeof tc === "string" ? tc : "#ffffff";
+  });
+  const [surface, setSurface] = useState<SurfaceType>(template.surface ?? "convexSquircle");
   const [bgIndex, setBgIndex] = useState(0);
   const [gradientIndex, setGradientIndex] = useState(0);
   const [framework, setFramework] = useState<Framework>("react");
   const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
+  const effect = template.effect;
   const isLiquid = effect === "liquid";
+  const tier = effectRenderTiers[effect];
+
+  // All templates for the same effect (for the dropdown)
+  const sameEffectTemplates = TEMPLATES
+    .map((t, i) => ({ ...t, index: i }))
+    .filter((t) => t.effect === effect);
+
+  // When switching templates, reload values
+  const switchTemplate = (idx: number) => {
+    const t = TEMPLATES[idx];
+    const nv: Record<string, number> = {};
+    for (const [k, v] of Object.entries(t.options)) {
+      if (typeof v === "number") nv[k] = v;
+    }
+    setValues(nv);
+    const tc = t.options.tintColor;
+    setTintColor(typeof tc === "string" ? tc : "#ffffff");
+    if (t.surface) setSurface(t.surface);
+    setDropdownOpen(false);
+    onSwitch(idx);
+  };
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const rect = previewRef.current?.getBoundingClientRect();
@@ -304,7 +420,6 @@ export function Showcase() {
     const o: Record<string, unknown> = {};
     activeSliders.forEach((s) => { o[s.key] = getValue(s.key, s.defaultValue); });
     if (["frosted", "crystal"].includes(effect)) o.tintColor = tintColor;
-    // Remap liquidSaturation → saturation for the liquid engine
     if (isLiquid && o.liquidSaturation !== undefined) {
       o.saturation = o.liquidSaturation;
       delete o.liquidSaturation;
@@ -314,9 +429,8 @@ export function Showcase() {
 
   const codeSnippet = useMemo(() => {
     if (isLiquid) {
-      const liquidOpts: Record<string, unknown> = {
-        width: 280,
-        height: 200,
+      return generateLiquidSnippet({
+        width: 280, height: 200,
         radius: getValue("radius", 20),
         bezelWidth: getValue("bezelWidth", 50),
         glassThickness: getValue("glassThickness", 200),
@@ -324,73 +438,94 @@ export function Showcase() {
         refractiveIndex: getValue("refractiveIndex", 1.5),
         surface,
         specularOpacity: getValue("specularOpacity", 0.6),
-      };
-      return generateLiquidSnippet(liquidOpts);
+      });
     }
     return getSnippet(framework, effect, options);
   }, [framework, effect, options, isLiquid, surface, values]);
 
-  const handlePreset = (name: PresetName) => {
-    const p = presets[name];
-    if (p.effect === "liquid") return; // liquid presets have fixed dimensions, skip for playground
-    setEffect(p.effect);
+  const resetToTemplate = () => {
     const nv: Record<string, number> = {};
-    for (const [k, v] of Object.entries(p.options)) {
+    for (const [k, v] of Object.entries(template.options)) {
       if (typeof v === "number") nv[k] = v;
-      if (k === "tintColor" && typeof v === "string") setTintColor(v);
     }
     setValues(nv);
+    const tc = template.options.tintColor;
+    setTintColor(typeof tc === "string" ? tc : "#ffffff");
+    if (template.surface) setSurface(template.surface);
   };
-
-  const loadTemplate = (t: typeof TEMPLATES[number]) => {
-    setEffect(t.effect);
-    const nv: Record<string, number> = {};
-    for (const [k, v] of Object.entries(t.options)) {
-      if (typeof v === "number") nv[k] = v;
-      if (k === "tintColor" && typeof v === "string") setTintColor(v);
-    }
-    setValues(nv);
-    if (t.surface) setSurface(t.surface);
-  };
-
-  const effectTemplates = TEMPLATES.filter((t) => t.effect === effect);
-  const effectPresets = presetNames.filter((n) => presets[n].effect === effect);
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <div className="text-center mb-10">
-        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-blue-200 to-violet-200 bg-clip-text text-transparent">
-          Playground
-        </h1>
-        <p className="text-slate-400 mt-3 text-lg">
-          Build custom glass effects. Pick an effect, tweak the parameters, copy the code.
-        </p>
+    <div>
+      {/* Header: back + template switcher */}
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1 text-sm text-slate-400 hover:text-white transition-colors"
+        >
+          <ChevronLeft size={16} /> Browse
+        </button>
+        <div className="h-4 w-px bg-slate-700" />
+        <div className="relative">
+          <button
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-sm text-slate-200 hover:border-slate-500 transition-colors"
+          >
+            {template.name}
+            <TierBadge tier={tier} />
+            <ChevronDown size={14} className={`text-slate-500 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
+          </button>
+          {dropdownOpen && (
+            <div className="absolute top-full left-0 mt-1 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 py-1 max-h-72 overflow-y-auto">
+              {TEMPLATES.map((t, i) => (
+                <button
+                  key={i}
+                  onClick={() => switchTemplate(i)}
+                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center justify-between ${
+                    i === templateIndex
+                      ? "bg-white/10 text-white"
+                      : "text-slate-300 hover:bg-slate-700"
+                  }`}
+                >
+                  <div>
+                    <span className="font-medium">{t.name}</span>
+                    <span className="text-[10px] text-slate-500 ml-2 capitalize">{t.effect}</span>
+                  </div>
+                  <span className={`text-[9px] ${effectRenderTiers[t.effect] === "svg-filter" ? "text-emerald-400" : "text-violet-400"}`}>
+                    {effectRenderTiers[t.effect] === "svg-filter" ? "SVG" : "CSS"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Chromium notice — only for liquid */}
+      {/* Chromium notice */}
       {isLiquid && (
-        <div className="text-center mb-6">
+        <div className="text-center mb-4">
           <span className="inline-flex items-center gap-2 text-xs text-yellow-400/80 bg-yellow-400/5 border border-yellow-400/20 rounded-full px-3 py-1">
             Chromium only — backdrop-filter with SVG filters requires Chrome or Edge
           </span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
-        {/* Preview */}
-        <div className="space-y-5">
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-slate-400">Background:</span>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+        {/* Preview + Code */}
+        <div className="space-y-4">
+          {/* Background picker */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500">BG:</span>
             {GRADIENT_BGS.map((g, i) => (
-              <button key={g} onClick={() => { setBgIndex(-1); setGradientIndex(i); }} className={`w-7 h-7 rounded-full bg-gradient-to-br ${g} border-2 transition-colors ${bgIndex === -1 && gradientIndex === i ? "border-white" : "border-transparent"}`} />
+              <button key={g} onClick={() => { setBgIndex(-1); setGradientIndex(i); }} className={`w-6 h-6 rounded-full bg-gradient-to-br ${g} border-2 transition-colors ${bgIndex === -1 && gradientIndex === i ? "border-white" : "border-transparent"}`} />
             ))}
             {BG_IMAGES.slice(0, 4).map((_, i) => (
-              <button key={i} onClick={() => setBgIndex(i)} className={`w-7 h-7 rounded-full border-2 transition-colors flex items-center justify-center bg-slate-700 ${bgIndex === i ? "border-white" : "border-transparent"}`}>
-                <Image size={12} className="text-slate-300" />
+              <button key={i} onClick={() => setBgIndex(i)} className={`w-6 h-6 rounded-full border-2 transition-colors flex items-center justify-center bg-slate-700 ${bgIndex === i ? "border-white" : "border-transparent"}`}>
+                <Image size={10} className="text-slate-400" />
               </button>
             ))}
           </div>
 
+          {/* Preview */}
           {isLiquid ? (
             <LiquidPreview
               surface={surface}
@@ -414,23 +549,20 @@ export function Showcase() {
                   src={BG_IMAGES[bgIndex]}
                   alt=""
                   className="absolute w-[115%] h-[115%] object-cover transition-transform duration-150 ease-out pointer-events-none"
-                  style={{
-                    top: "-7.5%",
-                    left: "-7.5%",
-                    transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)`,
-                  }}
+                  style={{ top: "-7.5%", left: "-7.5%", transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)` }}
                 />
               )}
               <Glass effect={effect} options={options as never} className="w-[280px] h-[200px] flex items-center justify-center transition-all duration-300">
                 <div className="text-center px-4">
                   <p className="text-white/90 text-sm font-medium capitalize">{effect}</p>
-                  <p className="text-white/50 text-xs mt-1">Customize with sliders</p>
+                  <p className="text-white/50 text-xs mt-1">{template.name}</p>
                 </div>
               </Glass>
             </div>
           )}
 
-          <div className="relative">
+          {/* Code */}
+          <div>
             <div className="flex justify-between items-center mb-2">
               {isLiquid ? (
                 <span className="text-xs text-slate-500">createLiquidGlass API</span>
@@ -442,135 +574,94 @@ export function Showcase() {
           </div>
         </div>
 
-        {/* Controls */}
-        <div className="space-y-6">
-          {/* ── SECTION 1: Choose ── */}
-          <div>
-            <h3 className="text-[11px] uppercase tracking-widest text-slate-500 font-semibold mb-3 px-1">Choose</h3>
-            <div className="space-y-3">
-              {/* Effect picker */}
-              <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-semibold text-slate-200">Effect</h4>
-                  <TierBadge effect={effect} />
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {ALL_EFFECTS.map((e) => (
-                    <button
-                      key={e}
-                      onClick={() => { setEffect(e); setValues({}); }}
-                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${effect === e ? "bg-white text-slate-900" : "bg-slate-700/60 text-slate-300 hover:bg-slate-600"}`}
-                    >
-                      <span>{e}</span>
-                      {effect !== e && (
-                        <span className={`text-[9px] ${effectRenderTiers[e] === "svg-filter" ? "text-emerald-400" : "text-violet-400"}`}>
-                          {effectRenderTiers[e] === "svg-filter" ? "SVG" : "CSS"}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Surface type picker (liquid only) */}
-              {isLiquid && (
-                <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
-                  <h4 className="text-sm font-semibold text-slate-200 mb-3">Surface Shape</h4>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {SURFACE_TYPES.map((s) => (
-                      <button key={s.key} onClick={() => setSurface(s.key)} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${surface === s.key ? "bg-white text-slate-900" : "bg-slate-700/60 text-slate-300 hover:bg-slate-600"}`}>
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Templates & Presets */}
-              {(effectTemplates.length > 0 || effectPresets.length > 0) && (
-                <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
-                  <h4 className="text-sm font-semibold text-slate-200 mb-3">Templates</h4>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {effectTemplates.map((t) => (
-                      <button
-                        key={t.name}
-                        onClick={() => loadTemplate(t)}
-                        className="px-3 py-2 rounded-lg text-left transition-colors bg-slate-700/60 hover:bg-slate-600 group"
-                      >
-                        <span className="text-xs font-medium text-slate-200 group-hover:text-white">{t.name}</span>
-                        <span className="block text-[10px] text-slate-500 mt-0.5 leading-tight">{t.description}</span>
-                      </button>
-                    ))}
-                  </div>
-                  {effectPresets.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-slate-700/50">
-                      <h5 className="text-[10px] uppercase tracking-wider text-slate-600 mb-2">Library Presets</h5>
-                      <div className="flex flex-wrap gap-1.5">
-                        {effectPresets.map((name) => (
-                          <button key={name} onClick={() => handlePreset(name)} className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-colors">{name}</button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ── Divider ── */}
-          <div className="border-t border-slate-700/50" />
-
-          {/* ── SECTION 2: Tune ── */}
-          <div>
-            <div className="flex items-center justify-between mb-3 px-1">
-              <h3 className="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">Tune</h3>
-              <button onClick={() => { setValues({}); setTintColor("#ffffff"); }} className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-white transition-colors"><RotateCcw size={10} /> Reset</button>
-            </div>
-            <div className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4">
-              <div className="space-y-3">
-                {!isLiquid && ["frosted", "crystal"].includes(effect) && (
-                  <label className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400">Tint Color</span>
-                    <input type="color" value={tintColor} onChange={(e) => setTintColor(e.target.value)} className="w-7 h-7 rounded cursor-pointer bg-transparent border-0" />
-                  </label>
-                )}
-                {activeSliders.map((s) => (
-                  <label key={s.key} className="block">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-slate-400">{s.label}</span>
-                      <span className="text-slate-600 font-mono text-[11px] tabular-nums">{getValue(s.key, s.defaultValue)}</span>
-                    </div>
-                    <input type="range" min={s.min} max={s.max} step={s.step} value={getValue(s.key, s.defaultValue)} onChange={(e) => setValues((p) => ({ ...p, [s.key]: Number(e.target.value) }))} className="w-full accent-blue-500 h-1" />
-                  </label>
+        {/* Sidebar: sliders */}
+        <div className="space-y-4">
+          {/* Surface picker (liquid only) */}
+          {isLiquid && (
+            <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
+              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Surface</h4>
+              <div className="grid grid-cols-2 gap-1.5">
+                {SURFACE_TYPES.map((s) => (
+                  <button key={s.key} onClick={() => setSurface(s.key)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${surface === s.key ? "bg-white text-slate-900" : "bg-slate-700/60 text-slate-300 hover:bg-slate-600"}`}>
+                    {s.label}
+                  </button>
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Parameters */}
+          <div className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Parameters</h4>
+              <button onClick={resetToTemplate} className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-white transition-colors">
+                <RotateCcw size={10} /> Reset
+              </button>
+            </div>
+            <div className="space-y-3">
+              {!isLiquid && ["frosted", "crystal"].includes(effect) && (
+                <label className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400">Tint Color</span>
+                  <input type="color" value={tintColor} onChange={(e) => setTintColor(e.target.value)} className="w-7 h-7 rounded cursor-pointer bg-transparent border-0" />
+                </label>
+              )}
+              {activeSliders.map((s) => (
+                <label key={s.key} className="block">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-400">{s.label}</span>
+                    <span className="text-slate-600 font-mono text-[11px] tabular-nums">{getValue(s.key, s.defaultValue)}</span>
+                  </div>
+                  <input type="range" min={s.min} max={s.max} step={s.step} value={getValue(s.key, s.defaultValue)} onChange={(e) => setValues((p) => ({ ...p, [s.key]: Number(e.target.value) }))} className="w-full accent-blue-500 h-1" />
+                </label>
+              ))}
+            </div>
           </div>
 
-          {/* Render tier info — compact footer */}
-          <div className="px-1">
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              {isLiquid ? (
-                <>
-                  <span className="text-slate-400 font-medium">SVG Refraction</span> — Snell-Descartes displacement map via canvas, fed into
-                  <code className="text-blue-400/70 mx-0.5">feDisplacementMap</code>.
-                </>
-              ) : effectRenderTiers[effect] === "svg-filter" ? (
-                <>
-                  <span className="text-slate-400 font-medium">SVG Filter</span> —
-                  <code className="text-blue-400/70 mx-0.5">feTurbulence</code> +
-                  <code className="text-blue-400/70 mx-0.5">feDisplacementMap</code>
-                  via backdrop-filter.
-                </>
-              ) : (
-                <>
-                  <span className="text-slate-400 font-medium">CSS</span> — backdrop-filter, box-shadow, CSS animations. All modern browsers.
-                </>
-              )}
-            </p>
-          </div>
+          {/* Render tier footnote */}
+          <p className="text-[11px] text-slate-600 leading-relaxed px-1">
+            {isLiquid ? (
+              <>Snell-Descartes displacement map via <code className="text-blue-400/60">feDisplacementMap</code>.</>
+            ) : tier === "svg-filter" ? (
+              <>SVG <code className="text-blue-400/60">feTurbulence</code> + <code className="text-blue-400/60">feDisplacementMap</code> via backdrop-filter.</>
+            ) : (
+              <>Pure CSS — backdrop-filter, box-shadow, animations. All modern browsers.</>
+            )}
+          </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════ */
+/*  Main Showcase — state machine                   */
+/* ═══════════════════════════════════════════════ */
+export function Showcase() {
+  const [activeTemplate, setActiveTemplate] = useState<number | null>(null);
+
+  return (
+    <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="text-center mb-10">
+        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-blue-200 to-violet-200 bg-clip-text text-transparent">
+          Playground
+        </h1>
+        <p className="text-slate-400 mt-3 text-lg">
+          {activeTemplate === null
+            ? "Pick a template to start customizing."
+            : "Tweak parameters, switch backgrounds, copy the code."
+          }
+        </p>
+      </div>
+
+      {activeTemplate === null ? (
+        <BrowseView onSelect={setActiveTemplate} />
+      ) : (
+        <TweakView
+          templateIndex={activeTemplate}
+          onBack={() => setActiveTemplate(null)}
+          onSwitch={setActiveTemplate}
+        />
+      )}
     </div>
   );
 }
