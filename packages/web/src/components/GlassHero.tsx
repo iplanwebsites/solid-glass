@@ -446,6 +446,12 @@ export function GlassHero({
               >
                 View Gallery <ArrowRight size={18} />
               </a>
+              <a
+                href="/playground"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold backdrop-blur-md bg-white/10 border border-white/20 text-white/90 hover:bg-white/20 hover:border-white/30 transition-all shadow-lg shadow-black/10"
+              >
+                Open Playground <ArrowRight size={18} />
+              </a>
               {showInstallCommand && (
                 <CopyCommand command="npm i solid-glass" />
               )}

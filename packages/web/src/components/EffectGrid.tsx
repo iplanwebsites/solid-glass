@@ -1,22 +1,22 @@
 import { useState, useRef, useCallback } from "react";
-import { Glass, type GlassEffectName } from "solid-glass";
+import { Glass, type TemplateName } from "solid-glass";
 import { Copy, Check } from "lucide-react";
 
 const BG_IMAGE = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80";
 
 export const EFFECTS: {
   name: string;
-  effect: GlassEffectName;
-  options: Record<string, unknown>;
+  template: TemplateName;
+  overrides: Record<string, unknown>;
   description: string;
 }[] = [
-  { name: "Frosted", effect: "frosted", options: { blur: 14, tintOpacity: 0.1 }, description: "Classic Apple-style frosted glass" },
-  { name: "Crystal", effect: "crystal", options: { blur: 8, distortionStrength: 50 }, description: "Noise-based refraction distortion" },
-  { name: "Aurora", effect: "aurora", options: { colors: ["#a78bfa", "#6ee7b7", "#fbbf24"] }, description: "Animated gradient overlay" },
-  { name: "Smoke", effect: "smoke", options: { blur: 22, density: 0.35 }, description: "Dark or light animated smoke" },
-  { name: "Prism", effect: "prism", options: { saturation: 1.4, brightness: 1.1 }, description: "Spectral color splitting" },
-  { name: "Holographic", effect: "holographic", options: { iridescence: 0.45 }, description: "Iridescent card-like shimmer" },
-  { name: "Thin", effect: "thin", options: { blur: 4, backgroundOpacity: 0.03 }, description: "Barely-there minimal glass" },
+  { name: "Frosted", template: "frosted", overrides: { blur: 14, tintOpacity: 0.1 }, description: "Classic Apple-style frosted glass" },
+  { name: "Crystal", template: "crystal", overrides: { blur: 8, distortion: 50 }, description: "Noise-based refraction distortion" },
+  { name: "Aurora", template: "aurora", overrides: { colors: ["#a78bfa", "#6ee7b7", "#fbbf24"] }, description: "Animated gradient overlay" },
+  { name: "Smoke", template: "smoke", overrides: { blur: 22, density: 0.35 }, description: "Dark or light animated smoke" },
+  { name: "Prism", template: "prism", overrides: { saturation: 1.4, brightness: 1.1 }, description: "Spectral color splitting" },
+  { name: "Holographic", template: "holographic", overrides: { iridescence: 0.45 }, description: "Iridescent card-like shimmer" },
+  { name: "Thin", template: "thin", overrides: { blur: 4, backgroundOpacity: 0.03 }, description: "Barely-there minimal glass" },
 ];
 
 interface EffectGridProps {
@@ -39,7 +39,8 @@ export function EffectGrid({ showDescriptions = false, showCopyButtons = false, 
   }, []);
 
   const handleCopy = (idx: number, effect: typeof EFFECTS[number]) => {
-    const snippet = `<Glass effect="${effect.effect}" options={${JSON.stringify(effect.options)}} />`;
+    const propsStr = Object.entries(effect.overrides).map(([k, v]) => typeof v === "string" ? `${k}="${v}"` : `${k}={${JSON.stringify(v)}}`).join(" ");
+    const snippet = `<Glass template="${effect.template}" ${propsStr} />`;
     navigator.clipboard.writeText(snippet);
     setCopiedIdx(idx);
     setTimeout(() => setCopiedIdx(null), 2000);
@@ -68,10 +69,10 @@ export function EffectGrid({ showDescriptions = false, showCopyButtons = false, 
       {/* Effects grid */}
       <div className={`relative z-10 grid grid-cols-4 lg:grid-cols-7 ${compact ? 'gap-1 p-3' : 'gap-2 p-4'}`}>
         {EFFECTS.map((e, idx) => (
-          <div key={e.effect} className="group relative">
+          <div key={e.template} className="group relative">
             <Glass
-              effect={e.effect}
-              options={e.options as never}
+              template={e.template}
+              {...e.overrides}
               className={`flex flex-col items-center justify-center rounded-xl ${compact ? 'aspect-square p-1.5' : 'aspect-square p-2'}`}
             >
               <span className={`text-white/90 font-semibold text-center drop-shadow-sm ${compact ? 'text-[10px]' : 'text-xs'}`}>

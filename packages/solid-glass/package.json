@@ -41,16 +41,10 @@
         "default": "./dist/engines/svg-refraction.js"
       }
     },
-    "./effects": {
+    "./templates": {
       "import": {
-        "types": "./dist/effects/index.d.ts",
-        "default": "./dist/effects/index.js"
-      }
-    },
-    "./presets": {
-      "import": {
-        "types": "./dist/presets.d.ts",
-        "default": "./dist/presets.js"
+        "types": "./dist/templates.d.ts",
+        "default": "./dist/templates.js"
       }
     },
     "./css": "./dist/solid-glass.css",

@@ -1,211 +1,183 @@
-import type { CSSProperties, HTMLAttributes } from "react";
+import type { CSSProperties } from "react";
 import type { SurfaceType } from "./engines/svg-refraction/surface-equations";
 
 /**
- * Rendering technology tier used by an effect.
+ * Rendering technology tier used by a template.
  *
- * - `"css"` — Pure CSS (`backdrop-filter`, `box-shadow`, gradients, animations).
- *   Broadest browser support.
- * - `"svg-filter"` — SVG filter primitives (`feTurbulence`, `feDisplacementMap`,
- *   `feGaussianBlur`, `feColorMatrix`, etc.). Moderate support; some filters
- *   in `backdrop-filter` are Chromium-only.
- * - `"webgl"` — GPU-accelerated WebGL/WebGPU shaders. Most powerful, narrowest
- *   support. Reserved for future use.
+ * - `"css"` — Pure CSS (backdrop-filter, box-shadow, gradients, animations).
+ * - `"svg-filter"` — SVG filter primitives (feTurbulence, feDisplacementMap, etc.).
+ * - `"webgl"` — GPU shaders (reserved for future use).
  */
 export type RenderTier = "css" | "svg-filter" | "webgl";
 
-/** Base configuration shared by all glass effects */
-export interface GlassBaseOptions {
-  /** Border radius in px */
-  borderRadius?: number;
-  /** Overall opacity of the glass effect (0-1) */
-  opacity?: number;
-  /** Additional CSS class names */
-  className?: string;
-  /** Additional inline styles */
-  style?: CSSProperties;
-}
-
-/** Configuration for the frosted glass effect */
-export interface FrostedGlassOptions extends GlassBaseOptions {
-  /** Backdrop blur amount in px (default: 12) */
+/**
+ * Unified glass material options.
+ *
+ * Every glass surface is built from the same set of controls.
+ * Templates provide curated starting points; any option can be overridden.
+ */
+export interface GlassOptions {
+  // ── Core ──────────────────────────────────────────────
+  /** Backdrop blur in px (default: 12) */
   blur?: number;
+  /** Overall opacity of the glass element 0-1 (default: 1) */
+  opacity?: number;
+  /** Border radius in px (default: 16) */
+  borderRadius?: number;
+
+  // ── Tint ──────────────────────────────────────────────
   /** Tint color as hex string (default: '#ffffff') */
   tintColor?: string;
   /** Tint opacity 0-1 (default: 0.08) */
   tintOpacity?: number;
+
+  // ── Border ────────────────────────────────────────────
+  /** Border color (default: 'rgba(255,255,255,0.2)') */
+  borderColor?: string;
+  /** Border width in px (default: 1) */
+  borderWidth?: number;
+  /** Border opacity 0-1 — overrides borderColor alpha when set */
+  borderOpacity?: number;
+
+  // ── Shadow ────────────────────────────────────────────
   /** Inner shadow color (default: 'rgba(255,255,255,0.6)') */
   shadowColor?: string;
   /** Inner shadow blur in px (default: 6) */
   shadowBlur?: number;
   /** Inner shadow spread in px (default: 0) */
   shadowSpread?: number;
-  /** Border color (default: 'rgba(255,255,255,0.2)') */
-  borderColor?: string;
-  /** Border width in px (default: 1) */
-  borderWidth?: number;
-}
 
-/** Configuration for the crystal glass effect with refraction */
-export interface CrystalGlassOptions extends GlassBaseOptions {
-  /** Backdrop blur in px (default: 8) */
-  blur?: number;
-  /** SVG noise frequency for refraction (default: 0.008) */
+  // ── Distortion / Refraction ───────────────────────────
+  /** Noise-based distortion strength (0 = off, default per template) */
+  distortion?: number;
+  /** SVG noise frequency for distortion (default: 0.008) */
   noiseFrequency?: number;
-  /** Distortion displacement scale (default: 60) */
-  distortionStrength?: number;
-  /** Tint color hex (default: '#ffffff') */
-  tintColor?: string;
-  /** Tint opacity (default: 0.05) */
-  tintOpacity?: number;
   /** Number of noise octaves (default: 2) */
-  octaves?: number;
-  /** Noise seed (default: random) */
-  seed?: number;
-}
-
-/** Configuration for the aurora glass effect */
-export interface AuroraGlassOptions extends GlassBaseOptions {
-  /** Backdrop blur in px (default: 16) */
-  blur?: number;
-  /** Gradient color stops (default: pastel rainbow) */
-  colors?: string[];
-  /** Gradient animation speed in seconds (default: 8) */
-  animationSpeed?: number;
-  /** Gradient angle in degrees (default: 135) */
-  angle?: number;
-  /** Color layer opacity (default: 0.15) */
-  colorOpacity?: number;
-}
-
-/** Configuration for the smoke glass effect */
-export interface SmokeGlassOptions extends GlassBaseOptions {
-  /** Backdrop blur in px (default: 20) */
-  blur?: number;
-  /** Smoke density 0-1 (default: 0.3) */
-  density?: number;
-  /** Smoke color hex (default: '#000000') */
-  smokeColor?: string;
-  /** Turbulence base frequency (default: 0.015) */
+  noiseOctaves?: number;
+  /** Noise seed (default: 42) */
+  noiseSeed?: number;
+  /** SVG turbulence frequency for smoke-like effects (default: 0.015) */
   turbulence?: number;
-  /** Animation enabled (default: true) */
-  animated?: boolean;
-  /** Animation duration in seconds (default: 12) */
-  animationDuration?: number;
-}
 
-/** Configuration for the prism glass effect */
-export interface PrismGlassOptions extends GlassBaseOptions {
-  /** Backdrop blur in px (default: 6) */
-  blur?: number;
-  /** Spectral spread intensity (default: 3) */
-  spread?: number;
-  /** Hue rotation in degrees (default: 0) */
-  hueRotate?: number;
-  /** Saturation boost (default: 1.2) */
-  saturation?: number;
-  /** Brightness (default: 1.05) */
-  brightness?: number;
-  /** Contrast (default: 1.1) */
-  contrast?: number;
-}
-
-/** Configuration for the holographic glass effect */
-export interface HolographicGlassOptions extends GlassBaseOptions {
-  /** Backdrop blur in px (default: 10) */
-  blur?: number;
-  /** Iridescent color shift intensity 0-1 (default: 0.4) */
-  iridescence?: number;
-  /** Animation speed in seconds (default: 6) */
-  animationSpeed?: number;
-  /** Base gradient colors */
-  colors?: string[];
-  /** Noise pattern overlay opacity (default: 0.05) */
-  noiseOpacity?: number;
-}
-
-/** Configuration for the minimal/flat glass effect */
-export interface ThinGlassOptions extends GlassBaseOptions {
-  /** Subtle blur in px (default: 4) */
-  blur?: number;
-  /** Background opacity (default: 0.02) */
-  backgroundOpacity?: number;
-  /** Border opacity (default: 0.1) */
-  borderOpacity?: number;
-  /** Use dark mode variant (default: false) */
-  dark?: boolean;
-}
-
-/** Configuration for the refraction glass effect (physics-based SVG refraction) */
-export interface RefractionGlassEffectOptions extends GlassBaseOptions {
-  /** Width of the glass element in px (required for displacement map generation) */
-  width: number;
-  /** Height of the glass element in px (required for displacement map generation) */
-  height: number;
-  /** Backdrop blur in px (default: 2) */
-  blur?: number;
-  /** Surface shape profile (default: "convexSquircle") */
+  // ── Physics refraction (SVG displacement maps) ────────
+  /** Surface shape for physics refraction (default: "convexSquircle") */
   surface?: SurfaceType;
+  /** Refractive index of the glass material (default: 2.05) */
+  refractiveIndex?: number;
   /** Width of the refractive bezel in px (default: 22) */
   bezelWidth?: number;
   /** Glass thickness for refraction depth (default: 130) */
   glassThickness?: number;
-  /** Refractive index of the glass material (default: 2.05) */
-  refractiveIndex?: number;
   /** Specular highlight opacity 0-1 (default: 0.7) */
   specularOpacity?: number;
   /** Specular light angle in radians (default: Math.PI / 3) */
   specularAngle?: number;
-  /** Color saturation boost (default: 1.2) */
+  /** Element width in px — auto-measured if omitted */
+  width?: number;
+  /** Element height in px — auto-measured if omitted */
+  height?: number;
+
+  // ── Color effects ─────────────────────────────────────
+  /** Color saturation multiplier (default: 1) */
   saturation?: number;
+  /** Brightness multiplier (default: 1) */
+  brightness?: number;
+  /** Contrast multiplier (default: 1) */
+  contrast?: number;
+  /** Hue rotation in degrees (default: 0) */
+  hueRotate?: number;
+
+  // ── Color overlay / gradient ──────────────────────────
+  /** Gradient color stops for overlay effects */
+  colors?: string[];
+  /** Color overlay opacity 0-1 (default: 0.15) */
+  colorOpacity?: number;
+  /** Gradient angle in degrees (default: 135) */
+  gradientAngle?: number;
+  /** Blend mode for the color overlay (default: "normal") */
+  colorBlend?: "normal" | "overlay" | "screen" | "multiply" | "soft-light";
+
+  // ── Animation ─────────────────────────────────────────
+  /** Enable animation (default: depends on template) */
+  animated?: boolean;
+  /** Animation duration in seconds (default: 8) */
+  animationSpeed?: number;
+  /** Animation easing — CSS easing or "bouncy" for spring physics (default: "ease") */
+  animationEasing?: "ease" | "linear" | "ease-in" | "ease-out" | "ease-in-out" | "bouncy";
+  /** Bounciness factor 0-1 — controls overshoot in spring animations (default: 0.3) */
+  bounciness?: number;
+  /** Pause animation (default: false) */
+  paused?: boolean;
+
+  // ── Theme ─────────────────────────────────────────────
+  /** Color scheme — "auto" follows prefers-color-scheme (default: "light") */
+  colorScheme?: "light" | "dark" | "auto";
+
+  // ── Pass-through ──────────────────────────────────────
+  /** Additional CSS class names */
+  className?: string;
+  /** Additional inline styles */
+  style?: CSSProperties;
 }
 
-/** Union type mapping effect names to their option types */
-export type GlassEffectMap = {
-  frosted: FrostedGlassOptions;
-  crystal: CrystalGlassOptions;
-  aurora: AuroraGlassOptions;
-  smoke: SmokeGlassOptions;
-  prism: PrismGlassOptions;
-  holographic: HolographicGlassOptions;
-  thin: ThinGlassOptions;
-  refraction: RefractionGlassEffectOptions;
-};
+/** Template names — curated starting points for glass materials */
+export type TemplateName =
+  | "frosted"
+  | "crystal"
+  | "aurora"
+  | "smoke"
+  | "prism"
+  | "holographic"
+  | "thin"
+  | "refraction";
 
-export type GlassEffectName = keyof GlassEffectMap;
+/** Named template presets with pre-configured variations */
+export type TemplatePresetName =
+  | "frostedLight"
+  | "frostedDark"
+  | "frostedBlue"
+  | "crystalClear"
+  | "crystalAmber"
+  | "auroraNorth"
+  | "auroraSunset"
+  | "smokeNoir"
+  | "smokeMist"
+  | "prismRainbow"
+  | "prismWarm"
+  | "holoCard"
+  | "holoSubtle"
+  | "thinLight"
+  | "thinDark"
+  | "refractionPanel"
+  | "refractionLoupe";
 
 /** Props for the unified Glass component */
-export interface GlassProps<E extends GlassEffectName = "frosted">
-  extends Omit<HTMLAttributes<HTMLDivElement>, "style" | "className"> {
-  /** Which glass effect to render */
-  effect?: E;
-  /** Options specific to the chosen effect */
-  options?: GlassEffectMap[E];
-  /** Shorthand: border radius */
-  radius?: number;
-  /** Shorthand: blur amount */
-  blur?: number;
+export interface GlassProps
+  extends GlassOptions,
+    Omit<React.HTMLAttributes<HTMLDivElement>, "style" | "className"> {
+  /** Template — curated starting point (default: "frosted") */
+  template?: TemplateName | TemplatePresetName;
   /** Content */
   children?: React.ReactNode;
   /** HTML tag to render (default: 'div') */
   as?: keyof JSX.IntrinsicElements;
-  /** Additional CSS class names */
-  className?: string;
-  /** Additional inline styles (also used for CSS variable injection) */
-  style?: CSSProperties;
+  /** Fallback template if the primary requires unsupported features */
+  fallback?: TemplateName;
 }
 
-/** CSS variable map returned by effect style generators */
+/** CSS variable map returned by the glass renderer */
 export type GlassCSSVars = Record<string, string | number>;
 
-/** An effect style generator function */
-export type GlassStyleGenerator<T extends GlassBaseOptions = GlassBaseOptions> = (
-  options?: T
-) => {
+/** Result from the glass rendering pipeline */
+export interface GlassRenderResult {
+  /** CSS class name(s) to apply */
   className: string;
+  /** CSS custom properties to set */
   cssVars: GlassCSSVars;
+  /** SVG filter markup to inject (if needed) */
   svgFilter?: string;
+  /** Additional inline styles */
   inlineStyle?: CSSProperties;
-  /** The rendering technology used by this effect */
-  renderTier?: RenderTier;
-};
+  /** The rendering technology used */
+  renderTier: RenderTier;
+}

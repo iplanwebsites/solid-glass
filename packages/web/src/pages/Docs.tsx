@@ -21,129 +21,72 @@ const sections = [
     content: (
       <>
         <p className="text-slate-400 mb-4">
-          Import the <code className="text-blue-300">Glass</code> component and the CSS file. That's it.
+          Import the <code className="text-blue-300">Glass</code> component and start using it immediately.
+          No CSS import needed — styles are auto-injected.
         </p>
         <CodeBlock code={`import { Glass } from "solid-glass";
-import "solid-glass/css";
 
 function App() {
   return (
-    <Glass effect="frosted" options={{ blur: 16 }}>
+    <Glass template="frosted" blur={14} tintOpacity={0.1}>
       <p>Content behind frosted glass</p>
     </Glass>
   );
 }`} />
+        <div className="mt-6 p-4 rounded-lg border border-slate-700 bg-slate-800/50">
+          <p className="text-sm text-slate-300 font-semibold mb-2">What happens automatically:</p>
+          <ul className="text-sm text-slate-400 space-y-1 list-disc list-inside">
+            <li><strong className="text-slate-300">Auto CSS injection</strong> — no manual CSS import needed</li>
+            <li><strong className="text-slate-300">Auto browser fallback</strong> — SVG filter templates fall back to CSS-only on unsupported browsers</li>
+            <li><strong className="text-slate-300">Auto-measure for refraction</strong> — uses ResizeObserver, no manual width/height needed</li>
+          </ul>
+        </div>
       </>
     ),
   },
   {
-    id: "effects",
-    title: "Available Effects",
+    id: "templates",
+    title: "Templates & Presets",
     content: (
       <>
-        <p className="text-slate-400 mb-6">Each effect produces different visual characteristics:</p>
+        <p className="text-slate-400 mb-4">
+          The <code className="text-blue-300">template</code> prop selects a base glass effect.
+          Named presets are pre-configured combinations of a template with specific prop values.
+        </p>
+        <h3 className="text-lg font-semibold text-white mt-6 mb-3">Base Templates</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-700">
-                <th className="text-left py-3 text-slate-300 font-semibold">Effect</th>
-                <th className="text-left py-3 text-slate-300 font-semibold">Render Tier</th>
+                <th className="text-left py-3 text-slate-300 font-semibold">Template</th>
                 <th className="text-left py-3 text-slate-300 font-semibold">Technique</th>
-                <th className="text-left py-3 text-slate-300 font-semibold">Key Options</th>
+                <th className="text-left py-3 text-slate-300 font-semibold">Key Props</th>
               </tr>
             </thead>
             <tbody className="text-slate-400">
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">frosted</td><td><span className="text-violet-400">CSS</span></td><td>Backdrop blur + tint + inner shadow</td><td>blur, tintColor, tintOpacity, shadowBlur, borderColor</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">crystal</td><td><span className="text-emerald-400">SVG Filter</span></td><td>SVG feTurbulence + feDisplacementMap</td><td>noiseFrequency, distortionStrength, octaves, seed</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">aurora</td><td><span className="text-violet-400">CSS</span></td><td>Animated gradient overlay + blur</td><td>colors, animationSpeed, angle, colorOpacity</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">smoke</td><td><span className="text-emerald-400">SVG Filter</span></td><td>Animated turbulence + heavy blur</td><td>density, smokeColor, turbulence, animated</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">prism</td><td><span className="text-violet-400">CSS</span></td><td>Backdrop filter chain (hue, saturate, contrast)</td><td>hueRotate, saturation, brightness, contrast</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">holographic</td><td><span className="text-violet-400">CSS</span></td><td>Animated iridescent overlay</td><td>iridescence, animationSpeed, colors</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">thin</td><td><span className="text-violet-400">CSS</span></td><td>Minimal blur + subtle border</td><td>backgroundOpacity, borderOpacity, dark</td></tr>
-              <tr><td className="py-3 text-white font-mono">refraction</td><td><span className="text-emerald-400">SVG Filter</span></td><td>Snell-Descartes refraction via feDisplacementMap</td><td>width, height, surface, refractiveIndex, glassThickness</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">frosted</td><td>Backdrop blur + tint + inner shadow</td><td>blur, tintColor, tintOpacity, shadowBlur, borderColor</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">crystal</td><td>SVG feTurbulence + feDisplacementMap</td><td>noiseFrequency, distortion, octaves, seed</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">aurora</td><td>Animated gradient overlay + blur</td><td>colors, animationSpeed, angle, colorOpacity</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">smoke</td><td>Animated turbulence + heavy blur</td><td>density, smokeColor, turbulence, animated</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">prism</td><td>Backdrop filter chain (hue, saturate, contrast)</td><td>hueRotate, saturation, brightness, contrast</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">holographic</td><td>Animated iridescent overlay</td><td>iridescence, animationSpeed, colors</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">thin</td><td>Minimal blur + subtle border</td><td>backgroundOpacity, borderOpacity, tintColor</td></tr>
+              <tr><td className="py-3 text-white font-mono">refraction</td><td>Snell-Descartes refraction via feDisplacementMap</td><td>surface, refractiveIndex, glassThickness</td></tr>
             </tbody>
           </table>
         </div>
-        <p className="text-slate-500 text-sm mt-4">All effects share: <code className="text-slate-300">borderRadius</code>, <code className="text-slate-300">opacity</code></p>
-      </>
-    ),
-  },
-  {
-    id: "component-api",
-    title: "Component API",
-    content: (
-      <>
+        <p className="text-slate-500 text-sm mt-4">All templates share: <code className="text-slate-300">borderRadius</code>, <code className="text-slate-300">opacity</code></p>
+
+        <h3 className="text-lg font-semibold text-white mt-8 mb-3">Named Presets</h3>
         <p className="text-slate-400 mb-4">
-          The <code className="text-blue-300">&lt;Glass&gt;</code> component is the primary way to use solid-glass.
+          Use a named preset directly as the <code className="text-blue-300">template</code> value — no extra props required:
         </p>
-        <CodeBlock code={`<Glass
-  effect="aurora"                           // Effect type
-  options={{ colors: ["#a78bfa", "#6ee7b7"] }} // Effect-specific options
-  radius={20}                                // Shorthand for borderRadius
-  blur={16}                                  // Shorthand for blur
-  as="section"                               // Render as any HTML tag
-  className="my-class"                       // Extra class names
-  style={{ padding: "2rem" }}                // Extra inline styles
->
-  {children}
-</Glass>`} />
-        <p className="text-slate-400 mt-4">
-          The component merges your CSS variables from the effect with any custom <code className="text-slate-300">style</code> you pass.
-          It forwards refs and passes through all standard HTML attributes.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "hook-api",
-    title: "Hook API",
-    content: (
-      <>
-        <p className="text-slate-400 mb-4">
-          For maximum control, use the <code className="text-blue-300">useGlass()</code> hook:
-        </p>
-        <CodeBlock code={`import { useGlass } from "solid-glass";
+        <CodeBlock code={`// Named presets work just like templates
+<Glass template="frostedDark" />
+<Glass template="auroraSunset" />
+<Glass template="holoCard" />
 
-function MyComponent() {
-  const glass = useGlass("crystal", {
-    blur: 10,
-    distortionStrength: 50,
-  });
-
-  return (
-    <div
-      ref={glass.ref}
-      className={glass.className}
-      style={{ ...glass.style, padding: "2rem" }}
-    >
-      Full control over rendering
-    </div>
-  );
-}`} />
-        <p className="text-slate-400 mt-4">
-          The hook returns <code className="text-slate-300">ref</code>, <code className="text-slate-300">className</code>, and <code className="text-slate-300">style</code>.
-          Apply them to any element. SVG filters (for crystal/smoke) are automatically injected and cleaned up.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "presets",
-    title: "Presets",
-    content: (
-      <>
-        <p className="text-slate-400 mb-4">
-          16 built-in presets for quick prototyping:
-        </p>
-        <CodeBlock code={`import { Glass, presets } from "solid-glass";
-
-// Use a preset
-<Glass
-  effect={presets.frostedDark.effect}
-  options={presets.frostedDark.options}
-/>
-
-// Available presets:
+// Available named presets:
 // frostedLight, frostedDark, frostedBlue
 // crystalClear, crystalAmber
 // auroraNorth, auroraSunset
@@ -156,64 +99,83 @@ function MyComponent() {
     ),
   },
   {
-    id: "selective-imports",
-    title: "Selective Imports",
+    id: "component-api",
+    title: "Component API",
     content: (
       <>
         <p className="text-slate-400 mb-4">
-          For smaller bundles, import only what you need:
+          The <code className="text-blue-300">&lt;Glass&gt;</code> component accepts flat props — no nested options object needed.
         </p>
-        <CodeBlock code={`// Full package
-import { Glass, useGlass, frosted, presets } from "solid-glass";
+        <CodeBlock code={`import { Glass } from "solid-glass";
 
-// Just effect generators (no React dependency)
-import { frosted, crystal } from "solid-glass/effects";
-
-// Just presets
-import { presets, presetNames } from "solid-glass/presets";
-
-// CSS (required — import once at app root)
-import "solid-glass/css";
-
-// SVG refraction engine (no framework dependency)
-import { createLiquidGlass } from "solid-glass/engines/svg-refraction";`} />
+<Glass
+  template="aurora"              // Base template or named preset
+  blur={16}                      // Override any template default
+  colors={["#a78bfa", "#6ee7b7"]}
+  borderRadius={20}
+  as="section"                   // Render as any HTML tag
+  className="my-class"           // Extra class names
+  style={{ padding: "2rem" }}    // Extra inline styles
+>
+  {children}
+</Glass>`} />
+        <p className="text-slate-400 mt-4">
+          The component merges CSS variables from the template with any custom <code className="text-slate-300">style</code> you pass.
+          It forwards refs and passes through all standard HTML attributes.
+        </p>
       </>
     ),
   },
   {
-    id: "vue-api",
-    title: "Vue API",
+    id: "animation",
+    title: "Animation Controls",
     content: (
       <>
         <p className="text-slate-400 mb-4">
-          Use the <code className="text-blue-300">&lt;Glass&gt;</code> component or <code className="text-blue-300">useGlass</code> composable in Vue 3:
+          Templates that support animation (aurora, smoke, holographic) accept animation props directly:
         </p>
-        <CodeBlock code={`<template>
-  <Glass effect="frosted" :options="{ blur: 16 }">
-    <p>Frosted glass in Vue</p>
-  </Glass>
-</template>
+        <CodeBlock code={`<Glass
+  template="aurora"
+  animated                    // Enable animation (default: true for animated templates)
+  paused={false}              // Pause / resume
+  bounciness={0.3}            // Spring tension (0-1)
+  animationEasing="bouncy"    // Easing curve
+/>
 
-<script setup>
-import { Glass } from "solid-glass/vue";
-import "solid-glass/css";
-</script>`} />
-        <p className="text-slate-400 mt-4 mb-4">
-          Or use the composable for full control:
+// Pause animation on hover, etc.
+const [paused, setPaused] = useState(false);
+<Glass template="holographic" paused={paused} />`} />
+      </>
+    ),
+  },
+  {
+    id: "hook-api",
+    title: "Hook API",
+    content: (
+      <>
+        <p className="text-slate-400 mb-4">
+          For custom integration, use the <code className="text-blue-300">useGlass()</code> hook:
         </p>
-        <CodeBlock code={`<script setup>
-import { useGlass } from "solid-glass/vue";
+        <CodeBlock code={`import { useGlass } from "solid-glass";
 
-const { glassRef, className, style } = useGlass("crystal", {
-  blur: 10, distortionStrength: 50,
-});
-</script>
+function MyComponent() {
+  const { className, cssVars, svgFilter } = useGlass("crystal", {
+    distortion: 50,
+  });
 
-<template>
-  <div :ref="glassRef" :class="className" :style="style">
-    Content
-  </div>
-</template>`} />
+  return (
+    <>
+      {svgFilter}
+      <div className={className} style={{ ...cssVars, padding: "2rem" }}>
+        Full control over rendering
+      </div>
+    </>
+  );
+}`} />
+        <p className="text-slate-400 mt-4">
+          The hook returns <code className="text-slate-300">className</code>, <code className="text-slate-300">cssVars</code>, and <code className="text-slate-300">svgFilter</code>.
+          SVG filters are provided as a React element to render into the DOM.
+        </p>
       </>
     ),
   },
@@ -226,7 +188,6 @@ const { glassRef, className, style } = useGlass("crystal", {
           No framework? Use <code className="text-blue-300">applyGlass</code> directly on any DOM element:
         </p>
         <CodeBlock code={`import { applyGlass } from "solid-glass/vanilla";
-import "solid-glass/css";
 
 const el = document.querySelector("#my-card");
 const cleanup = applyGlass(el, "frosted", {
@@ -239,42 +200,28 @@ const cleanup = applyGlass(el, "frosted", {
 cleanup();`} />
         <p className="text-slate-400 mt-4">
           Returns a cleanup function that removes all styles and injected SVG filters.
+          CSS is auto-injected — no manual import needed.
         </p>
       </>
     ),
   },
   {
-    id: "svg-refraction-engine",
-    title: "SVG Refraction Engine",
+    id: "vue-api",
+    title: "Vue API",
     content: (
       <>
         <p className="text-slate-400 mb-4">
-          A separate physics-based engine that uses Snell-Descartes law and canvas-generated displacement maps
-          for realistic glass refraction. <strong className="text-white">Chromium-only.</strong>
+          Use the <code className="text-blue-300">&lt;SGlass&gt;</code> component in Vue 3 with the same flat-prop API:
         </p>
-        <CodeBlock code={`import { createLiquidGlass } from "solid-glass/engines/svg-refraction";
+        <CodeBlock code={`<template>
+  <SGlass template="frosted" :blur="14" :tintOpacity="0.1">
+    <p>Frosted glass in Vue</p>
+  </SGlass>
+</template>
 
-const glass = createLiquidGlass({
-  width: 300,
-  height: 200,
-  radius: 20,
-  bezelWidth: 50,
-  glassThickness: 200,
-  blur: 8,
-  refractiveIndex: 1.5,
-  surface: "convexSquircle",  // convexCircle | convexSquircle | concave | lip
-  specularOpacity: 0.6,
-});
-
-// Inject SVG filter into DOM
-document.body.insertAdjacentHTML("beforeend", glass.svgFilter);
-
-// Apply as backdrop-filter
-element.style.backdropFilter = glass.filterRef;`} />
-        <p className="text-slate-400 mt-4 text-sm">
-          Physics approach based on <a href="https://kube.io/blog/liquid-glass-css-svg" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">Chris Feijoo's blog post</a>.
-          Try it in the <a href="#/showcase" className="text-blue-400 hover:text-blue-300 underline">Playground</a>.
-        </p>
+<script setup>
+import { SGlass } from "solid-glass/vue";
+</script>`} />
       </>
     ),
   },
@@ -292,14 +239,13 @@ element.style.backdropFilter = glass.filterRef;`} />
               <tr className="border-b border-slate-700">
                 <th className="text-left py-3 text-slate-300 font-semibold">Component</th>
                 <th className="text-left py-3 text-slate-300 font-semibold">Description</th>
-                <th className="text-left py-3 text-slate-300 font-semibold">Render Tier</th>
               </tr>
             </thead>
             <tbody className="text-slate-400">
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassCard</td><td>Frosted glass card with title/subtitle slots</td><td><span className="text-violet-400">CSS</span></td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassButton</td><td>Interactive glass button with hover states</td><td><span className="text-violet-400">CSS</span></td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">Loupe</td><td>Magnifying glass overlay</td><td><span className="text-emerald-400">SVG Filter</span></td></tr>
-              <tr><td className="py-3 text-white font-mono">RefractionPanel</td><td>Physics-based glass panel wrapper</td><td><span className="text-emerald-400">SVG Filter</span></td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassCard</td><td>Frosted glass card with title/subtitle slots</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassButton</td><td>Interactive glass button with hover states</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">Loupe</td><td>Magnifying glass overlay</td></tr>
+              <tr><td className="py-3 text-white font-mono">RefractionPanel</td><td>Physics-based glass panel wrapper</td></tr>
             </tbody>
           </table>
         </div>
@@ -330,8 +276,8 @@ element.style.backdropFilter = glass.filterRef;`} />
           </table>
         </div>
         <p className="text-slate-400 mt-4 text-sm">
-          All effects use progressive enhancement — if backdrop-filter isn't supported,
-          the tint/border still renders gracefully.
+          SVG filter templates automatically fall back to CSS-only rendering on unsupported browsers.
+          All effects use progressive enhancement — tint and border still render gracefully.
         </p>
       </>
     ),
