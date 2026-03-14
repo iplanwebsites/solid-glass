@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Glass } from "solid-glass";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
-import { Sparkles, Gem, Box } from "lucide-react";
+import { Sparkles, Gem, Box, Menu, Search, Bell, X, Info, CheckCircle, AlertTriangle, User, Lock, Mail } from "lucide-react";
 import { CodeBlock } from "../components/CodeBlock";
 
 /* ─── Render Tier Badge ─── */
