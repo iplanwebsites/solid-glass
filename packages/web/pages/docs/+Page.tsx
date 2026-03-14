@@ -270,7 +270,7 @@ document.body.insertAdjacentHTML("beforeend", glass.svgFilter);
 element.style.backdropFilter = glass.filterRef;`} />
         <p className="text-slate-400 mt-4 text-sm">
           Physics approach based on <a href="https://kube.io/blog/liquid-glass-css-svg" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">Chris Feijoo's blog post</a>.
-          Try it in the <a href="/showcase" className="text-blue-400 hover:text-blue-300 underline">Playground</a>.
+          Try it in the <a href="/playground" className="text-blue-400 hover:text-blue-300 underline">Playground</a>.
         </p>
       </>
     ),

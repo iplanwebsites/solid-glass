@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Github, BookOpen, Layers, Box, Play, Gem, FlaskConical, Menu, X } from "lucide-react";
+import { Github, BookOpen, Layers, Box, Play, Gem, FlaskConical, Menu, X, FlaskRound } from "lucide-react";
 import "solid-glass/css";
 import "@/styles/globals.css";
 
@@ -20,9 +20,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const navItems = (
     <>
       {navLink("/gallery", "Gallery", Layers)}
-      {navLink("/showcase", "Playground", Play)}
+      {navLink("/playground", "Playground", Play)}
       {navLink("/docs", "Docs", BookOpen)}
       {navLink("/components", "Components", Box)}
+      {navLink("/kitchen", "Kitchen", FlaskConical)}
     </>
   );
 

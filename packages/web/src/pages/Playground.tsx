@@ -137,7 +137,7 @@ type Template = {
 
 const TEMPLATES: Template[] = [
   { name: "Frosted Light", template: "frosted", overrides: { blur: 12, tintColor: "#ffffff", tintOpacity: 0.1 }, description: "Classic light frosted glass." },
-  { name: "Frosted Dark", template: "frosted", overrides: { blur: 14, tintColor: "#000000", tintOpacity: 0.2, shadowColor: "rgba(0,0,0,0.3)" }, description: "Dark mode frosted variant." },
+  { name: "Frosted Dark", template: "frosted", overrides: { blur: 14, tintColor: "#000000", tintOpacity: 0.2, shadowColor: "rgba(0,0,0,0.3)" }, description: "Dark-tinted frosted variant." },
   { name: "Crystal Clear", template: "crystal", overrides: { blur: 6, noiseFrequency: 0.006, distortion: 40 }, description: "Subtle refraction." },
   { name: "Crystal Cyan", template: "crystal", overrides: { blur: 7, borderRadius: 4, tintOpacity: 0.23, noiseFrequency: 0.032, distortion: 40, tintColor: "#0ad9f5" }, description: "Vivid cyan refraction." },
   { name: "Aurora North", template: "aurora", overrides: { colors: ["#a78bfa", "#818cf8", "#6ee7b7"] }, description: "Northern Lights gradient." },
@@ -647,9 +647,9 @@ function TweakView({
 }
 
 /* ═══════════════════════════════════════════════ */
-/*  Main Showcase — state machine                   */
+/*  Main Playground — state machine                  */
 /* ═══════════════════════════════════════════════ */
-export function Showcase() {
+export function Playground() {
   const [activeTemplate, setActiveTemplate] = useState<number | null>(null);
 
   return (

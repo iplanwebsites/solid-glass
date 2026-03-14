@@ -58,7 +58,7 @@ export default function Page() {
     <div>
       {/* Glass Hero with animated bubbles */}
       <GlassHero
-        tagline="Customize your style, choose between 2 different engines for the best support"
+        tagline="Beautiful glass effects for your UI. One component, every framework."
       />
 
       {/* Effect showcase grid */}

@@ -525,7 +525,7 @@ function HeroSection() {
                 Explore Gallery <ArrowRight size={18} />
               </a>
               <a
-                href="/showcase"
+                href="/playground"
                 className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition-colors"
               >
                 Open Playground
