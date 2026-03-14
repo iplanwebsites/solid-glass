@@ -33,7 +33,8 @@ export const effects: Record<GlassEffectName, GlassStyleGenerator<GlassBaseOptio
  * Rendering tier used by each effect.
  *
  * - `"css"` — Pure CSS (backdrop-filter, box-shadow, gradients)
- * - `"svg-filter"` — SVG filter primitives (feTurbulence, feDisplacementMap, etc.)
+ * - `"svg-filter"` — SVG filter via CSS `filter:` property (broadly supported)
+ * - `"svg-backdrop"` — SVG filter via CSS `backdrop-filter: url()` (Chromium 113+)
  * - `"webgl"` — GPU shaders (reserved for future use)
  */
 export const effectRenderTiers: Record<GlassEffectName, RenderTier> = {
@@ -44,7 +45,7 @@ export const effectRenderTiers: Record<GlassEffectName, RenderTier> = {
   prism: "css",
   holographic: "css",
   thin: "css",
-  refraction: "svg-filter",
+  refraction: "svg-backdrop",
 };
 
 /** Get a style generator by effect name */

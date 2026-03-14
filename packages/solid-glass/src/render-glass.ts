@@ -23,9 +23,9 @@ export function renderGlass(
   // Check if browser supports the required render tier
   let effectiveBase = base;
   const requiredTier = templateRenderTiers[base];
-  if (requiredTier === "svg-filter" && typeof document !== "undefined") {
+  if (requiredTier === "svg-backdrop" && typeof document !== "undefined") {
     const supported = detectRenderTier();
-    if (supported === "css" && templateFallbacks[base]) {
+    if (supported !== "svg-backdrop" && supported !== "webgl" && templateFallbacks[base]) {
       effectiveBase = templateFallbacks[base]!;
       // Re-resolve with fallback template but keep user overrides
       const fallbackOpts = resolveTemplate(effectiveBase).options;
@@ -38,7 +38,7 @@ export function renderGlass(
 
       if (typeof console !== "undefined") {
         console.warn(
-          `[solid-glass] "${base}" requires SVG filters (Chromium 113+). ` +
+          `[solid-glass] "${base}" uses backdrop-filter: url() which requires Chromium 113+. ` +
           `Falling back to "${effectiveBase}". Pass fallback="${effectiveBase}" to silence this.`
         );
       }
@@ -210,7 +210,7 @@ function renderRefraction(o: GlassOptions): GlassRenderResult {
   if (!w || !h) {
     return {
       className: classNames("sg-refraction sg-refraction--needs-measure", o),
-      renderTier: "svg-filter",
+      renderTier: "svg-backdrop",
       cssVars: {
         ...commonVars(o),
       },
@@ -236,7 +236,7 @@ function renderRefraction(o: GlassOptions): GlassRenderResult {
 
   return {
     className: classNames("sg-refraction", o),
-    renderTier: "svg-filter",
+    renderTier: "svg-backdrop",
     cssVars: {
       "--sg-refraction-filter": result.filterRef,
       ...commonVars(o),

@@ -60,6 +60,6 @@ export const refraction: GlassStyleGenerator<RefractionGlassEffectOptions> = (op
       width: `${o.width}px`,
       height: `${o.height}px`,
     },
-    renderTier: "svg-filter",
+    renderTier: "svg-backdrop",
   };
 };
