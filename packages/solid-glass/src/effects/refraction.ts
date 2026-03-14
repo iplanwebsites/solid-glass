@@ -1,4 +1,4 @@
-import type { LiquidGlassEffectOptions, GlassStyleGenerator } from "../types";
+import type { RefractionGlassEffectOptions, GlassStyleGenerator } from "../types";
 import { createLiquidGlass } from "../engines/svg-refraction";
 
 const DEFAULTS = {
@@ -15,7 +15,7 @@ const DEFAULTS = {
 };
 
 /**
- * Liquid glass effect — physics-based Snell-Descartes refraction via SVG filters.
+ * Refraction glass effect — physics-based Snell-Descartes refraction via SVG filters.
  *
  * Uses `backdrop-filter: url(#...)` to refract the actual backdrop content
  * through a computed displacement map. Chromium 113+ for full backdrop support;
@@ -24,10 +24,10 @@ const DEFAULTS = {
  * Requires `width` and `height` in options to generate correctly-sized
  * displacement and specular maps.
  */
-export const liquid: GlassStyleGenerator<LiquidGlassEffectOptions> = (opts) => {
+export const refraction: GlassStyleGenerator<RefractionGlassEffectOptions> = (opts) => {
   if (!opts || !opts.width || !opts.height) {
     throw new Error(
-      '[solid-glass] The "liquid" effect requires width and height options ' +
+      '[solid-glass] The "refraction" effect requires width and height options ' +
         "for displacement map generation."
     );
   }
@@ -49,11 +49,11 @@ export const liquid: GlassStyleGenerator<LiquidGlassEffectOptions> = (opts) => {
   });
 
   return {
-    className: "sg-liquid",
+    className: "sg-refraction",
     cssVars: {
       "--sg-radius": `${o.borderRadius}px`,
       "--sg-opacity": o.opacity,
-      "--sg-liquid-filter": result.filterRef,
+      "--sg-refraction-filter": result.filterRef,
     },
     svgFilter: result.svgFilter,
     inlineStyle: {

@@ -40,10 +40,10 @@ const cleanup = applyGlass(el, "${effect}", ${JSON.stringify(options, null, 2)})
 // Later: cleanup();`;
 }
 
-function generateLiquidSnippet(liquidOpts: Record<string, unknown>) {
+function generateRefractionSnippet(refractionOpts: Record<string, unknown>) {
   return `import { createLiquidGlass } from "solid-glass/engines/svg-refraction";
 
-const glass = createLiquidGlass(${JSON.stringify(liquidOpts, null, 2)});
+const glass = createLiquidGlass(${JSON.stringify(refractionOpts, null, 2)});
 
 // Inject SVG filter into DOM
 document.body.insertAdjacentHTML("beforeend", glass.svgFilter);
@@ -142,13 +142,13 @@ const TEMPLATES: Template[] = [
   { name: "Prism Rainbow", effect: "prism", options: { blur: 8, saturation: 1.4, brightness: 1.1 }, description: "Spectral splitting." },
   { name: "Holo Card", effect: "holographic", options: { blur: 8, iridescence: 0.5, animationSpeed: 4 }, description: "Iridescent shimmer." },
   { name: "Thin Light", effect: "thin", options: { blur: 4, backgroundOpacity: 0.03 }, description: "Barely-there glass." },
-  // Liquid templates
-  { name: "Convex Lens", effect: "liquid", surface: "convexCircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Classic magnifying glass." },
-  { name: "Squircle Panel", effect: "liquid", surface: "convexSquircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Rounded square glass." },
-  { name: "Concave Dish", effect: "liquid", surface: "concave", options: { bezelWidth: 40, glassThickness: 180, blur: 6, refractiveIndex: 1.4, specularOpacity: 0.5 }, description: "Inward-curving surface." },
-  { name: "Sharp Refract", effect: "liquid", surface: "convexSquircle", options: { bezelWidth: 30, glassThickness: 400, blur: 4, refractiveIndex: 2.0, specularOpacity: 0.8 }, description: "Dramatic light bending." },
-  { name: "Soft Blur", effect: "liquid", surface: "convexSquircle", options: { bezelWidth: 60, glassThickness: 150, blur: 14, refractiveIndex: 1.3, specularOpacity: 0.4 }, description: "Heavy blur, gentle refraction." },
-  { name: "Lip Edge", effect: "liquid", surface: "lip", options: { bezelWidth: 50, glassThickness: 200, blur: 6, refractiveIndex: 1.5, specularOpacity: 0.5 }, description: "Raised lip edge." },
+  // Refraction templates
+  { name: "Convex Lens", effect: "refraction", surface: "convexCircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Classic magnifying glass." },
+  { name: "Squircle Panel", effect: "refraction", surface: "convexSquircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Rounded square glass." },
+  { name: "Concave Dish", effect: "refraction", surface: "concave", options: { bezelWidth: 40, glassThickness: 180, blur: 6, refractiveIndex: 1.4, specularOpacity: 0.5 }, description: "Inward-curving surface." },
+  { name: "Sharp Refract", effect: "refraction", surface: "convexSquircle", options: { bezelWidth: 30, glassThickness: 400, blur: 4, refractiveIndex: 2.0, specularOpacity: 0.8 }, description: "Dramatic light bending." },
+  { name: "Soft Blur", effect: "refraction", surface: "convexSquircle", options: { bezelWidth: 60, glassThickness: 150, blur: 14, refractiveIndex: 1.3, specularOpacity: 0.4 }, description: "Heavy blur, gentle refraction." },
+  { name: "Lip Edge", effect: "refraction", surface: "lip", options: { bezelWidth: 50, glassThickness: 200, blur: 6, refractiveIndex: 1.5, specularOpacity: 0.5 }, description: "Raised lip edge." },
 ];
 
 /* ─── Sliders ─── */
@@ -167,14 +167,14 @@ const SLIDERS: SliderConfig[] = [
   { key: "saturation", label: "Saturation", min: 0.5, max: 2, step: 0.1, defaultValue: 1.2, effects: ["prism"] },
   { key: "iridescence", label: "Iridescence", min: 0, max: 1, step: 0.05, defaultValue: 0.4, effects: ["holographic"] },
   { key: "backgroundOpacity", label: "BG Opacity", min: 0, max: 0.2, step: 0.005, defaultValue: 0.02, effects: ["thin"] },
-  // Liquid-specific
-  { key: "bezelWidth", label: "Bezel Width", min: 10, max: 100, step: 1, defaultValue: 50, effects: ["liquid"] },
-  { key: "glassThickness", label: "Glass Thickness", min: 20, max: 500, step: 10, defaultValue: 200, effects: ["liquid"] },
-  { key: "blur", label: "Blur", min: 0, max: 20, step: 1, defaultValue: 8, effects: ["liquid"] },
-  { key: "refractiveIndex", label: "Refractive Index", min: 1.0, max: 2.5, step: 0.05, defaultValue: 1.5, effects: ["liquid"] },
-  { key: "specularOpacity", label: "Specular", min: 0, max: 1, step: 0.05, defaultValue: 0.6, effects: ["liquid"] },
-  { key: "liquidSaturation", label: "Saturation", min: 0.5, max: 3, step: 0.1, defaultValue: 1.2, effects: ["liquid"] },
-  { key: "radius", label: "Corner Radius", min: 4, max: 60, step: 1, defaultValue: 20, effects: ["liquid"] },
+  // Refraction-specific
+  { key: "bezelWidth", label: "Bezel Width", min: 10, max: 100, step: 1, defaultValue: 50, effects: ["refraction"] },
+  { key: "glassThickness", label: "Glass Thickness", min: 20, max: 500, step: 10, defaultValue: 200, effects: ["refraction"] },
+  { key: "blur", label: "Blur", min: 0, max: 20, step: 1, defaultValue: 8, effects: ["refraction"] },
+  { key: "refractiveIndex", label: "Refractive Index", min: 1.0, max: 2.5, step: 0.05, defaultValue: 1.5, effects: ["refraction"] },
+  { key: "specularOpacity", label: "Specular", min: 0, max: 1, step: 0.05, defaultValue: 0.6, effects: ["refraction"] },
+  { key: "refractionSaturation", label: "Saturation", min: 0.5, max: 3, step: 0.1, defaultValue: 1.2, effects: ["refraction"] },
+  { key: "radius", label: "Corner Radius", min: 4, max: 60, step: 1, defaultValue: 20, effects: ["refraction"] },
 ];
 
 const SURFACE_TYPES: { key: SurfaceType; label: string }[] = [
@@ -239,13 +239,13 @@ function BrowseView({ onSelect }: { onSelect: (index: number) => void }) {
             >
               {/* Mini preview */}
               <div className="relative h-32 bg-gradient-to-br from-blue-600 via-violet-600 to-fuchsia-600 flex items-center justify-center overflow-hidden">
-                {t.effect !== "liquid" ? (
+                {t.effect !== "refraction" ? (
                   <Glass effect={t.effect} options={t.options as never} className="w-[160px] h-[80px] flex items-center justify-center">
                     <span className="text-white/60 text-xs">Preview</span>
                   </Glass>
                 ) : (
                   <div className="w-[160px] h-[80px] rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                    <span className="text-white/60 text-xs">SVG Refraction</span>
+                    <span className="text-white/60 text-xs">Refraction</span>
                   </div>
                 )}
               </div>
@@ -267,9 +267,9 @@ function BrowseView({ onSelect }: { onSelect: (index: number) => void }) {
 }
 
 /* ═══════════════════════════════════════════════ */
-/*  Liquid Glass Preview (tweak mode)               */
+/*  Refraction Preview (tweak mode)                  */
 /* ═══════════════════════════════════════════════ */
-function LiquidPreview({
+function RefractionPreview({
   surface,
   values,
   getValue,
@@ -303,7 +303,7 @@ function LiquidPreview({
       refractiveIndex: getValue("refractiveIndex", 1.5),
       surface,
       specularOpacity: getValue("specularOpacity", 0.6),
-      saturation: getValue("liquidSaturation", 1.2),
+      saturation: getValue("refractionSaturation", 1.2),
       dpr: 1,
     });
   }, [surface, values]);
@@ -349,7 +349,7 @@ function LiquidPreview({
         }}
       >
         <div className="text-center px-4 relative z-10">
-          <p className="text-white/90 text-sm font-medium">Liquid Glass</p>
+          <p className="text-white/90 text-sm font-medium">Refraction Glass</p>
           <p className="text-white/50 text-xs mt-1">{SURFACE_EQUATIONS[surface].name}</p>
         </div>
       </div>
@@ -390,7 +390,7 @@ function TweakView({
   const previewRef = useRef<HTMLDivElement>(null);
 
   const effect = template.effect;
-  const isLiquid = effect === "liquid";
+  const isRefraction = effect === "refraction";
   const tier = effectRenderTiers[effect];
 
   // All templates for the same effect (for the dropdown)
@@ -428,16 +428,16 @@ function TweakView({
     const o: Record<string, unknown> = {};
     activeSliders.forEach((s) => { o[s.key] = getValue(s.key, s.defaultValue); });
     if (["frosted", "crystal"].includes(effect)) o.tintColor = tintColor;
-    if (isLiquid && o.liquidSaturation !== undefined) {
-      o.saturation = o.liquidSaturation;
-      delete o.liquidSaturation;
+    if (isRefraction && o.refractionSaturation !== undefined) {
+      o.saturation = o.refractionSaturation;
+      delete o.refractionSaturation;
     }
     return o;
-  }, [effect, values, tintColor, activeSliders, isLiquid]);
+  }, [effect, values, tintColor, activeSliders, isRefraction]);
 
   const codeSnippet = useMemo(() => {
-    if (isLiquid) {
-      return generateLiquidSnippet({
+    if (isRefraction) {
+      return generateRefractionSnippet({
         width: 280, height: 200,
         radius: getValue("radius", 20),
         bezelWidth: getValue("bezelWidth", 50),
@@ -449,7 +449,7 @@ function TweakView({
       });
     }
     return getSnippet(framework, effect, options);
-  }, [framework, effect, options, isLiquid, surface, values]);
+  }, [framework, effect, options, isRefraction, surface, values]);
 
   const resetToTemplate = () => {
     const nv: Record<string, number> = {};
@@ -509,7 +509,7 @@ function TweakView({
       </div>
 
       {/* Chromium notice */}
-      {isLiquid && (
+      {isRefraction && (
         <div className="text-center mb-4">
           <span className="inline-flex items-center gap-2 text-xs text-yellow-400/80 bg-yellow-400/5 border border-yellow-400/20 rounded-full px-3 py-1">
             Chromium only — backdrop-filter with SVG filters requires Chrome or Edge
@@ -534,8 +534,8 @@ function TweakView({
           </div>
 
           {/* Preview */}
-          {isLiquid ? (
-            <LiquidPreview
+          {isRefraction ? (
+            <RefractionPreview
               surface={surface}
               values={values}
               getValue={getValue}
@@ -572,20 +572,20 @@ function TweakView({
           {/* Code */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              {isLiquid ? (
+              {isRefraction ? (
                 <span className="text-xs text-slate-500">createLiquidGlass API</span>
               ) : (
                 <FrameworkTabs active={framework} onChange={setFramework} />
               )}
             </div>
-            <CodeBlock code={codeSnippet} lang={isLiquid ? "ts" : framework === "vue" ? "vue" : "tsx"} />
+            <CodeBlock code={codeSnippet} lang={isRefraction ? "ts" : framework === "vue" ? "vue" : "tsx"} />
           </div>
         </div>
 
         {/* Sidebar: sliders */}
         <div className="space-y-4">
           {/* Surface picker (liquid only) */}
-          {isLiquid && (
+          {isRefraction && (
             <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
               <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Surface</h4>
               <div className="grid grid-cols-2 gap-1.5">
@@ -607,7 +607,7 @@ function TweakView({
               </button>
             </div>
             <div className="space-y-3">
-              {!isLiquid && ["frosted", "crystal"].includes(effect) && (
+              {!isRefraction && ["frosted", "crystal"].includes(effect) && (
                 <label className="flex items-center justify-between">
                   <span className="text-xs text-slate-400">Tint Color</span>
                   <input type="color" value={tintColor} onChange={(e) => setTintColor(e.target.value)} className="w-7 h-7 rounded cursor-pointer bg-transparent border-0" />
@@ -627,7 +627,7 @@ function TweakView({
 
           {/* Render tier footnote */}
           <p className="text-[11px] text-slate-600 leading-relaxed px-1">
-            {isLiquid ? (
+            {isRefraction ? (
               <>Snell-Descartes displacement map via <code className="text-blue-400/60">feDisplacementMap</code>.</>
             ) : tier === "webgl" ? (
               <>WebGL — GPU-accelerated rendering with custom shaders.</>

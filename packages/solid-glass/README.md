@@ -9,7 +9,7 @@ A lightweight, customizable glass effect library for modern web applications. Cr
 - **Fully Customizable**: Control every aspect of the glass effect
 - **Lightweight**: Minimal dependencies, ~4KB gzipped core
 - **Framework Agnostic**: Works with vanilla JS, React, and Vue
-- **Two Rendering Tiers**: CSS & SVG filter effects + physics-based SVG refraction
+- **Three Rendering Tiers**: CSS, SVG filters, and WebGL (future)
 - **TypeScript**: Full type definitions included
 
 ## Installation

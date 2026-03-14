@@ -6,7 +6,7 @@ import { smoke } from "../effects/smoke";
 import { prism } from "../effects/prism";
 import { holographic } from "../effects/holographic";
 import { thin } from "../effects/thin";
-import { liquid } from "../effects/liquid";
+import { refraction } from "../effects/refraction";
 import { effects, getEffect, effectRenderTiers } from "../effects";
 
 describe("frosted effect", () => {
@@ -192,20 +192,20 @@ describe("thin effect", () => {
   });
 });
 
-describe("liquid effect", () => {
+describe("refraction effect", () => {
   it("throws without width and height", () => {
-    expect(() => liquid()).toThrow("requires width and height");
-    expect(() => liquid({} as any)).toThrow("requires width and height");
+    expect(() => refraction()).toThrow("requires width and height");
+    expect(() => refraction({} as any)).toThrow("requires width and height");
   });
 
   it("returns correct className", () => {
     // Note: createLiquidGlass uses canvas internally, which throws in jsdom.
     // We verify the error message to confirm the effect is wired up correctly.
-    expect(typeof liquid).toBe("function");
+    expect(typeof refraction).toBe("function");
   });
 
   it("reports svg-filter renderTier", () => {
-    expect(effectRenderTiers.liquid).toBe("svg-filter");
+    expect(effectRenderTiers.refraction).toBe("svg-filter");
   });
 });
 
@@ -236,15 +236,15 @@ describe("effects registry", () => {
     const names = Object.keys(effects);
     expect(names).toHaveLength(8);
     expect(names).toEqual(
-      expect.arrayContaining(["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin", "liquid"])
+      expect.arrayContaining(["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin", "refraction"])
     );
   });
 
   it("all effects are callable functions", () => {
     for (const [name, effect] of Object.entries(effects)) {
       expect(typeof effect).toBe("function");
-      // Skip liquid — it requires width/height and uses canvas
-      if (name === "liquid") continue;
+      // Skip refraction — it requires width/height and uses canvas
+      if (name === "refraction") continue;
       const result = effect({});
       expect(result).toHaveProperty("className");
       expect(result).toHaveProperty("cssVars");

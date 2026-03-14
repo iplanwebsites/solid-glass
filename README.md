@@ -1,6 +1,6 @@
 # Solid Glass
 
-Glass effects for the web. 7 CSS & SVG filter effects plus a physics-based SVG refraction engine.
+Glass effects for the web. 8 effects across CSS, SVG filters, and physics-based refraction.
 
 **[Live Demo & Docs](https://solidglass.dev)** | [npm](https://www.npmjs.com/package/solid-glass)
 
@@ -30,7 +30,7 @@ import "solid-glass/css";
 - **prism** — Spectral color splitting *(CSS)*
 - **holographic** — Iridescent shimmer *(CSS)*
 - **thin** — Minimal, barely-there glass *(CSS)*
-- **liquid** — Physics-based Snell-Descartes refraction *(SVG filter)*
+- **refraction** — Physics-based Snell-Descartes refraction *(SVG filter)*
 
 ## SVG Refraction Engine
 

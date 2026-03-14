@@ -6,7 +6,7 @@ import type {
   PrismGlassOptions,
   HolographicGlassOptions,
   ThinGlassOptions,
-  LiquidGlassEffectOptions,
+  RefractionGlassEffectOptions,
 } from "./types";
 import type { LiquidGlassOptions } from "./engines/svg-refraction";
 
@@ -86,14 +86,14 @@ export const presets = {
     options: { blur: 4, dark: true, backgroundOpacity: 0.05, borderRadius: 12 } satisfies ThinGlassOptions,
   },
 
-  // --- Liquid variants (physics-based SVG refraction) ---
-  liquidPanel: {
-    effect: "liquid" as const,
-    options: { width: 300, height: 200, blur: 2, surface: "convexSquircle", bezelWidth: 22, glassThickness: 130, refractiveIndex: 2.05, specularOpacity: 0.7, borderRadius: 54 } satisfies LiquidGlassEffectOptions,
+  // --- Refraction variants (physics-based SVG refraction) ---
+  refractionPanel: {
+    effect: "refraction" as const,
+    options: { width: 300, height: 200, blur: 2, surface: "convexSquircle", bezelWidth: 22, glassThickness: 130, refractiveIndex: 2.05, specularOpacity: 0.7, borderRadius: 54 } satisfies RefractionGlassEffectOptions,
   },
-  liquidLoupe: {
-    effect: "liquid" as const,
-    options: { width: 200, height: 200, blur: 0, surface: "convexCircle", bezelWidth: 20, glassThickness: 200, refractiveIndex: 1.5, specularOpacity: 0.7, borderRadius: 100 } satisfies LiquidGlassEffectOptions,
+  refractionLoupe: {
+    effect: "refraction" as const,
+    options: { width: 200, height: 200, blur: 0, surface: "convexCircle", bezelWidth: 20, glassThickness: 200, refractiveIndex: 1.5, specularOpacity: 0.7, borderRadius: 100 } satisfies RefractionGlassEffectOptions,
   },
 } as const;
 
@@ -104,7 +104,7 @@ export const presetNames = Object.keys(presets) as PresetName[];
  * Liquid glass presets for the SVG refraction engine.
  * These define dimension-independent settings; width/height should be set per-use.
  */
-export const liquidGlassPresets = {
+export const refractionPresets = {
   /** Default panel style — balanced refraction with soft blur */
   panel: {
     radius: 54,
@@ -157,5 +157,5 @@ export const liquidGlassPresets = {
   },
 } as const satisfies Record<string, Omit<LiquidGlassOptions, "width" | "height">>;
 
-export type LiquidGlassPresetName = keyof typeof liquidGlassPresets;
-export const liquidGlassPresetNames = Object.keys(liquidGlassPresets) as LiquidGlassPresetName[];
+export type RefractionPresetName = keyof typeof refractionPresets;
+export const refractionPresetNames = Object.keys(refractionPresets) as RefractionPresetName[];

@@ -9,7 +9,7 @@ function TierBadge({ tier }: { tier: string }) {
   if (tier === "svg-filter") {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">
-        <Gem size={10} /> SVG Refraction
+        <Gem size={10} /> SVG Filter
       </span>
     );
   }
@@ -22,7 +22,7 @@ function TierBadge({ tier }: { tier: string }) {
   }
   return (
     <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-full px-2 py-0.5">
-      <Sparkles size={10} /> CSS + SVG Filters
+      <Sparkles size={10} /> CSS
     </span>
   );
 }
@@ -213,8 +213,8 @@ function LoupeDemo() {
   );
 }
 
-/* ─── LiquidGlassPanel Demo ─── */
-function LiquidGlassPanelDemo() {
+/* ─── RefractionPanel Demo ─── */
+function RefractionPanelDemo() {
   const svgRef = useRef<Element | null>(null);
   const [surface, setSurface] = useState<SurfaceType>("convexSquircle");
 
@@ -252,7 +252,7 @@ function LiquidGlassPanelDemo() {
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-3 mb-2">
-          <h3 className="text-xl font-bold text-white">LiquidGlassPanel</h3>
+          <h3 className="text-xl font-bold text-white">RefractionPanel</h3>
           <TierBadge tier="svg-filter" />
         </div>
         <p className="text-slate-400 text-sm">
@@ -300,16 +300,16 @@ function LiquidGlassPanelDemo() {
         </div>
       </div>
 
-      <CodeBlock code={`import { LiquidGlassPanel } from "solid-glass/components/react";
+      <CodeBlock code={`import { RefractionPanel } from "solid-glass/components/react";
 
-<LiquidGlassPanel
+<RefractionPanel
   width={320}
   height={200}
   bezelWidth={40}
   surface="${surface}"
 >
   <h2>Physics-based glass</h2>
-</LiquidGlassPanel>`} />
+</RefractionPanel>`} />
     </div>
   );
 }
@@ -319,7 +319,7 @@ const COMPONENTS = [
   { id: "glass-card", label: "GlassCard", tier: "css" as const, Component: GlassCardDemo },
   { id: "glass-button", label: "GlassButton", tier: "css" as const, Component: GlassButtonDemo },
   { id: "loupe", label: "Loupe", tier: "svg-filter" as const, Component: LoupeDemo },
-  { id: "liquid-glass-panel", label: "LiquidGlassPanel", tier: "svg-filter" as const, Component: LiquidGlassPanelDemo },
+  { id: "liquid-glass-panel", label: "RefractionPanel", tier: "svg-filter" as const, Component: RefractionPanelDemo },
 ];
 
 export function Components() {

@@ -136,8 +136,8 @@ export interface ThinGlassOptions extends GlassBaseOptions {
   dark?: boolean;
 }
 
-/** Configuration for the liquid glass effect (physics-based SVG refraction) */
-export interface LiquidGlassEffectOptions extends GlassBaseOptions {
+/** Configuration for the refraction glass effect (physics-based SVG refraction) */
+export interface RefractionGlassEffectOptions extends GlassBaseOptions {
   /** Width of the glass element in px (required for displacement map generation) */
   width: number;
   /** Height of the glass element in px (required for displacement map generation) */
@@ -169,7 +169,7 @@ export type GlassEffectMap = {
   prism: PrismGlassOptions;
   holographic: HolographicGlassOptions;
   thin: ThinGlassOptions;
-  liquid: LiquidGlassEffectOptions;
+  refraction: RefractionGlassEffectOptions;
 };
 
 export type GlassEffectName = keyof GlassEffectMap;

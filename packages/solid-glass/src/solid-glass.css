@@ -147,8 +147,8 @@
   backdrop-filter: blur(var(--sg-blur, 4px));
 }
 
-/* --- Liquid Glass (physics-based SVG refraction) --- */
-.sg-liquid::before {
+/* --- Refraction Glass (physics-based SVG refraction) --- */
+.sg-refraction::before {
   z-index: 1;
   box-shadow:
     rgba(0, 0, 0, 0.16) 0px 4px 9px,
@@ -157,10 +157,10 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.sg-liquid::after {
+.sg-refraction::after {
   z-index: -1;
-  -webkit-backdrop-filter: var(--sg-liquid-filter);
-  backdrop-filter: var(--sg-liquid-filter);
+  -webkit-backdrop-filter: var(--sg-refraction-filter);
+  backdrop-filter: var(--sg-refraction-filter);
 }
 
 /* --- Content layer sits above effects --- */

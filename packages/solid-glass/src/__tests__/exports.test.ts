@@ -20,7 +20,7 @@ describe("main entry (solid-glass)", () => {
 
   it("exports all 8 effect generators", async () => {
     const mod = await import("../index");
-    const effects = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin", "liquid"];
+    const effects = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin", "refraction"];
     for (const effect of effects) {
       expect(mod[effect as keyof typeof mod]).toBeDefined();
       expect(typeof mod[effect as keyof typeof mod]).toBe("function");
@@ -59,9 +59,9 @@ describe("main entry (solid-glass)", () => {
 });
 
 describe("solid-glass/effects", () => {
-  it("exports all effect generators including liquid", async () => {
+  it("exports all effect generators including refraction", async () => {
     const mod = await import("../effects");
-    const effects = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin", "liquid"];
+    const effects = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin", "refraction"];
     for (const effect of effects) {
       expect(mod[effect as keyof typeof mod]).toBeDefined();
       expect(typeof mod[effect as keyof typeof mod]).toBe("function");

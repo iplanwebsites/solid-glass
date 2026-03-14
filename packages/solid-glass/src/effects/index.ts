@@ -5,7 +5,7 @@ export { smoke } from "./smoke";
 export { prism } from "./prism";
 export { holographic } from "./holographic";
 export { thin } from "./thin";
-export { liquid } from "./liquid";
+export { refraction } from "./refraction";
 
 import { frosted } from "./frosted";
 import { crystal } from "./crystal";
@@ -14,7 +14,7 @@ import { smoke } from "./smoke";
 import { prism } from "./prism";
 import { holographic } from "./holographic";
 import { thin } from "./thin";
-import { liquid } from "./liquid";
+import { refraction } from "./refraction";
 import type { GlassEffectName, GlassStyleGenerator, GlassBaseOptions, RenderTier } from "../types";
 
 /** Registry of all built-in effects */
@@ -26,7 +26,7 @@ export const effects: Record<GlassEffectName, GlassStyleGenerator<GlassBaseOptio
   prism: prism as GlassStyleGenerator<GlassBaseOptions>,
   holographic: holographic as GlassStyleGenerator<GlassBaseOptions>,
   thin: thin as GlassStyleGenerator<GlassBaseOptions>,
-  liquid: liquid as GlassStyleGenerator<GlassBaseOptions>,
+  refraction: refraction as GlassStyleGenerator<GlassBaseOptions>,
 };
 
 /**
@@ -44,7 +44,7 @@ export const effectRenderTiers: Record<GlassEffectName, RenderTier> = {
   prism: "css",
   holographic: "css",
   thin: "css",
-  liquid: "svg-filter",
+  refraction: "svg-filter",
 };
 
 /** Get a style generator by effect name */

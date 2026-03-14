@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo, useEffect } from "react";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
-import { liquidGlassPresets } from "solid-glass";
+import { refractionPresets } from "solid-glass";
 import { EffectGrid } from "../components/EffectGrid";
 
 const LOUPE_IMAGE = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80";
@@ -15,7 +15,7 @@ function LoupeDemoCard() {
   const glass = useMemo(
     () =>
       createLiquidGlass({
-        ...liquidGlassPresets.loupe,
+        ...refractionPresets.loupe,
         width: loupeSize,
         height: loupeSize,
         radius: loupeSize / 2,
@@ -45,15 +45,11 @@ function LoupeDemoCard() {
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <div className="flex items-center gap-3 mb-1">
-          <h3 className="text-lg font-semibold text-white">Loupe</h3>
-          <span className="text-[10px] font-medium bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-full px-2 py-0.5">
-            Chrome only
-          </span>
-        </div>
-        <p className="text-sm text-slate-400">Magnifying glass with real refraction. Move your mouse over the image.</p>
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-white">Loupe</h3>
+        <span className="text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">SVG Filter</span>
+        <span className="text-[10px] text-yellow-400/70">Chromium</span>
       </div>
       <div
         ref={containerRef}
@@ -91,7 +87,7 @@ function RefractionDemoCard() {
   const glass = useMemo(
     () =>
       createLiquidGlass({
-        ...liquidGlassPresets.panel,
+        ...refractionPresets.panel,
         width: GALLERY_PANEL_WIDTH,
         height: GALLERY_PANEL_HEIGHT,
         surface,
@@ -112,22 +108,18 @@ function RefractionDemoCard() {
   }, [glass.svgFilter]);
 
   return (
-    <div className="space-y-4">
-      <div>
-        <div className="flex items-center gap-3 mb-1">
-          <h3 className="text-lg font-semibold text-white">LiquidGlassPanel</h3>
-          <span className="text-[10px] font-medium bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-full px-2 py-0.5">
-            Chrome only
-          </span>
-        </div>
-        <p className="text-sm text-slate-400">Physics-based panel with Snell-Descartes refraction.</p>
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-white">Refraction Panel</h3>
+        <span className="text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">SVG Filter</span>
+        <span className="text-[10px] text-yellow-400/70">Chromium</span>
       </div>
-      <div className="flex gap-2 mb-2">
+      <div className="flex gap-1.5 mb-2">
         {(["convexCircle", "convexSquircle", "concave", "lip"] as SurfaceType[]).map((s) => (
           <button
             key={s}
             onClick={() => setSurface(s)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+            className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-colors ${
               surface === s ? "bg-white text-slate-900" : "bg-slate-700 text-slate-300 hover:bg-slate-600"
             }`}
           >
@@ -141,7 +133,7 @@ function RefractionDemoCard() {
           style={{
             width: GALLERY_PANEL_WIDTH,
             height: GALLERY_PANEL_HEIGHT,
-            borderRadius: liquidGlassPresets.panel.radius,
+            borderRadius: refractionPresets.panel.radius,
             overflow: "hidden",
             backdropFilter: glass.filterRef,
             WebkitBackdropFilter: glass.filterRef,
@@ -152,7 +144,7 @@ function RefractionDemoCard() {
           }}
         >
           <div className="text-center px-4 relative z-10">
-            <p className="text-white/90 font-medium">Physics-based glass</p>
+            <p className="text-white/90 font-medium text-sm">Physics-based glass</p>
             <p className="text-white/50 text-xs mt-1">Surface: {surface}</p>
           </div>
         </div>
@@ -164,37 +156,22 @@ function RefractionDemoCard() {
 export function Gallery() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
-      {/* Hero */}
       <div className="text-center mb-10">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-white via-lime-200 to-yellow-200 bg-clip-text text-transparent">
           Glass Effect Gallery
         </h1>
         <p className="text-slate-400 mt-4 text-lg max-w-2xl mx-auto">
-          8 glass effects. Hover to see them in action. Click to copy code.
+          8 effects across CSS, SVG filters, and physics-based refraction. Hover to preview.
         </p>
       </div>
 
-      {/* Effects Grid - same as home */}
+      {/* All CSS & SVG filter effects */}
       <EffectGrid showDescriptions showCopyButtons />
 
-      {/* SVG Engine Showcase */}
-      <div className="mt-16">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-lime-200 to-yellow-200 bg-clip-text text-transparent">
-            SVG Refraction Engine
-          </h2>
-          <p className="text-slate-400 mt-3 max-w-2xl mx-auto">
-            Physics-based glass using Snell-Descartes refraction. Move your mouse to see the effect in action.
-          </p>
-          <span className="inline-block mt-3 text-[11px] font-medium bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-full px-3 py-1">
-            Chrome only
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <LoupeDemoCard />
-          <RefractionDemoCard />
-        </div>
+      {/* SVG refraction demos — same visual flow, no separate "engine" section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        <LoupeDemoCard />
+        <RefractionDemoCard />
       </div>
     </div>
   );
