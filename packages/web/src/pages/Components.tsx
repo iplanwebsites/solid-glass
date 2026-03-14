@@ -1,15 +1,22 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Glass } from "solid-glass";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
-import { Sparkles, Gem } from "lucide-react";
+import { Sparkles, Gem, Box } from "lucide-react";
 import { CodeBlock } from "../components/CodeBlock";
 
 /* ─── Render Tier Badge ─── */
-function TierBadge({ tier }: { tier: "css" | "svg-filter" }) {
+function TierBadge({ tier }: { tier: string }) {
   if (tier === "svg-filter") {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">
         <Gem size={10} /> SVG Refraction
+      </span>
+    );
+  }
+  if (tier === "webgl") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full px-2 py-0.5">
+        <Box size={10} /> WebGL
       </span>
     );
   }

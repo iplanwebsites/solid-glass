@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Glass, type GlassEffectName, presets, type PresetName, presetNames, effectRenderTiers } from "solid-glass";
 import { createLiquidGlass, type SurfaceType, SURFACE_EQUATIONS } from "solid-glass/engines/svg-refraction";
-import { RotateCcw, Image, Sparkles, Gem, ChevronLeft, ChevronDown } from "lucide-react";
+import { RotateCcw, Image, Sparkles, Gem, Box, ChevronLeft, ChevronDown } from "lucide-react";
 import { CodeBlock } from "../components/CodeBlock";
 
 /* ─── Framework Code Generators ─── */
@@ -87,6 +87,13 @@ function TierBadge({ tier }: { tier: string }) {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">
         <Gem size={10} /> SVG Filter
+      </span>
+    );
+  }
+  if (tier === "webgl") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full px-2 py-0.5">
+        <Box size={10} /> WebGL
       </span>
     );
   }
@@ -177,7 +184,7 @@ const SURFACE_TYPES: { key: SurfaceType; label: string }[] = [
   { key: "lip", label: "Lip" },
 ];
 
-type FilterTab = "all" | "css" | "svg-filter";
+type FilterTab = "all" | "css" | "svg-filter" | "webgl";
 
 /* ═══════════════════════════════════════════════ */
 /*  Browse Mode — template gallery                  */
@@ -194,7 +201,8 @@ function BrowseView({ onSelect }: { onSelect: (index: number) => void }) {
     { key: "all", label: "All", count: TEMPLATES.length },
     { key: "css", label: "CSS", count: TEMPLATES.filter((t) => effectRenderTiers[t.effect] === "css").length },
     { key: "svg-filter", label: "SVG Filter", count: TEMPLATES.filter((t) => effectRenderTiers[t.effect] === "svg-filter").length },
-  ];
+    { key: "webgl", label: "WebGL", count: TEMPLATES.filter((t) => effectRenderTiers[t.effect] === "webgl").length },
+  ].filter((tab): tab is { key: FilterTab; label: string; count: number } => tab.key === "all" || tab.count > 0);
 
   return (
     <div>
@@ -491,7 +499,7 @@ function TweakView({
                     <span className="text-[10px] text-slate-500 ml-2 capitalize">{t.effect}</span>
                   </div>
                   <span className={`text-[9px] ${effectRenderTiers[t.effect] === "svg-filter" ? "text-emerald-400" : "text-violet-400"}`}>
-                    {effectRenderTiers[t.effect] === "svg-filter" ? "SVG" : "CSS"}
+                    {effectRenderTiers[t.effect] === "svg-filter" ? "SVG" : effectRenderTiers[t.effect] === "webgl" ? "WebGL" : "CSS"}
                   </span>
                 </button>
               ))}
@@ -621,6 +629,8 @@ function TweakView({
           <p className="text-[11px] text-slate-600 leading-relaxed px-1">
             {isLiquid ? (
               <>Snell-Descartes displacement map via <code className="text-blue-400/60">feDisplacementMap</code>.</>
+            ) : tier === "webgl" ? (
+              <>WebGL — GPU-accelerated rendering with custom shaders.</>
             ) : tier === "svg-filter" ? (
               <>SVG <code className="text-blue-400/60">feTurbulence</code> + <code className="text-blue-400/60">feDisplacementMap</code> via backdrop-filter.</>
             ) : (
