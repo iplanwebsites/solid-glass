@@ -5,10 +5,13 @@ import type { SurfaceType } from "./engines/svg-refraction/surface-equations";
  * Rendering technology tier used by a template.
  *
  * - `"css"` — Pure CSS (backdrop-filter, box-shadow, gradients, animations).
- * - `"svg-filter"` — SVG filter primitives (feTurbulence, feDisplacementMap, etc.).
+ * - `"svg-filter"` — SVG filter via CSS `filter:` property (e.g. crystal, smoke).
+ *   Uses `backdrop-filter: blur()` + `filter: url(#svg)` — broadly supported.
+ * - `"svg-backdrop"` — SVG filter inside CSS `backdrop-filter: url(#...)` (e.g. refraction).
+ *   Chromium 113+ only — Firefox/Safari do not support SVG refs in backdrop-filter.
  * - `"webgl"` — GPU shaders (reserved for future use).
  */
-export type RenderTier = "css" | "svg-filter" | "webgl";
+export type RenderTier = "css" | "svg-filter" | "svg-backdrop" | "webgl";
 
 /**
  * Unified glass material options.

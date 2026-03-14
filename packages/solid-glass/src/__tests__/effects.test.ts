@@ -182,8 +182,8 @@ describe("renderGlass — refraction", () => {
     expect(result.className).toContain("sg-refraction--needs-measure");
   });
 
-  it("reports svg-filter renderTier", () => {
-    expect(templateRenderTiers.refraction).toBe("svg-filter");
+  it("reports svg-backdrop renderTier", () => {
+    expect(templateRenderTiers.refraction).toBe("svg-backdrop");
   });
 });
 

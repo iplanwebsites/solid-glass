@@ -33,7 +33,8 @@ import type { RenderTier } from "./types";
  * Detect the highest rendering tier supported by the current browser.
  *
  * - `"webgl"` — WebGL 2 or WebGPU available (future shader effects)
- * - `"svg-filter"` — SVG filters in `backdrop-filter` are supported (Chromium 113+)
+ * - `"svg-backdrop"` — SVG filters in `backdrop-filter: url()` are supported (Chromium 113+)
+ * - `"svg-filter"` — SVG filters via CSS `filter: url()` (all modern browsers)
  * - `"css"` — Basic CSS `backdrop-filter` support (Safari, Firefox, Chrome)
  *
  * Returns `"css"` in non-browser environments (SSR).
@@ -61,11 +62,14 @@ export function detectRenderTier(): RenderTier {
     const el = document.createElement("div");
     el.style.backdropFilter = "url(#test)";
     if (el.style.backdropFilter.includes("url")) {
-      return "svg-filter";
+      return "svg-backdrop";
     }
   } catch {
     // Not supported
   }
 
+  // svg-filter tier (CSS filter: url()) is supported in all modern browsers,
+  // but we return "css" here since we only use this function to gate
+  // svg-backdrop features. The svg-filter tier doesn't need runtime detection.
   return "css";
 }

@@ -86,6 +86,13 @@ function FrameworkTabs({ active, onChange }: { active: Framework; onChange: (f: 
 
 /* ─── Render Tier Badge ─── */
 function TierBadge({ tier }: { tier: string }) {
+  if (tier === "svg-backdrop") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full px-2 py-0.5">
+        <Gem size={10} /> SVG Backdrop
+      </span>
+    );
+  }
   if (tier === "svg-filter") {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">
@@ -187,7 +194,7 @@ const SURFACE_TYPES: { key: SurfaceType; label: string }[] = [
   { key: "lip", label: "Lip" },
 ];
 
-type FilterTab = "all" | "css" | "svg-filter" | "webgl";
+type FilterTab = "all" | "css" | "svg-filter" | "svg-backdrop" | "webgl";
 
 /* ═══════════════════════════════════════════════ */
 /*  Browse Mode — template gallery                  */
@@ -204,6 +211,7 @@ function BrowseView({ onSelect }: { onSelect: (index: number) => void }) {
     { key: "all", label: "All", count: TEMPLATES.length },
     { key: "css", label: "CSS", count: TEMPLATES.filter((t) => templateRenderTiers[t.template] === "css").length },
     { key: "svg-filter", label: "SVG Filter", count: TEMPLATES.filter((t) => templateRenderTiers[t.template] === "svg-filter").length },
+    { key: "svg-backdrop", label: "SVG Backdrop", count: TEMPLATES.filter((t) => templateRenderTiers[t.template] === "svg-backdrop").length },
     { key: "webgl", label: "WebGL", count: TEMPLATES.filter((t) => templateRenderTiers[t.template] === "webgl").length },
   ].filter((tab): tab is { key: FilterTab; label: string; count: number } => tab.key === "all" || tab.count > 0);
 
@@ -535,8 +543,8 @@ function TweakView({
                     <span className="font-medium">{t.name}</span>
                     <span className="text-[10px] text-slate-500 ml-2 capitalize">{t.template}</span>
                   </div>
-                  <span className={`text-[9px] ${templateRenderTiers[t.template] === "svg-filter" ? "text-emerald-400" : "text-violet-400"}`}>
-                    {templateRenderTiers[t.template] === "svg-filter" ? "SVG" : templateRenderTiers[t.template] === "webgl" ? "WebGL" : "CSS"}
+                  <span className={`text-[9px] ${templateRenderTiers[t.template] === "svg-backdrop" ? "text-amber-400" : templateRenderTiers[t.template] === "svg-filter" ? "text-emerald-400" : "text-violet-400"}`}>
+                    {templateRenderTiers[t.template] === "svg-backdrop" ? "SVG Backdrop" : templateRenderTiers[t.template] === "svg-filter" ? "SVG Filter" : templateRenderTiers[t.template] === "webgl" ? "WebGL" : "CSS"}
                   </span>
                 </button>
               ))}
@@ -545,11 +553,11 @@ function TweakView({
         </div>
       </div>
 
-      {/* Chromium notice */}
-      {isRefraction && (
+      {/* Chromium notice — only for svg-backdrop tier (backdrop-filter: url()) */}
+      {tier === "svg-backdrop" && (
         <div className="text-center mb-4">
           <span className="inline-flex items-center gap-2 text-xs text-yellow-400/80 bg-yellow-400/5 border border-yellow-400/20 rounded-full px-3 py-1">
-            Chromium only — backdrop-filter with SVG filters requires Chrome or Edge
+            Chromium 113+ only — <code className="font-mono">backdrop-filter: url()</code> requires Chrome or Edge
           </span>
         </div>
       )}
@@ -664,12 +672,12 @@ function TweakView({
 
           {/* Render tier footnote */}
           <p className="text-[11px] text-slate-600 leading-relaxed px-1">
-            {isRefraction ? (
-              <>Snell-Descartes displacement map via <code className="text-blue-400/60">feDisplacementMap</code>.</>
+            {tier === "svg-backdrop" ? (
+              <>SVG displacement via <code className="text-amber-400/60">backdrop-filter: url()</code> — Chromium 113+ only.</>
             ) : tier === "webgl" ? (
               <>WebGL — GPU-accelerated rendering with custom shaders.</>
             ) : tier === "svg-filter" ? (
-              <>SVG <code className="text-blue-400/60">feTurbulence</code> + <code className="text-blue-400/60">feDisplacementMap</code> via backdrop-filter.</>
+              <>SVG <code className="text-emerald-400/60">filter: url()</code> + <code className="text-emerald-400/60">backdrop-filter: blur()</code> — all modern browsers.</>
             ) : (
               <>Pure CSS — backdrop-filter, box-shadow, animations. All modern browsers.</>
             )}

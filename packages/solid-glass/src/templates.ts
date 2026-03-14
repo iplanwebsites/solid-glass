@@ -124,13 +124,19 @@ export const templateRenderTiers: Record<TemplateName, RenderTier> = {
   prism: "css",
   holographic: "css",
   thin: "css",
-  refraction: "svg-filter",
+  refraction: "svg-backdrop",
 };
 
-/** CSS-only fallback mapping for SVG-filter templates */
+/**
+ * CSS-only fallback mapping.
+ *
+ * Only `svg-backdrop` templates need fallbacks — they use `backdrop-filter: url(#...)`
+ * which requires Chromium 113+.
+ *
+ * `svg-filter` templates (crystal, smoke) use standard CSS `filter: url(#...)` on top of
+ * `backdrop-filter: blur()`, which is broadly supported and does NOT need fallbacks.
+ */
 export const templateFallbacks: Partial<Record<TemplateName, TemplateName>> = {
-  crystal: "frosted",
-  smoke: "frosted",
   refraction: "frosted",
 };
 

@@ -121,6 +121,9 @@ describe("templateRenderTiers", () => {
   it("SVG filter templates are correct", () => {
     expect(templateRenderTiers.crystal).toBe("svg-filter");
     expect(templateRenderTiers.smoke).toBe("svg-filter");
-    expect(templateRenderTiers.refraction).toBe("svg-filter");
+  });
+
+  it("SVG backdrop templates are correct", () => {
+    expect(templateRenderTiers.refraction).toBe("svg-backdrop");
   });
 });
