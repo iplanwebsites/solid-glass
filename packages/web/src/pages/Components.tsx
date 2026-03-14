@@ -374,6 +374,16 @@ export function Components() {
               <c.Component />
             </section>
           ))}
+
+          {/* CTA to Playground */}
+          <div className="text-center pt-8 pb-4">
+            <a
+              href="/playground"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-lime-500 to-yellow-500 text-slate-900 px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
+            >
+              Customize in Playground &rarr;
+            </a>
+          </div>
         </div>
       </div>
     </div>

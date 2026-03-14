@@ -195,6 +195,16 @@ export function Gallery() {
         <LoupeDemoCard />
         <RefractionDemoCard />
       </div>
+
+      {/* CTA to Playground */}
+      <div className="mt-16 text-center">
+        <a
+          href="/playground"
+          className="inline-flex items-center gap-2 bg-gradient-to-r from-lime-500 to-yellow-500 text-slate-900 px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
+        >
+          Try in Playground &rarr;
+        </a>
+      </div>
     </div>
   );
 }
