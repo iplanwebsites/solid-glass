@@ -3,6 +3,7 @@ import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-ref
 import { Glass, type TemplateName } from "solid-glass";
 import { ArrowRight, Sparkles, Play, Pause, Settings2, RotateCcw, X } from "lucide-react";
 import { Slider } from "../components/ui/slider";
+import { EffectGrid } from "../components/EffectGrid";
 
 // Hero background images - random on page load
 const HERO_BGS = [
@@ -704,29 +705,7 @@ function LoupeShowcase() {
   );
 }
 
-function InteractivePanelGrid() {
-  const [activePanel, setActivePanel] = useState<number | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const panels = [
-    { template: "frosted" as TemplateName, title: "Frosted", desc: "Classic Apple-style blur" },
-    { template: "crystal" as TemplateName, title: "Crystal", desc: "Noise-based distortion" },
-    { template: "aurora" as TemplateName, title: "Aurora", desc: "Animated gradient overlay" },
-    { template: "smoke" as TemplateName, title: "Smoke", desc: "Dark animated turbulence" },
-    { template: "prism" as TemplateName, title: "Prism", desc: "Spectral color splitting" },
-    { template: "holographic" as TemplateName, title: "Holographic", desc: "Iridescent shimmer" },
-  ];
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    setMousePos({
-      x: ((e.clientX - rect.left) / rect.width - 0.5) * 20,
-      y: ((e.clientY - rect.top) / rect.height - 0.5) * 20,
-    });
-  }, []);
-
+function EffectShowcaseSection() {
   return (
     <section className="py-20 px-6">
       <div className="max-w-6xl mx-auto">
@@ -735,53 +714,11 @@ function InteractivePanelGrid() {
             Effect Showcase
           </h2>
           <p className="text-slate-400 mt-3 max-w-2xl mx-auto">
-            Six distinct glass effects. Hover to expand and explore.
+            All seven glass effects at a glance. Hover to copy the code.
           </p>
         </div>
 
-        <div
-          ref={containerRef}
-          className="relative overflow-hidden rounded-3xl"
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => setMousePos({ x: 0, y: 0 })}
-        >
-          <img
-            src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1400&q=80"
-            alt=""
-            className="absolute w-[110%] h-[110%] object-cover transition-transform duration-200 ease-out"
-            style={{
-              top: "-5%",
-              left: "-5%",
-              transform: `translate(${mousePos.x}px, ${mousePos.y}px)`,
-            }}
-          />
-          <div className="absolute inset-0 bg-black/10" />
-
-          <div className="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-4 p-6">
-            {panels.map((panel, i) => (
-              <Glass
-                key={panel.template}
-                template={panel.template}
-                blur={14}
-                className={`p-6 rounded-2xl cursor-pointer transition-all duration-500 ${
-                  activePanel === i ? "scale-105 z-10" : activePanel !== null ? "scale-95 opacity-70" : ""
-                }`}
-                onMouseEnter={() => setActivePanel(i)}
-                onMouseLeave={() => setActivePanel(null)}
-              >
-                <h3 className="text-white font-semibold text-lg">{panel.title}</h3>
-                <p className="text-white/60 text-sm mt-1">{panel.desc}</p>
-                {activePanel === i && (
-                  <div className="mt-4 pt-4 border-t border-white/20">
-                    <code className="text-[10px] text-lime-300 font-mono">
-                      {`<Glass template="${panel.template}" />`}
-                    </code>
-                  </div>
-                )}
-              </Glass>
-            ))}
-          </div>
-        </div>
+        <EffectGrid showDescriptions showCopyButtons />
       </div>
     </section>
   );
@@ -793,7 +730,7 @@ export function Kitchen() {
       <HeroSection />
       <GlassButtonsShowcase />
       <LoupeShowcase />
-      <InteractivePanelGrid />
+      <EffectShowcaseSection />
     </div>
   );
 }
