@@ -181,8 +181,8 @@ function BrowseView({ onSelect }: { onSelect: (index: number) => void }) {
   const tabs: { key: FilterTab; label: string; count: number }[] = [
     { key: "all", label: "All", count: TEMPLATES.length },
     { key: "css", label: "CSS", count: TEMPLATES.filter((t) => templateRenderTiers[t.template] === "css").length },
-    { key: "svg-filter", label: "SVG Filter", count: TEMPLATES.filter((t) => templateRenderTiers[t.template] === "svg-filter").length },
-    { key: "svg-backdrop", label: "SVG Backdrop", count: TEMPLATES.filter((t) => templateRenderTiers[t.template] === "svg-backdrop").length },
+    { key: "svg-filter", label: "SVG", count: TEMPLATES.filter((t) => templateRenderTiers[t.template] === "svg-filter").length },
+    { key: "svg-backdrop", label: "Chrome only", count: TEMPLATES.filter((t) => templateRenderTiers[t.template] === "svg-backdrop").length },
     { key: "webgl", label: "WebGL", count: TEMPLATES.filter((t) => templateRenderTiers[t.template] === "webgl").length },
   ].filter((tab): tab is { key: FilterTab; label: string; count: number } => tab.key === "all" || tab.count > 0);
 

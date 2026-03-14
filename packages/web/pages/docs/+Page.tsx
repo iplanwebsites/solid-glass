@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { CodeBlock } from "../../src/components/CodeBlock";
-import { RenderTierInline } from "../../src/components/RenderTierTag";
 
 const sections = [
   {
@@ -248,7 +247,7 @@ cleanup();`} />
       <>
         <p className="text-slate-400 mb-4">
           A separate physics-based engine that uses Snell-Descartes law and canvas-generated displacement maps
-          for realistic glass refraction. <strong className="text-white">Chromium-only.</strong>
+          for realistic glass refraction. <strong className="text-amber-400">Chrome & Edge only</strong> — other browsers get an automatic CSS fallback.
         </p>
         <CodeBlock code={`import { createLiquidGlass } from "solid-glass/engines/svg-refraction";
 
@@ -294,10 +293,10 @@ element.style.backdropFilter = glass.filterRef;`} />
               </tr>
             </thead>
             <tbody className="text-slate-400">
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassCard</td><td>Frosted glass card with title/subtitle slots</td><td><RenderTierInline tier="css" /></td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassButton</td><td>Interactive glass button with hover states</td><td><RenderTierInline tier="css" /></td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">Loupe</td><td>Magnifying glass overlay</td><td><RenderTierInline tier="svg-backdrop" /></td></tr>
-              <tr><td className="py-3 text-white font-mono">RefractionPanel</td><td>Physics-based glass panel wrapper</td><td><RenderTierInline tier="svg-backdrop" /></td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassCard</td><td>Frosted glass card with title/subtitle slots</td><td><span className="text-green-400">All browsers</span></td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassButton</td><td>Interactive glass button with hover states</td><td><span className="text-green-400">All browsers</span></td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">Loupe</td><td>Magnifying glass overlay</td><td><span className="text-amber-400">Chrome & Edge</span></td></tr>
+              <tr><td className="py-3 text-white font-mono">RefractionPanel</td><td>Physics-based glass panel wrapper</td><td><span className="text-amber-400">Chrome & Edge</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -308,100 +307,91 @@ element.style.backdropFilter = glass.filterRef;`} />
     ),
   },
   {
-    id: "rendering-tiers",
-    title: "Rendering Tiers",
+    id: "browser-support",
+    title: "Browser Support",
     content: (
       <>
-        <p className="text-slate-400 mb-4">
-          Solid-glass uses three rendering approaches. Each template is built on one of them, and browser support depends on which approach it uses — not on the template name.
+        <p className="text-slate-400 mb-6">
+          Most effects work in every modern browser. One — refraction — needs Chrome or Edge.
         </p>
 
-        {/* Tier 1: CSS */}
-        <div className="mb-6 bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 rounded-full bg-violet-400" />
-            <h4 className="text-white font-semibold text-sm">CSS</h4>
-            <span className="text-xs text-green-400 bg-green-500/10 border border-green-500/20 rounded-full px-2 py-0.5">All browsers</span>
-          </div>
-          <p className="text-slate-400 text-sm mb-2">
-            Pure CSS effects using <code className="text-blue-300">backdrop-filter: blur()</code>, box-shadow, gradients, and keyframe animations.
-            No SVG or JavaScript at render time.
-          </p>
-          <p className="text-slate-500 text-xs">
-            <strong className="text-slate-400">Templates:</strong> frosted, aurora, prism, holographic, thin
-          </p>
-        </div>
-
-        {/* Tier 2: SVG Filter */}
-        <div className="mb-6 bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <h4 className="text-white font-semibold text-sm">CSS + SVG Filter</h4>
-            <span className="text-xs text-green-400 bg-green-500/10 border border-green-500/20 rounded-full px-2 py-0.5">All browsers</span>
-          </div>
-          <p className="text-slate-400 text-sm mb-2">
-            Standard <code className="text-blue-300">backdrop-filter: blur()</code> for the blur, plus an SVG displacement filter
-            applied via the CSS <code className="text-blue-300">filter: url(#id)</code> property.
-            Both are long-established, broadly supported CSS features that compose together — the SVG{" "}
-            <code className="text-blue-300">feTurbulence</code> distortion runs on the already-blurred backdrop.
-          </p>
-          <p className="text-slate-500 text-xs">
-            <strong className="text-slate-400">Templates:</strong> crystal, smoke
-          </p>
-        </div>
-
-        {/* Tier 3: SVG Backdrop */}
-        <div className="mb-6 bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 rounded-full bg-amber-400" />
-            <h4 className="text-white font-semibold text-sm">SVG Backdrop Filter</h4>
-            <span className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5">Chromium 113+</span>
-          </div>
-          <p className="text-slate-400 text-sm mb-2">
-            The entire SVG filter chain — Snell-Descartes displacement maps, specular highlights, saturation adjustments — is passed
-            directly as the <code className="text-blue-300">backdrop-filter</code> value:{" "}
-            <code className="text-blue-300">backdrop-filter: url(#svg-filter)</code>.
-            Only Chromium browsers support SVG filter references inside <code className="text-blue-300">backdrop-filter</code>;
-            Firefox and Safari will fall back to a simpler CSS effect automatically.
-          </p>
-          <p className="text-slate-500 text-xs">
-            <strong className="text-slate-400">Templates:</strong> refraction
-          </p>
-        </div>
-
-        {/* Key distinction callout */}
-        <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 mb-6">
-          <p className="text-blue-300 text-sm font-medium mb-1">Why the distinction?</p>
-          <p className="text-slate-400 text-sm">
-            Crystal and smoke both generate <code className="text-slate-300">&lt;svg&gt;&lt;filter&gt;</code> elements, just like refraction.
-            The difference is <em>how</em> that SVG filter is applied in CSS.
-            Crystal/smoke use the standard CSS <code className="text-slate-300">filter</code> property to apply the SVG displacement on top of a regular <code className="text-slate-300">backdrop-filter: blur()</code> — two
-            broadly-supported features composed together.
-            Refraction puts the SVG filter <em>inside</em> <code className="text-slate-300">backdrop-filter</code> itself, which is a Chromium-only capability.
-          </p>
-        </div>
-
-        {/* Browser compat table */}
-        <div className="overflow-x-auto">
+        {/* Compat table — lead with what users care about */}
+        <div className="overflow-x-auto mb-8">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-700">
-                <th className="text-left py-3 text-slate-300 font-semibold">Browser</th>
-                <th className="text-left py-3 text-slate-300 font-semibold"><span className="text-violet-400">CSS</span></th>
-                <th className="text-left py-3 text-slate-300 font-semibold"><span className="text-emerald-400">CSS + SVG Filter</span></th>
-                <th className="text-left py-3 text-slate-300 font-semibold"><span className="text-amber-400">SVG Backdrop</span></th>
+                <th className="text-left py-3 text-slate-300 font-semibold">Effect</th>
+                <th className="text-left py-3 text-slate-300 font-semibold">Chrome / Edge</th>
+                <th className="text-left py-3 text-slate-300 font-semibold">Safari</th>
+                <th className="text-left py-3 text-slate-300 font-semibold">Firefox</th>
               </tr>
             </thead>
             <tbody className="text-slate-400">
-              <tr className="border-b border-slate-800"><td className="py-3">Chrome / Edge 113+</td><td className="text-green-400">Full</td><td className="text-green-400">Full</td><td className="text-green-400">Full</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3">Safari 15.4+</td><td className="text-green-400">Full</td><td className="text-green-400">Full</td><td className="text-amber-400">Falls back to CSS</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3">Firefox 103+</td><td className="text-green-400">Full</td><td className="text-green-400">Full</td><td className="text-amber-400">Falls back to CSS</td></tr>
+              <tr className="border-b border-slate-800">
+                <td className="py-3 text-white">frosted, aurora, prism, holographic, thin</td>
+                <td className="text-green-400">Full</td>
+                <td className="text-green-400">Full</td>
+                <td className="text-green-400">Full</td>
+              </tr>
+              <tr className="border-b border-slate-800">
+                <td className="py-3 text-white">crystal, smoke</td>
+                <td className="text-green-400">Full</td>
+                <td className="text-green-400">Full</td>
+                <td className="text-green-400">Full</td>
+              </tr>
+              <tr className="border-b border-slate-800">
+                <td className="py-3 text-white">refraction</td>
+                <td className="text-green-400">Full</td>
+                <td className="text-amber-400">CSS fallback</td>
+                <td className="text-amber-400">CSS fallback</td>
+              </tr>
             </tbody>
           </table>
         </div>
-        <p className="text-slate-500 text-sm mt-4">
-          All effects use progressive enhancement — unsupported tiers automatically fall back to a simpler rendering. The tint, border, and shadow always render.
+
+        <p className="text-slate-400 text-sm mb-6">
+          Fallbacks are automatic — you don't need to do anything. If a browser can't run the full effect,
+          it renders a simpler glass style instead. The tint, border, and shadow always show up.
         </p>
+
+        {/* Why refraction is different — for the curious */}
+        <details className="group bg-slate-800/40 border border-slate-700/50 rounded-xl">
+          <summary className="p-4 cursor-pointer select-none text-sm font-medium text-slate-300 hover:text-white">
+            Why is refraction Chrome-only?
+          </summary>
+          <div className="px-4 pb-4 space-y-3 text-sm text-slate-400">
+            <p>
+              All three groups above generate SVG <code className="text-slate-300">&lt;filter&gt;</code> elements
+              under the hood. The difference is how that filter reaches the screen:
+            </p>
+            <div className="space-y-2">
+              <div className="flex gap-3">
+                <span className="shrink-0 w-2 h-2 mt-1.5 rounded-full bg-violet-400" />
+                <p>
+                  <strong className="text-slate-300">frosted, aurora, etc.</strong> — pure CSS.
+                  <code className="text-blue-300 ml-1">backdrop-filter: blur()</code> does the work.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <span className="shrink-0 w-2 h-2 mt-1.5 rounded-full bg-emerald-400" />
+                <p>
+                  <strong className="text-slate-300">crystal, smoke</strong> — CSS blur <em>plus</em> an SVG distortion
+                  applied through the standard <code className="text-blue-300">filter</code> property.
+                  Two well-supported features layered together.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <span className="shrink-0 w-2 h-2 mt-1.5 rounded-full bg-amber-400" />
+                <p>
+                  <strong className="text-slate-300">refraction</strong> — the SVG filter goes <em>inside</em>{" "}
+                  <code className="text-blue-300">backdrop-filter: url(#...)</code> itself.
+                  Only Chromium supports passing an SVG reference to backdrop-filter.
+                  Firefox and Safari ignore it and get the CSS fallback.
+                </p>
+              </div>
+            </div>
+          </div>
+        </details>
       </>
     ),
   },

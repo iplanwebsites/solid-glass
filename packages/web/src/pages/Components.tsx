@@ -721,8 +721,8 @@ export function Components() {
                   }`}
                 >
                   <span className="font-mono">{c.label}</span>
-                  <span className={`ml-2 text-[9px] ${c.tier === "svg-backdrop" ? "text-amber-400" : c.tier === "svg-filter" ? "text-emerald-400" : "text-violet-400"}`}>
-                    {c.tier === "svg-backdrop" ? "SVG Backdrop" : c.tier === "svg-filter" ? "SVG Filter" : "CSS"}
+                  <span className={`ml-2 text-[9px] ${c.tier === "svg-backdrop" ? "text-amber-400" : "text-violet-400"}`}>
+                    {c.tier === "svg-backdrop" ? "Chrome only" : "All browsers"}
                   </span>
                 </button>
               </li>
