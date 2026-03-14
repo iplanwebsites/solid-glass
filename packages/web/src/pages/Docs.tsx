@@ -47,18 +47,20 @@ function App() {
             <thead>
               <tr className="border-b border-slate-700">
                 <th className="text-left py-3 text-slate-300 font-semibold">Effect</th>
+                <th className="text-left py-3 text-slate-300 font-semibold">Render Tier</th>
                 <th className="text-left py-3 text-slate-300 font-semibold">Technique</th>
                 <th className="text-left py-3 text-slate-300 font-semibold">Key Options</th>
               </tr>
             </thead>
             <tbody className="text-slate-400">
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">frosted</td><td>Backdrop blur + tint + inner shadow</td><td>blur, tintColor, tintOpacity, shadowBlur, borderColor</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">crystal</td><td>SVG feTurbulence + feDisplacementMap</td><td>noiseFrequency, distortionStrength, octaves, seed</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">aurora</td><td>Animated gradient overlay + blur</td><td>colors, animationSpeed, angle, colorOpacity</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">smoke</td><td>Animated turbulence + heavy blur</td><td>density, smokeColor, turbulence, animated</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">prism</td><td>Backdrop filter chain (hue, saturate, contrast)</td><td>hueRotate, saturation, brightness, contrast</td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">holographic</td><td>Animated iridescent overlay</td><td>iridescence, animationSpeed, colors</td></tr>
-              <tr><td className="py-3 text-white font-mono">thin</td><td>Minimal blur + subtle border</td><td>backgroundOpacity, borderOpacity, dark</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">frosted</td><td><span className="text-violet-400">CSS</span></td><td>Backdrop blur + tint + inner shadow</td><td>blur, tintColor, tintOpacity, shadowBlur, borderColor</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">crystal</td><td><span className="text-emerald-400">SVG Filter</span></td><td>SVG feTurbulence + feDisplacementMap</td><td>noiseFrequency, distortionStrength, octaves, seed</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">aurora</td><td><span className="text-violet-400">CSS</span></td><td>Animated gradient overlay + blur</td><td>colors, animationSpeed, angle, colorOpacity</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">smoke</td><td><span className="text-emerald-400">SVG Filter</span></td><td>Animated turbulence + heavy blur</td><td>density, smokeColor, turbulence, animated</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">prism</td><td><span className="text-violet-400">CSS</span></td><td>Backdrop filter chain (hue, saturate, contrast)</td><td>hueRotate, saturation, brightness, contrast</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">holographic</td><td><span className="text-violet-400">CSS</span></td><td>Animated iridescent overlay</td><td>iridescence, animationSpeed, colors</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">thin</td><td><span className="text-violet-400">CSS</span></td><td>Minimal blur + subtle border</td><td>backgroundOpacity, borderOpacity, dark</td></tr>
+              <tr><td className="py-3 text-white font-mono">liquid</td><td><span className="text-emerald-400">SVG Filter</span></td><td>Snell-Descartes refraction via feDisplacementMap</td><td>width, height, surface, refractiveIndex, glassThickness</td></tr>
             </tbody>
           </table>
         </div>
@@ -148,7 +150,8 @@ function MyComponent() {
 // smokeNoir, smokeMist
 // prismRainbow, prismWarm
 // holoCard, holoSubtle
-// thinLight, thinDark`} />
+// thinLight, thinDark
+// liquidPanel, liquidLoupe`} />
       </>
     ),
   },
@@ -289,12 +292,12 @@ element.style.backdropFilter = glass.filterRef;`} />
               <tr className="border-b border-slate-700">
                 <th className="text-left py-3 text-slate-300 font-semibold">Component</th>
                 <th className="text-left py-3 text-slate-300 font-semibold">Description</th>
-                <th className="text-left py-3 text-slate-300 font-semibold">Engine</th>
+                <th className="text-left py-3 text-slate-300 font-semibold">Render Tier</th>
               </tr>
             </thead>
             <tbody className="text-slate-400">
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassCard</td><td>Frosted glass card with title/subtitle slots</td><td><span className="text-violet-400">Shaders</span></td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassButton</td><td>Interactive glass button with hover states</td><td><span className="text-violet-400">Shaders</span></td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassCard</td><td>Frosted glass card with title/subtitle slots</td><td><span className="text-violet-400">CSS</span></td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassButton</td><td>Interactive glass button with hover states</td><td><span className="text-violet-400">CSS</span></td></tr>
               <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">Loupe</td><td>Magnifying glass overlay</td><td><span className="text-emerald-400">SVG Refraction</span></td></tr>
               <tr><td className="py-3 text-white font-mono">LiquidGlassPanel</td><td>Physics-based glass panel wrapper</td><td><span className="text-emerald-400">SVG Refraction</span></td></tr>
             </tbody>

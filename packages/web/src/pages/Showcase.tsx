@@ -88,8 +88,8 @@ const BG_IMAGES = [
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80",
 ];
 
-/* ─── Shader Templates ─── */
-const SHADER_TEMPLATES: {
+/* ─── Effect Templates ─── */
+const EFFECT_TEMPLATES: {
   name: string;
   effect: GlassEffectName;
   options: Record<string, unknown>;
@@ -121,7 +121,7 @@ const SVG_TEMPLATES: {
   { name: "Lip Edge", surface: "lip", options: { bezelWidth: 50, glassThickness: 200, blur: 6, refractiveIndex: 1.5, specularOpacity: 0.5 }, description: "Raised lip edge surface." },
 ];
 
-/* ─── Playground Sliders (Shaders) ─── */
+/* ─── Playground Sliders (Effects) ─── */
 type SliderConfig = { key: string; label: string; min: number; max: number; step: number; defaultValue: number; effects: GlassEffectName[] };
 const SLIDERS: SliderConfig[] = [
   { key: "blur", label: "Blur", min: 0, max: 40, step: 1, defaultValue: 12, effects: EFFECT_TYPES },
@@ -161,7 +161,7 @@ const SURFACE_TYPES: { key: SurfaceType; label: string }[] = [
 /*  Main Showcase Page                             */
 /* ═══════════════════════════════════════════════ */
 export function Showcase() {
-  const [engine, setEngine] = useState<"shaders" | "svg">("shaders");
+  const [engine, setEngine] = useState<"css" | "svg">("css");
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -170,18 +170,17 @@ export function Showcase() {
           Playground
         </h1>
         <p className="text-slate-400 mt-3 text-lg">
-          Build custom glass effects with two rendering engines.
+          Build custom glass effects with two rendering tiers.
         </p>
       </div>
 
       {/* Engine switcher */}
       <div className="flex justify-center gap-2 mb-10">
         <button
-          onClick={() => setEngine("shaders")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-colors ${engine === "shaders" ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}
+          onClick={() => setEngine("css")}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-colors ${engine === "css" ? "bg-white text-slate-900" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}
         >
-          <Sparkles size={16} /> Shaders
-          <span className="text-[10px] opacity-60 ml-1">CSS + SVG filters</span>
+          <Sparkles size={16} /> CSS + SVG Filters
         </button>
         <button
           onClick={() => setEngine("svg")}
@@ -192,15 +191,15 @@ export function Showcase() {
         </button>
       </div>
 
-      {engine === "shaders" ? <ShadersPlayground /> : <SVGPlayground />}
+      {engine === "css" ? <EffectsPlayground /> : <SVGPlayground />}
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════ */
-/*  Shaders Playground                             */
+/*  Effects Playground (CSS + SVG Filters)         */
 /* ═══════════════════════════════════════════════ */
-function ShadersPlayground() {
+function EffectsPlayground() {
   const [effect, setEffect] = useState<GlassEffectName>("frosted");
   const [values, setValues] = useState<Record<string, number>>({});
   const [tintColor, setTintColor] = useState("#ffffff");
@@ -241,7 +240,7 @@ function ShadersPlayground() {
     setValues(nv);
   };
 
-  const loadTemplate = (t: typeof SHADER_TEMPLATES[number]) => {
+  const loadTemplate = (t: typeof EFFECT_TEMPLATES[number]) => {
     setEffect(t.effect);
     const nv: Record<string, number> = {};
     for (const [k, v] of Object.entries(t.options)) {
@@ -317,7 +316,7 @@ function ShadersPlayground() {
         <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
           <h3 className="text-sm font-semibold text-slate-200 mb-3">Templates</h3>
           <div className="flex flex-wrap gap-2">
-            {SHADER_TEMPLATES.filter((t) => t.effect === effect).map((t) => (
+            {EFFECT_TEMPLATES.filter((t) => t.effect === effect).map((t) => (
               <button key={t.name} onClick={() => loadTemplate(t)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">{t.name}</button>
             ))}
           </div>

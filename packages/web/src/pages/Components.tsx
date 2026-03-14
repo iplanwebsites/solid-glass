@@ -4,9 +4,9 @@ import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-ref
 import { Sparkles, Gem } from "lucide-react";
 import { CodeBlock } from "../components/CodeBlock";
 
-/* ─── Engine Badge ─── */
-function EngineBadge({ engine }: { engine: "shaders" | "svg" }) {
-  if (engine === "svg") {
+/* ─── Render Tier Badge ─── */
+function TierBadge({ tier }: { tier: "css" | "svg-filter" }) {
+  if (tier === "svg-filter") {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">
         <Gem size={10} /> SVG Refraction
@@ -15,7 +15,7 @@ function EngineBadge({ engine }: { engine: "shaders" | "svg" }) {
   }
   return (
     <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-full px-2 py-0.5">
-      <Sparkles size={10} /> Shaders
+      <Sparkles size={10} /> CSS + SVG Filters
     </span>
   );
 }
@@ -29,7 +29,7 @@ function GlassCardDemo() {
       <div>
         <div className="flex items-center gap-3 mb-2">
           <h3 className="text-xl font-bold text-white">GlassCard</h3>
-          <EngineBadge engine="shaders" />
+          <TierBadge tier="css" />
         </div>
         <p className="text-slate-400 text-sm">A ready-to-use frosted glass card with title, subtitle, and content slots.</p>
       </div>
@@ -73,7 +73,7 @@ function GlassButtonDemo() {
       <div>
         <div className="flex items-center gap-3 mb-2">
           <h3 className="text-xl font-bold text-white">GlassButton</h3>
-          <EngineBadge engine="shaders" />
+          <TierBadge tier="css" />
         </div>
         <p className="text-slate-400 text-sm">Interactive glass-styled buttons with hover and active states.</p>
       </div>
@@ -161,7 +161,7 @@ function LoupeDemo() {
       <div>
         <div className="flex items-center gap-3 mb-2">
           <h3 className="text-xl font-bold text-white">Loupe</h3>
-          <EngineBadge engine="svg" />
+          <TierBadge tier="svg-filter" />
         </div>
         <p className="text-slate-400 text-sm">
           A magnifying glass component using the SVG refraction engine. Move your mouse over the image.
@@ -246,7 +246,7 @@ function LiquidGlassPanelDemo() {
       <div>
         <div className="flex items-center gap-3 mb-2">
           <h3 className="text-xl font-bold text-white">LiquidGlassPanel</h3>
-          <EngineBadge engine="svg" />
+          <TierBadge tier="svg-filter" />
         </div>
         <p className="text-slate-400 text-sm">
           A panel using the SVG refraction engine with Snell-Descartes law.
@@ -309,10 +309,10 @@ function LiquidGlassPanelDemo() {
 
 /* ─── Main Page ─── */
 const COMPONENTS = [
-  { id: "glass-card", label: "GlassCard", engine: "shaders" as const, Component: GlassCardDemo },
-  { id: "glass-button", label: "GlassButton", engine: "shaders" as const, Component: GlassButtonDemo },
-  { id: "loupe", label: "Loupe", engine: "svg" as const, Component: LoupeDemo },
-  { id: "liquid-glass-panel", label: "LiquidGlassPanel", engine: "svg" as const, Component: LiquidGlassPanelDemo },
+  { id: "glass-card", label: "GlassCard", tier: "css" as const, Component: GlassCardDemo },
+  { id: "glass-button", label: "GlassButton", tier: "css" as const, Component: GlassButtonDemo },
+  { id: "loupe", label: "Loupe", tier: "svg-filter" as const, Component: LoupeDemo },
+  { id: "liquid-glass-panel", label: "LiquidGlassPanel", tier: "svg-filter" as const, Component: LiquidGlassPanelDemo },
 ];
 
 export function Components() {
@@ -348,8 +348,8 @@ export function Components() {
                   }`}
                 >
                   <span className="font-mono">{c.label}</span>
-                  <span className={`ml-2 text-[9px] ${c.engine === "svg" ? "text-emerald-500" : "text-violet-400"}`}>
-                    {c.engine === "svg" ? "SVG" : "Shaders"}
+                  <span className={`ml-2 text-[9px] ${c.tier === "svg-filter" ? "text-emerald-500" : "text-violet-400"}`}>
+                    {c.tier === "svg-filter" ? "SVG Filter" : "CSS"}
                   </span>
                 </button>
               </li>

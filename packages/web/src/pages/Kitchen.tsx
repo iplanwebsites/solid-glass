@@ -301,8 +301,8 @@ const DEFAULT_SVG_PARAMS = {
   specularOpacity: 0.60,
 };
 
-// Default Shader parameters
-const DEFAULT_SHADER_PARAMS = {
+// Default Effect parameters
+const DEFAULT_EFFECT_PARAMS = {
   blur: 12,
   tintOpacity: 0.1,
   animationSpeed: 6,
@@ -317,7 +317,7 @@ interface SVGParams {
   specularOpacity: number;
 }
 
-interface ShaderParams {
+interface EffectParams {
   blur: number;
   tintOpacity: number;
   animationSpeed: number;
@@ -332,20 +332,20 @@ function ControlsPanel({
   setIsPaused,
   svgParams,
   setSvgParams,
-  shaderParams,
-  setShaderParams,
+  effectParams,
+  setEffectParams,
   onReset,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  engine: "svg" | "shaders";
-  setEngine: (e: "svg" | "shaders") => void;
+  engine: "svg" | "css";
+  setEngine: (e: "svg" | "css") => void;
   isPaused: boolean;
   setIsPaused: (p: boolean) => void;
   svgParams: SVGParams;
   setSvgParams: (p: SVGParams) => void;
-  shaderParams: ShaderParams;
-  setShaderParams: (p: ShaderParams) => void;
+  effectParams: EffectParams;
+  setEffectParams: (p: EffectParams) => void;
   onReset: () => void;
 }) {
   if (!isOpen) return null;
@@ -381,12 +381,12 @@ function ControlsPanel({
               SVG Refraction
             </button>
             <button
-              onClick={() => setEngine("shaders")}
+              onClick={() => setEngine("css")}
               className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                engine === "shaders" ? "bg-lime-500 text-slate-900" : "text-slate-400 hover:text-white"
+                engine === "css" ? "bg-lime-500 text-slate-900" : "text-slate-400 hover:text-white"
               }`}
             >
-              Shaders
+              CSS + SVG Filters
             </button>
           </div>
         </div>
@@ -497,45 +497,45 @@ function ControlsPanel({
           </div>
         ) : (
           <div className="space-y-4">
-            <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">Shader Parameters</label>
+            <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">Effect Parameters</label>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-xs mb-2">
                   <span className="text-slate-300">Blur</span>
-                  <span className="text-slate-500 font-mono">{shaderParams.blur}</span>
+                  <span className="text-slate-500 font-mono">{effectParams.blur}</span>
                 </div>
                 <Slider
-                  value={[shaderParams.blur]}
+                  value={[effectParams.blur]}
                   min={0}
                   max={30}
                   step={1}
-                  onValueChange={([v]) => setShaderParams({ ...shaderParams, blur: v })}
+                  onValueChange={([v]) => setEffectParams({ ...effectParams, blur: v })}
                 />
               </div>
               <div>
                 <div className="flex justify-between text-xs mb-2">
                   <span className="text-slate-300">Tint Opacity</span>
-                  <span className="text-slate-500 font-mono">{shaderParams.tintOpacity.toFixed(2)}</span>
+                  <span className="text-slate-500 font-mono">{effectParams.tintOpacity.toFixed(2)}</span>
                 </div>
                 <Slider
-                  value={[shaderParams.tintOpacity]}
+                  value={[effectParams.tintOpacity]}
                   min={0}
                   max={0.5}
                   step={0.01}
-                  onValueChange={([v]) => setShaderParams({ ...shaderParams, tintOpacity: v })}
+                  onValueChange={([v]) => setEffectParams({ ...effectParams, tintOpacity: v })}
                 />
               </div>
               <div>
                 <div className="flex justify-between text-xs mb-2">
                   <span className="text-slate-300">Animation Speed</span>
-                  <span className="text-slate-500 font-mono">{shaderParams.animationSpeed}s</span>
+                  <span className="text-slate-500 font-mono">{effectParams.animationSpeed}s</span>
                 </div>
                 <Slider
-                  value={[shaderParams.animationSpeed]}
+                  value={[effectParams.animationSpeed]}
                   min={1}
                   max={20}
                   step={1}
-                  onValueChange={([v]) => setShaderParams({ ...shaderParams, animationSpeed: v })}
+                  onValueChange={([v]) => setEffectParams({ ...effectParams, animationSpeed: v })}
                 />
               </div>
             </div>
@@ -562,9 +562,9 @@ function HeroSection() {
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isPaused, setIsPaused] = useState(false);
-  const [engine, setEngine] = useState<"svg" | "shaders">("svg");
+  const [engine, setEngine] = useState<"svg" | "css">("svg");
   const [svgParams, setSvgParams] = useState<SVGParams>(DEFAULT_SVG_PARAMS);
-  const [shaderParams, setShaderParams] = useState<ShaderParams>(DEFAULT_SHADER_PARAMS);
+  const [effectParams, setEffectParams] = useState<EffectParams>(DEFAULT_EFFECT_PARAMS);
   const [resetKey, setResetKey] = useState(0);
   const [controlsOpen, setControlsOpen] = useState(false);
 
@@ -595,7 +595,7 @@ function HeroSection() {
 
   const handleReset = () => {
     setSvgParams(DEFAULT_SVG_PARAMS);
-    setShaderParams(DEFAULT_SHADER_PARAMS);
+    setEffectParams(DEFAULT_EFFECT_PARAMS);
     setResetKey((k) => k + 1);
   };
 
@@ -628,17 +628,17 @@ function HeroSection() {
           <GlassBubble key={bubble.id} bubble={bubble} mousePos={mousePos} svgParams={svgParams} />
         ))}
 
-        {/* Shader effect overlay panels */}
-        {engine === "shaders" && (
+        {/* CSS + SVG filter effect overlay panels */}
+        {engine === "css" && (
           <div className="absolute inset-0 flex items-center justify-center gap-8 p-12 flex-wrap">
             {(["frosted", "crystal", "aurora", "prism", "holographic", "smoke"] as GlassEffectName[]).map((effect, i) => (
               <Glass
                 key={effect}
                 effect={effect}
                 options={{
-                  blur: shaderParams.blur,
-                  tintOpacity: shaderParams.tintOpacity,
-                  animationSpeed: shaderParams.animationSpeed + i,
+                  blur: effectParams.blur,
+                  tintOpacity: effectParams.tintOpacity,
+                  animationSpeed: effectParams.animationSpeed + i,
                 }}
                 className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center rounded-2xl animate-float"
                 style={{
@@ -711,8 +711,8 @@ function HeroSection() {
         setIsPaused={setIsPaused}
         svgParams={svgParams}
         setSvgParams={setSvgParams}
-        shaderParams={shaderParams}
-        setShaderParams={setShaderParams}
+        effectParams={effectParams}
+        setEffectParams={setEffectParams}
         onReset={handleReset}
       />
     </section>
