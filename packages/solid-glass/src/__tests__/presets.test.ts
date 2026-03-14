@@ -1,47 +1,126 @@
 import { describe, it, expect } from "vitest";
-import { presets, presetNames } from "../presets";
-import { effects } from "../effects";
+import {
+  templates,
+  templatePresets,
+  templateNames,
+  templatePresetNames,
+  resolveTemplate,
+  templateRenderTiers,
+} from "../templates";
+import { renderGlass } from "../render-glass";
 
-describe("presets", () => {
-  it("exports a non-empty set of presets", () => {
-    expect(presetNames.length).toBeGreaterThan(0);
+describe("templates", () => {
+  it("exports 8 base templates", () => {
+    expect(templateNames).toHaveLength(8);
+    expect(templateNames).toEqual(
+      expect.arrayContaining(["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin", "refraction"])
+    );
   });
 
-  it("presetNames matches Object.keys(presets)", () => {
-    expect(presetNames).toEqual(Object.keys(presets));
+  it("templateNames matches Object.keys(templates)", () => {
+    expect(templateNames).toEqual(Object.keys(templates));
   });
 
-  it("every preset has a valid effect name", () => {
-    const validEffects = Object.keys(effects);
-    for (const name of presetNames) {
-      expect(validEffects).toContain(presets[name].effect);
+  it("every template has valid options", () => {
+    for (const name of templateNames) {
+      const t = templates[name];
+      expect(typeof t).toBe("object");
+      expect(t).not.toBeNull();
     }
   });
 
-  it("every preset has an options object", () => {
-    for (const name of presetNames) {
-      const preset = presets[name];
-      expect(typeof preset.options).toBe("object");
-      expect(preset.options).not.toBeNull();
+  it("every base template can be rendered", () => {
+    for (const name of templateNames) {
+      if (name === "refraction") continue; // needs canvas
+      const result = renderGlass(name);
+      expect(result.className).toBeTruthy();
+      expect(Object.keys(result.cssVars).length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe("templatePresets", () => {
+  it("exports non-empty presets", () => {
+    expect(templatePresetNames.length).toBeGreaterThan(0);
+  });
+
+  it("templatePresetNames matches Object.keys(templatePresets)", () => {
+    expect(templatePresetNames).toEqual(Object.keys(templatePresets));
+  });
+
+  it("every preset has a valid base template", () => {
+    for (const name of templatePresetNames) {
+      const preset = templatePresets[name];
+      expect(templateNames).toContain(preset.base);
     }
   });
 
-  it("every preset can be applied through its effect generator", () => {
-    for (const name of presetNames) {
-      const preset = presets[name];
-      // Skip refraction presets — they require canvas for displacement maps (unavailable in jsdom)
-      if (preset.effect === "refraction") continue;
-      const gen = effects[preset.effect];
-      const result = gen(preset.options);
+  it("every preset has overrides object", () => {
+    for (const name of templatePresetNames) {
+      const preset = templatePresets[name];
+      expect(typeof preset.overrides).toBe("object");
+      expect(preset.overrides).not.toBeNull();
+    }
+  });
+
+  it("every non-refraction preset can be rendered", () => {
+    for (const name of templatePresetNames) {
+      const preset = templatePresets[name];
+      if (preset.base === "refraction") continue;
+      const result = renderGlass(name);
       expect(result.className).toBeTruthy();
       expect(Object.keys(result.cssVars).length).toBeGreaterThan(0);
     }
   });
 
-  it("contains at least one preset per effect type", () => {
-    const effectsCovered = new Set(presetNames.map((n) => presets[n].effect));
-    for (const effectName of Object.keys(effects)) {
-      expect(effectsCovered.has(effectName as never)).toBe(true);
+  it("contains at least one preset per base template (excluding refraction)", () => {
+    const bases = new Set(templatePresetNames.map((n) => templatePresets[n].base));
+    for (const name of templateNames) {
+      if (name === "refraction") continue;
+      expect(bases.has(name)).toBe(true);
     }
+  });
+});
+
+describe("resolveTemplate", () => {
+  it("resolves base templates", () => {
+    const { base, options } = resolveTemplate("frosted");
+    expect(base).toBe("frosted");
+    expect(options.blur).toBe(12);
+  });
+
+  it("resolves preset names", () => {
+    const { base, options } = resolveTemplate("frostedDark");
+    expect(base).toBe("frosted");
+    expect(options.tintColor).toBe("#000000");
+    expect(options.blur).toBe(14);
+  });
+
+  it("merges preset overrides on top of base", () => {
+    const { options } = resolveTemplate("auroraNorth");
+    expect(options.colors).toEqual(["#a78bfa", "#818cf8", "#6ee7b7"]);
+    expect(options.animationSpeed).toBe(10);
+    // Should still have base blur
+    expect(options.blur).toBe(16);
+  });
+});
+
+describe("templateRenderTiers", () => {
+  it("maps all 8 templates", () => {
+    expect(Object.keys(templateRenderTiers)).toHaveLength(8);
+  });
+
+  it("CSS templates are correct", () => {
+    expect(templateRenderTiers.frosted).toBe("css");
+    expect(templateRenderTiers.aurora).toBe("css");
+    expect(templateRenderTiers.prism).toBe("css");
+    expect(templateRenderTiers.holographic).toBe("css");
+    expect(templateRenderTiers.thin).toBe("css");
+  });
+
+  it("SVG filter templates are correct", () => {
+    expect(templateRenderTiers.crystal).toBe("svg-filter");
+    expect(templateRenderTiers.smoke).toBe("svg-filter");
+    expect(templateRenderTiers.refraction).toBe("svg-filter");
   });
 });
