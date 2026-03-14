@@ -58,7 +58,7 @@ export default function Page() {
     <div>
       {/* Glass Hero with animated bubbles */}
       <GlassHero
-        tagline="Customize your style, choose between 2 different engines for the best support"
+        tagline="Beautiful glass effects for your UI. One component, every framework."
       />
 
       {/* Effect showcase grid */}
@@ -112,7 +112,7 @@ export default function Page() {
       <section className="max-w-3xl mx-auto px-6 pb-24 text-center">
         <h2 className="text-3xl font-bold mb-4">Ready to add some glass?</h2>
         <p className="text-slate-400 mb-8">
-          Explore the gallery or dive into the docs.
+          Explore the gallery, try the playground, or dive into the docs.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a
@@ -122,10 +122,10 @@ export default function Page() {
             View Gallery <ArrowRight size={18} />
           </a>
           <a
-            href="/docs"
+            href="/playground"
             className="inline-flex items-center justify-center gap-2 bg-slate-800 border border-slate-700 text-white px-6 py-3 rounded-xl font-semibold hover:bg-slate-700 transition-colors"
           >
-            Read the Docs
+            Open Playground <ArrowRight size={18} />
           </a>
         </div>
       </section>

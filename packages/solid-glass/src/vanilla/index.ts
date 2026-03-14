@@ -1,66 +1,73 @@
-import type { GlassEffectName, GlassEffectMap } from "../types";
-import { getEffect } from "../effects";
+import type { GlassOptions, TemplateName, TemplatePresetName } from "../types";
+import { renderGlass } from "../render-glass";
+import { injectSvgFilter, ensureStyles } from "../dom";
 
 /**
  * Apply a glass effect to a plain DOM element.
+ * Returns a cleanup function that fully removes the effect.
  *
  * @example
  * ```js
- * import { applyGlass, removeGlass } from "solid-glass/vanilla";
- * import "solid-glass/css";
+ * import { applyGlass } from "solid-glass/vanilla";
  *
- * const el = document.querySelector("#card");
- * const cleanup = applyGlass(el, "frosted", { blur: 16 });
+ * // Zero config
+ * const cleanup = applyGlass(document.querySelector("#card"));
  *
- * // Later: remove the effect
+ * // With template + overrides
+ * const cleanup = applyGlass(el, "aurora", { blur: 20, paused: true });
+ *
+ * // Named preset
+ * const cleanup = applyGlass(el, "frostedDark");
+ *
+ * // Later: full cleanup
  * cleanup();
  * ```
  */
-export function applyGlass<E extends GlassEffectName>(
+export function applyGlass(
   element: HTMLElement,
-  effect: E,
-  options?: GlassEffectMap[E]
+  template: TemplateName | TemplatePresetName = "frosted",
+  options?: GlassOptions
 ): () => void {
-  const gen = getEffect(effect);
-  const result = gen(options ?? ({} as GlassEffectMap[E]));
+  ensureStyles();
 
-  // Apply class
-  element.classList.add(result.className);
+  const result = renderGlass(template, options ?? {});
+
+  // Apply classes
+  const classes = result.className.split(" ").filter(Boolean);
+  element.classList.add(...classes);
 
   // Apply CSS variables
+  const appliedVars: string[] = [];
   for (const [key, val] of Object.entries(result.cssVars)) {
     element.style.setProperty(key, String(val));
+    appliedVars.push(key);
   }
 
-  // Inject SVG filter if needed
-  let svgEl: Element | null = null;
-  if (result.svgFilter) {
-    const container = document.createElement("div");
-    container.innerHTML = result.svgFilter;
-    svgEl = container.firstElementChild;
-    if (svgEl) {
-      document.body.appendChild(svgEl);
+  // Apply inline styles
+  const appliedStyles: string[] = [];
+  if (result.inlineStyle) {
+    for (const [key, val] of Object.entries(result.inlineStyle)) {
+      const cssKey = key.replace(/([A-Z])/g, "-$1").toLowerCase();
+      element.style.setProperty(cssKey, String(val));
+      appliedStyles.push(cssKey);
     }
   }
 
-  // Return cleanup function
+  // Inject SVG filter
+  let cleanupSvg: (() => void) | null = null;
+  if (result.svgFilter) {
+    cleanupSvg = injectSvgFilter(result.svgFilter);
+  }
+
+  // Return full cleanup
   return () => {
-    element.classList.remove(result.className);
-    for (const key of Object.keys(result.cssVars)) {
+    element.classList.remove(...classes);
+    for (const key of appliedVars) {
       element.style.removeProperty(key);
     }
-    if (svgEl) {
-      svgEl.remove();
+    for (const key of appliedStyles) {
+      element.style.removeProperty(key);
     }
+    cleanupSvg?.();
   };
-}
-
-/**
- * Shorthand: remove a glass effect class from an element.
- * For full cleanup, use the function returned by `applyGlass`.
- */
-export function removeGlass(element: HTMLElement, effect: GlassEffectName) {
-  const gen = getEffect(effect);
-  const result = gen({});
-  element.classList.remove(result.className);
 }

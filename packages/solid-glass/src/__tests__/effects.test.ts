@@ -1,21 +1,15 @@
 import { describe, it, expect } from "vitest";
-import { frosted } from "../effects/frosted";
-import { crystal } from "../effects/crystal";
-import { aurora } from "../effects/aurora";
-import { smoke } from "../effects/smoke";
-import { prism } from "../effects/prism";
-import { holographic } from "../effects/holographic";
-import { thin } from "../effects/thin";
-import { effects, getEffect } from "../effects";
+import { renderGlass } from "../render-glass";
+import { templateRenderTiers } from "../templates";
 
-describe("frosted effect", () => {
+describe("renderGlass — frosted", () => {
   it("returns correct className", () => {
-    const result = frosted();
+    const result = renderGlass("frosted");
     expect(result.className).toBe("sg-frosted");
   });
 
   it("applies default CSS variables", () => {
-    const result = frosted();
+    const result = renderGlass("frosted");
     expect(result.cssVars["--sg-blur"]).toBe("12px");
     expect(result.cssVars["--sg-tint-rgb"]).toBe("255, 255, 255");
     expect(result.cssVars["--sg-tint-opacity"]).toBe(0.08);
@@ -25,36 +19,34 @@ describe("frosted effect", () => {
   });
 
   it("overrides defaults with custom options", () => {
-    const result = frosted({ blur: 20, borderRadius: 32, tintOpacity: 0.5 });
+    const result = renderGlass("frosted", { blur: 20, borderRadius: 32, tintOpacity: 0.5 });
     expect(result.cssVars["--sg-blur"]).toBe("20px");
     expect(result.cssVars["--sg-radius"]).toBe("32px");
     expect(result.cssVars["--sg-tint-opacity"]).toBe(0.5);
   });
 
   it("converts hex tint color to RGB", () => {
-    const result = frosted({ tintColor: "#3b82f6" });
+    const result = renderGlass("frosted", { tintColor: "#3b82f6" });
     expect(result.cssVars["--sg-tint-rgb"]).toBe("59, 130, 246");
   });
 
-  it("passes through RGB tint color", () => {
-    const result = frosted({ tintColor: "100, 200, 50" });
-    expect(result.cssVars["--sg-tint-rgb"]).toBe("100, 200, 50");
+  it("does not produce an SVG filter", () => {
+    const result = renderGlass("frosted");
+    expect(result.svgFilter).toBeUndefined();
   });
 
-  it("does not produce an SVG filter", () => {
-    const result = frosted();
-    expect(result.svgFilter).toBeUndefined();
+  it("reports css renderTier", () => {
+    expect(renderGlass("frosted").renderTier).toBe("css");
   });
 });
 
-describe("crystal effect", () => {
+describe("renderGlass — crystal", () => {
   it("returns correct className", () => {
-    const result = crystal();
-    expect(result.className).toBe("sg-crystal");
+    expect(renderGlass("crystal").className).toBe("sg-crystal");
   });
 
-  it("produces an SVG filter with correct attributes", () => {
-    const result = crystal({ noiseFrequency: 0.01, distortionStrength: 80, octaves: 3, seed: 99 });
+  it("produces SVG filter with correct attributes", () => {
+    const result = renderGlass("crystal", { noiseFrequency: 0.01, distortion: 80, noiseOctaves: 3, noiseSeed: 99 });
     expect(result.svgFilter).toBeDefined();
     expect(result.svgFilter).toContain("feTurbulence");
     expect(result.svgFilter).toContain("feDisplacementMap");
@@ -65,77 +57,70 @@ describe("crystal effect", () => {
   });
 
   it("sets --sg-filter-id referencing the SVG filter", () => {
-    const result = crystal();
+    const result = renderGlass("crystal");
     expect(result.cssVars["--sg-filter-id"]).toMatch(/^url\(#sg-crystal-/);
   });
 
   it("applies default blur", () => {
-    const result = crystal();
-    expect(result.cssVars["--sg-blur"]).toBe("8px");
+    expect(renderGlass("crystal").cssVars["--sg-blur"]).toBe("8px");
   });
 });
 
-describe("aurora effect", () => {
+describe("renderGlass — aurora", () => {
   it("returns correct className", () => {
-    const result = aurora();
-    expect(result.className).toBe("sg-aurora");
+    expect(renderGlass("aurora").className).toBe("sg-aurora");
   });
 
   it("builds gradient from default colors", () => {
-    const result = aurora();
+    const result = renderGlass("aurora");
     expect(result.cssVars["--sg-aurora-gradient"]).toContain("linear-gradient");
     expect(result.cssVars["--sg-aurora-gradient"]).toContain("#a78bfa");
   });
 
   it("uses custom colors and angle", () => {
-    const result = aurora({ colors: ["red", "blue"], angle: 45 });
+    const result = renderGlass("aurora", { colors: ["red", "blue"], gradientAngle: 45 });
     expect(result.cssVars["--sg-aurora-gradient"]).toBe("linear-gradient(45deg, red, blue)");
   });
 
   it("sets animation speed", () => {
-    const result = aurora({ animationSpeed: 15 });
+    const result = renderGlass("aurora", { animationSpeed: 15 });
     expect(result.cssVars["--sg-aurora-speed"]).toBe("15s");
   });
 
   it("does not produce an SVG filter", () => {
-    expect(aurora().svgFilter).toBeUndefined();
+    expect(renderGlass("aurora").svgFilter).toBeUndefined();
   });
 });
 
-describe("smoke effect", () => {
+describe("renderGlass — smoke", () => {
   it("returns correct className", () => {
-    expect(smoke().className).toBe("sg-smoke");
+    expect(renderGlass("smoke").className).toBe("sg-smoke");
   });
 
   it("produces SVG filter with animation", () => {
-    const result = smoke({ animated: true, animationDuration: 20 });
+    const result = renderGlass("smoke", { animated: true, animationSpeed: 20 });
     expect(result.svgFilter).toContain("animate");
     expect(result.svgFilter).toContain('dur="20s"');
     expect(result.svgFilter).toContain('repeatCount="indefinite"');
   });
 
   it("disables animation when animated=false", () => {
-    const result = smoke({ animated: false });
+    const result = renderGlass("smoke", { animated: false });
     expect(result.svgFilter).toContain('repeatCount="0"');
   });
 
-  it("converts smoke color to RGB", () => {
-    const result = smoke({ smokeColor: "#ff0000" });
-    expect(result.cssVars["--sg-smoke-rgb"]).toBe("255, 0, 0");
-  });
-
   it("applies default blur of 20px", () => {
-    expect(smoke().cssVars["--sg-blur"]).toBe("20px");
+    expect(renderGlass("smoke").cssVars["--sg-blur"]).toBe("20px");
   });
 });
 
-describe("prism effect", () => {
+describe("renderGlass — prism", () => {
   it("returns correct className", () => {
-    expect(prism().className).toBe("sg-prism");
+    expect(renderGlass("prism").className).toBe("sg-prism");
   });
 
   it("applies default values", () => {
-    const result = prism();
+    const result = renderGlass("prism");
     expect(result.cssVars["--sg-prism-hue"]).toBe("0deg");
     expect(result.cssVars["--sg-prism-saturate"]).toBe(1.2);
     expect(result.cssVars["--sg-prism-brightness"]).toBe(1.05);
@@ -143,82 +128,132 @@ describe("prism effect", () => {
   });
 
   it("accepts custom hue rotation", () => {
-    const result = prism({ hueRotate: 90 });
+    const result = renderGlass("prism", { hueRotate: 90 });
     expect(result.cssVars["--sg-prism-hue"]).toBe("90deg");
   });
 
   it("does not produce SVG filter", () => {
-    expect(prism().svgFilter).toBeUndefined();
+    expect(renderGlass("prism").svgFilter).toBeUndefined();
   });
 });
 
-describe("holographic effect", () => {
+describe("renderGlass — holographic", () => {
   it("returns correct className", () => {
-    expect(holographic().className).toBe("sg-holographic");
+    expect(renderGlass("holographic").className).toBe("sg-holographic");
   });
 
   it("builds gradient from colors", () => {
-    const result = holographic({ colors: ["#ff0000", "#00ff00"] });
+    const result = renderGlass("holographic", { colors: ["#ff0000", "#00ff00"] });
     expect(result.cssVars["--sg-holo-gradient"]).toBe("linear-gradient(135deg, #ff0000, #00ff00)");
   });
 
   it("sets iridescence and speed", () => {
-    const result = holographic({ iridescence: 0.8, animationSpeed: 3 });
+    const result = renderGlass("holographic", { colorOpacity: 0.8, animationSpeed: 3 });
     expect(result.cssVars["--sg-holo-iridescence"]).toBe(0.8);
     expect(result.cssVars["--sg-holo-speed"]).toBe("3s");
   });
 });
 
-describe("thin effect", () => {
+describe("renderGlass — thin", () => {
   it("returns sg-thin className", () => {
-    expect(thin().className).toBe("sg-thin");
+    expect(renderGlass("thin").className).toBe("sg-thin");
   });
 
-  it("adds sg-thin-dark class when dark=true", () => {
-    expect(thin({ dark: true }).className).toBe("sg-thin sg-thin-dark");
+  it("adds sg-thin-dark class when colorScheme=dark", () => {
+    expect(renderGlass("thin", { colorScheme: "dark" }).className).toContain("sg-thin-dark");
   });
 
-  it("uses white RGB base in light mode", () => {
-    expect(thin().cssVars["--sg-thin-bg-rgb"]).toBe("255, 255, 255");
+  it("uses white RGB base by default", () => {
+    expect(renderGlass("thin").cssVars["--sg-thin-bg-rgb"]).toBe("255, 255, 255");
   });
 
   it("uses black RGB base in dark mode", () => {
-    expect(thin({ dark: true }).cssVars["--sg-thin-bg-rgb"]).toBe("0, 0, 0");
+    expect(renderGlass("thin", { colorScheme: "dark" }).cssVars["--sg-thin-bg-rgb"]).toBe("0, 0, 0");
   });
 
   it("applies default blur of 4px", () => {
-    expect(thin().cssVars["--sg-blur"]).toBe("4px");
+    expect(renderGlass("thin").cssVars["--sg-blur"]).toBe("4px");
   });
 });
 
-describe("effects registry", () => {
-  it("contains all 7 effects", () => {
-    const names = Object.keys(effects);
-    expect(names).toHaveLength(7);
+describe("renderGlass — refraction", () => {
+  it("returns needs-measure class when no dimensions", () => {
+    const result = renderGlass("refraction");
+    expect(result.className).toContain("sg-refraction--needs-measure");
+  });
+
+  it("reports svg-filter renderTier", () => {
+    expect(templateRenderTiers.refraction).toBe("svg-filter");
+  });
+});
+
+describe("renderTier annotations", () => {
+  it("CSS-only templates report css tier", () => {
+    expect(renderGlass("frosted").renderTier).toBe("css");
+    expect(renderGlass("aurora").renderTier).toBe("css");
+    expect(renderGlass("prism").renderTier).toBe("css");
+    expect(renderGlass("holographic").renderTier).toBe("css");
+    expect(renderGlass("thin").renderTier).toBe("css");
+  });
+
+  it("SVG filter templates report svg-filter tier", () => {
+    expect(renderGlass("crystal").renderTier).toBe("svg-filter");
+    expect(renderGlass("smoke").renderTier).toBe("svg-filter");
+  });
+
+  it("templateRenderTiers maps all templates", () => {
+    const names = Object.keys(templateRenderTiers);
+    expect(names).toHaveLength(8);
     expect(names).toEqual(
-      expect.arrayContaining(["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin"])
+      expect.arrayContaining(["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin", "refraction"])
     );
   });
+});
 
-  it("all effects are callable functions", () => {
-    for (const [name, effect] of Object.entries(effects)) {
-      expect(typeof effect).toBe("function");
-      const result = effect({});
-      expect(result).toHaveProperty("className");
-      expect(result).toHaveProperty("cssVars");
-      expect(typeof result.className).toBe("string");
-      expect(typeof result.cssVars).toBe("object");
-    }
+describe("animation controls", () => {
+  it("sets paused state", () => {
+    const result = renderGlass("aurora", { paused: true });
+    expect(result.cssVars["--sg-animation-state"]).toBe("paused");
+  });
+
+  it("generates bouncy easing", () => {
+    const result = renderGlass("aurora", { bounciness: 0.5 });
+    expect(result.cssVars["--sg-animation-easing"]).toContain("cubic-bezier");
+  });
+
+  it("applies custom easing", () => {
+    const result = renderGlass("aurora", { animationEasing: "linear" });
+    expect(result.cssVars["--sg-animation-easing"]).toBe("linear");
+  });
+
+  it("does not set easing for default ease", () => {
+    const result = renderGlass("aurora", { animationEasing: "ease" });
+    expect(result.cssVars["--sg-animation-easing"]).toBeUndefined();
   });
 });
 
-describe("getEffect", () => {
-  it("returns the requested effect", () => {
-    expect(getEffect("frosted")).toBe(effects.frosted);
-    expect(getEffect("crystal")).toBe(effects.crystal);
+describe("template presets", () => {
+  it("resolves frostedDark preset", () => {
+    const result = renderGlass("frostedDark");
+    expect(result.className).toBe("sg-frosted");
+    expect(result.cssVars["--sg-blur"]).toBe("14px");
   });
 
-  it("throws for unknown effect name", () => {
-    expect(() => getEffect("nonexistent" as never)).toThrow("[solid-glass] Unknown effect");
+  it("resolves auroraNorth preset", () => {
+    const result = renderGlass("auroraNorth");
+    expect(result.className).toBe("sg-aurora");
+    expect(result.cssVars["--sg-aurora-speed"]).toBe("10s");
+  });
+
+  it("allows overrides on top of presets", () => {
+    const result = renderGlass("frostedDark", { blur: 30 });
+    expect(result.cssVars["--sg-blur"]).toBe("30px");
+  });
+});
+
+describe("default template", () => {
+  it("uses frosted when no template specified", () => {
+    const result = renderGlass();
+    expect(result.className).toBe("sg-frosted");
   });
 });

@@ -16,6 +16,7 @@ export const prism: GlassStyleGenerator<PrismGlassOptions> = (opts = {}) => {
 
   return {
     className: "sg-prism",
+    renderTier: "css",
     cssVars: {
       "--sg-blur": `${o.blur}px`,
       "--sg-prism-hue": `${o.hueRotate}deg`,

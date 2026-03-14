@@ -21,6 +21,7 @@ export const smoke: GlassStyleGenerator<SmokeGlassOptions> = (opts = {}) => {
 
   return {
     className: "sg-smoke",
+    renderTier: "svg-filter",
     cssVars: {
       "--sg-blur": `${o.blur}px`,
       "--sg-smoke-rgb": rgb,

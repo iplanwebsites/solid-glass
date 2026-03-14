@@ -1,9 +1,9 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
-import { Glass, type GlassEffectName } from "solid-glass";
+import { Glass, type TemplateName } from "solid-glass";
 import { ArrowRight, Sparkles, Play, Pause, Settings2, RotateCcw, X } from "lucide-react";
-import { Switch } from "../components/ui/switch";
 import { Slider } from "../components/ui/slider";
+import { EffectGrid } from "../components/EffectGrid";
 
 // Hero background images - random on page load
 const HERO_BGS = [
@@ -301,13 +301,6 @@ const DEFAULT_SVG_PARAMS = {
   specularOpacity: 0.60,
 };
 
-// Default Shader parameters
-const DEFAULT_SHADER_PARAMS = {
-  blur: 12,
-  tintOpacity: 0.1,
-  animationSpeed: 6,
-};
-
 interface SVGParams {
   bubbleCount: number;
   bezelWidth: number;
@@ -317,46 +310,31 @@ interface SVGParams {
   specularOpacity: number;
 }
 
-interface ShaderParams {
-  blur: number;
-  tintOpacity: number;
-  animationSpeed: number;
-}
-
 function ControlsPanel({
   isOpen,
   onClose,
-  engine,
-  setEngine,
   isPaused,
   setIsPaused,
   svgParams,
   setSvgParams,
-  shaderParams,
-  setShaderParams,
   onReset,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  engine: "svg" | "shaders";
-  setEngine: (e: "svg" | "shaders") => void;
   isPaused: boolean;
   setIsPaused: (p: boolean) => void;
   svgParams: SVGParams;
   setSvgParams: (p: SVGParams) => void;
-  shaderParams: ShaderParams;
-  setShaderParams: (p: ShaderParams) => void;
   onReset: () => void;
 }) {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-y-0 right-0 z-50 w-80 bg-slate-900/95 backdrop-blur-xl border-l border-slate-700 shadow-2xl flex flex-col">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
         <h3 className="text-sm font-semibold text-white flex items-center gap-2">
           <Settings2 size={16} className="text-lime-400" />
-          Controls
+          Glass Controls
         </h3>
         <button
           onClick={onClose}
@@ -366,31 +344,7 @@ function ControlsPanel({
         </button>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Engine Toggle */}
-        <div>
-          <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">Engine</label>
-          <div className="mt-2 flex items-center justify-between bg-slate-800 rounded-lg p-1">
-            <button
-              onClick={() => setEngine("svg")}
-              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                engine === "svg" ? "bg-lime-500 text-slate-900" : "text-slate-400 hover:text-white"
-              }`}
-            >
-              SVG Refraction
-            </button>
-            <button
-              onClick={() => setEngine("shaders")}
-              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                engine === "shaders" ? "bg-lime-500 text-slate-900" : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Shaders
-            </button>
-          </div>
-        </div>
-
         {/* Animation Toggle */}
         <div>
           <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">Animation</label>
@@ -410,140 +364,56 @@ function ControlsPanel({
 
         <div className="h-px bg-slate-700" />
 
-        {/* Engine-specific params */}
-        {engine === "svg" ? (
+        {/* SVG Refraction Parameters */}
+        <div className="space-y-4">
+          <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">SVG Refraction</label>
           <div className="space-y-4">
-            <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">SVG Parameters</label>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-xs mb-2">
-                  <span className="text-slate-300">Bubbles</span>
-                  <span className="text-slate-500 font-mono">{svgParams.bubbleCount}</span>
-                </div>
-                <Slider
-                  value={[svgParams.bubbleCount]}
-                  min={1}
-                  max={15}
-                  step={1}
-                  onValueChange={([v]) => setSvgParams({ ...svgParams, bubbleCount: v })}
-                />
+            <div>
+              <div className="flex justify-between text-xs mb-2">
+                <span className="text-slate-300">Bubbles</span>
+                <span className="text-slate-500 font-mono">{svgParams.bubbleCount}</span>
               </div>
-              <div>
-                <div className="flex justify-between text-xs mb-2">
-                  <span className="text-slate-300">Bezel Width</span>
-                  <span className="text-slate-500 font-mono">{svgParams.bezelWidth}</span>
-                </div>
-                <Slider
-                  value={[svgParams.bezelWidth]}
-                  min={5}
-                  max={60}
-                  step={1}
-                  onValueChange={([v]) => setSvgParams({ ...svgParams, bezelWidth: v })}
-                />
+              <Slider value={[svgParams.bubbleCount]} min={1} max={15} step={1} onValueChange={([v]) => setSvgParams({ ...svgParams, bubbleCount: v })} />
+            </div>
+            <div>
+              <div className="flex justify-between text-xs mb-2">
+                <span className="text-slate-300">Bezel Width</span>
+                <span className="text-slate-500 font-mono">{svgParams.bezelWidth}</span>
               </div>
-              <div>
-                <div className="flex justify-between text-xs mb-2">
-                  <span className="text-slate-300">Glass Thickness</span>
-                  <span className="text-slate-500 font-mono">{svgParams.glassThickness}</span>
-                </div>
-                <Slider
-                  value={[svgParams.glassThickness]}
-                  min={50}
-                  max={500}
-                  step={10}
-                  onValueChange={([v]) => setSvgParams({ ...svgParams, glassThickness: v })}
-                />
+              <Slider value={[svgParams.bezelWidth]} min={5} max={60} step={1} onValueChange={([v]) => setSvgParams({ ...svgParams, bezelWidth: v })} />
+            </div>
+            <div>
+              <div className="flex justify-between text-xs mb-2">
+                <span className="text-slate-300">Glass Thickness</span>
+                <span className="text-slate-500 font-mono">{svgParams.glassThickness}</span>
               </div>
-              <div>
-                <div className="flex justify-between text-xs mb-2">
-                  <span className="text-slate-300">Blur</span>
-                  <span className="text-slate-500 font-mono">{svgParams.blur}</span>
-                </div>
-                <Slider
-                  value={[svgParams.blur]}
-                  min={0}
-                  max={20}
-                  step={1}
-                  onValueChange={([v]) => setSvgParams({ ...svgParams, blur: v })}
-                />
+              <Slider value={[svgParams.glassThickness]} min={50} max={500} step={10} onValueChange={([v]) => setSvgParams({ ...svgParams, glassThickness: v })} />
+            </div>
+            <div>
+              <div className="flex justify-between text-xs mb-2">
+                <span className="text-slate-300">Blur</span>
+                <span className="text-slate-500 font-mono">{svgParams.blur}</span>
               </div>
-              <div>
-                <div className="flex justify-between text-xs mb-2">
-                  <span className="text-slate-300">Refractive Index</span>
-                  <span className="text-slate-500 font-mono">{svgParams.refractiveIndex.toFixed(1)}</span>
-                </div>
-                <Slider
-                  value={[svgParams.refractiveIndex]}
-                  min={1.0}
-                  max={3.0}
-                  step={0.1}
-                  onValueChange={([v]) => setSvgParams({ ...svgParams, refractiveIndex: v })}
-                />
+              <Slider value={[svgParams.blur]} min={0} max={20} step={1} onValueChange={([v]) => setSvgParams({ ...svgParams, blur: v })} />
+            </div>
+            <div>
+              <div className="flex justify-between text-xs mb-2">
+                <span className="text-slate-300">Refractive Index</span>
+                <span className="text-slate-500 font-mono">{svgParams.refractiveIndex.toFixed(1)}</span>
               </div>
-              <div>
-                <div className="flex justify-between text-xs mb-2">
-                  <span className="text-slate-300">Specular</span>
-                  <span className="text-slate-500 font-mono">{svgParams.specularOpacity.toFixed(2)}</span>
-                </div>
-                <Slider
-                  value={[svgParams.specularOpacity]}
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  onValueChange={([v]) => setSvgParams({ ...svgParams, specularOpacity: v })}
-                />
+              <Slider value={[svgParams.refractiveIndex]} min={1.0} max={3.0} step={0.1} onValueChange={([v]) => setSvgParams({ ...svgParams, refractiveIndex: v })} />
+            </div>
+            <div>
+              <div className="flex justify-between text-xs mb-2">
+                <span className="text-slate-300">Specular</span>
+                <span className="text-slate-500 font-mono">{svgParams.specularOpacity.toFixed(2)}</span>
               </div>
+              <Slider value={[svgParams.specularOpacity]} min={0} max={1} step={0.05} onValueChange={([v]) => setSvgParams({ ...svgParams, specularOpacity: v })} />
             </div>
           </div>
-        ) : (
-          <div className="space-y-4">
-            <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">Shader Parameters</label>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-xs mb-2">
-                  <span className="text-slate-300">Blur</span>
-                  <span className="text-slate-500 font-mono">{shaderParams.blur}</span>
-                </div>
-                <Slider
-                  value={[shaderParams.blur]}
-                  min={0}
-                  max={30}
-                  step={1}
-                  onValueChange={([v]) => setShaderParams({ ...shaderParams, blur: v })}
-                />
-              </div>
-              <div>
-                <div className="flex justify-between text-xs mb-2">
-                  <span className="text-slate-300">Tint Opacity</span>
-                  <span className="text-slate-500 font-mono">{shaderParams.tintOpacity.toFixed(2)}</span>
-                </div>
-                <Slider
-                  value={[shaderParams.tintOpacity]}
-                  min={0}
-                  max={0.5}
-                  step={0.01}
-                  onValueChange={([v]) => setShaderParams({ ...shaderParams, tintOpacity: v })}
-                />
-              </div>
-              <div>
-                <div className="flex justify-between text-xs mb-2">
-                  <span className="text-slate-300">Animation Speed</span>
-                  <span className="text-slate-500 font-mono">{shaderParams.animationSpeed}s</span>
-                </div>
-                <Slider
-                  value={[shaderParams.animationSpeed]}
-                  min={1}
-                  max={20}
-                  step={1}
-                  onValueChange={([v]) => setShaderParams({ ...shaderParams, animationSpeed: v })}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
 
-      {/* Footer */}
       <div className="p-4 border-t border-slate-700">
         <button
           onClick={onReset}
@@ -562,14 +432,12 @@ function HeroSection() {
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isPaused, setIsPaused] = useState(false);
-  const [engine, setEngine] = useState<"svg" | "shaders">("svg");
   const [svgParams, setSvgParams] = useState<SVGParams>(DEFAULT_SVG_PARAMS);
-  const [shaderParams, setShaderParams] = useState<ShaderParams>(DEFAULT_SHADER_PARAMS);
   const [resetKey, setResetKey] = useState(0);
   const [controlsOpen, setControlsOpen] = useState(false);
 
   const bubbles = useAnimatedBubbles(
-    engine === "svg" ? svgParams.bubbleCount : 0,
+    svgParams.bubbleCount,
     containerSize,
     isPaused,
     resetKey
@@ -595,7 +463,6 @@ function HeroSection() {
 
   const handleReset = () => {
     setSvgParams(DEFAULT_SVG_PARAMS);
-    setShaderParams(DEFAULT_SHADER_PARAMS);
     setResetKey((k) => k + 1);
   };
 
@@ -623,33 +490,10 @@ function HeroSection() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950/80" />
 
-        {/* Animated bubbles (SVG engine) */}
-        {engine === "svg" && bubbles.map(bubble => (
+        {/* Animated glass bubbles */}
+        {bubbles.map(bubble => (
           <GlassBubble key={bubble.id} bubble={bubble} mousePos={mousePos} svgParams={svgParams} />
         ))}
-
-        {/* Shader effect overlay panels */}
-        {engine === "shaders" && (
-          <div className="absolute inset-0 flex items-center justify-center gap-8 p-12 flex-wrap">
-            {(["frosted", "crystal", "aurora", "prism", "holographic", "smoke"] as GlassEffectName[]).map((effect, i) => (
-              <Glass
-                key={effect}
-                effect={effect}
-                options={{
-                  blur: shaderParams.blur,
-                  tintOpacity: shaderParams.tintOpacity,
-                  animationSpeed: shaderParams.animationSpeed + i,
-                }}
-                className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center rounded-2xl animate-float"
-                style={{
-                  animationDelay: `${i * 0.3}s`,
-                }}
-              >
-                <span className="text-white/90 font-semibold text-sm capitalize">{effect}</span>
-              </Glass>
-            ))}
-          </div>
-        )}
 
         {/* Hero content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
@@ -682,7 +526,7 @@ function HeroSection() {
                 Explore Gallery <ArrowRight size={18} />
               </a>
               <a
-                href="/showcase"
+                href="/playground"
                 className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition-colors"
               >
                 Open Playground
@@ -705,14 +549,10 @@ function HeroSection() {
       <ControlsPanel
         isOpen={controlsOpen}
         onClose={() => setControlsOpen(false)}
-        engine={engine}
-        setEngine={setEngine}
         isPaused={isPaused}
         setIsPaused={setIsPaused}
         svgParams={svgParams}
         setSvgParams={setSvgParams}
-        shaderParams={shaderParams}
-        setShaderParams={setShaderParams}
         onReset={handleReset}
       />
     </section>
@@ -723,10 +563,10 @@ function GlassButtonsShowcase() {
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
 
   const buttons = [
-    { effect: "frosted" as GlassEffectName, label: "Frosted Button", options: { blur: 12, tintOpacity: 0.15 } },
-    { effect: "crystal" as GlassEffectName, label: "Crystal Button", options: { blur: 8, distortionStrength: 30 } },
-    { effect: "aurora" as GlassEffectName, label: "Aurora Button", options: { colors: ["#a78bfa", "#6ee7b7"] } },
-    { effect: "holographic" as GlassEffectName, label: "Holo Button", options: { iridescence: 0.5 } },
+    { template: "frosted" as TemplateName, label: "Frosted Button", overrides: { blur: 12, tintOpacity: 0.15 } },
+    { template: "crystal" as TemplateName, label: "Crystal Button", overrides: { blur: 8, distortion: 30 } },
+    { template: "aurora" as TemplateName, label: "Aurora Button", overrides: { colors: ["#a78bfa", "#6ee7b7"] } },
+    { template: "holographic" as TemplateName, label: "Holo Button", overrides: { iridescence: 0.5 } },
   ];
 
   return (
@@ -752,13 +592,13 @@ function GlassButtonsShowcase() {
           <div className="relative z-10 flex flex-wrap items-center justify-center gap-6 p-12">
             {buttons.map((btn) => (
               <Glass
-                key={btn.effect}
-                effect={btn.effect}
-                options={btn.options as never}
+                key={btn.template}
+                template={btn.template}
+                {...btn.overrides}
                 className={`px-8 py-4 rounded-2xl cursor-pointer transition-all duration-300 ${
-                  hoveredBtn === btn.effect ? "scale-110 shadow-2xl" : ""
+                  hoveredBtn === btn.template ? "scale-110 shadow-2xl" : ""
                 }`}
-                onMouseEnter={() => setHoveredBtn(btn.effect)}
+                onMouseEnter={() => setHoveredBtn(btn.template)}
                 onMouseLeave={() => setHoveredBtn(null)}
               >
                 <span className="text-white font-semibold text-sm whitespace-nowrap">{btn.label}</span>
@@ -865,29 +705,7 @@ function LoupeShowcase() {
   );
 }
 
-function InteractivePanelGrid() {
-  const [activePanel, setActivePanel] = useState<number | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const panels = [
-    { effect: "frosted" as GlassEffectName, title: "Frosted", desc: "Classic Apple-style blur" },
-    { effect: "crystal" as GlassEffectName, title: "Crystal", desc: "Noise-based distortion" },
-    { effect: "aurora" as GlassEffectName, title: "Aurora", desc: "Animated gradient overlay" },
-    { effect: "smoke" as GlassEffectName, title: "Smoke", desc: "Dark animated turbulence" },
-    { effect: "prism" as GlassEffectName, title: "Prism", desc: "Spectral color splitting" },
-    { effect: "holographic" as GlassEffectName, title: "Holographic", desc: "Iridescent shimmer" },
-  ];
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    setMousePos({
-      x: ((e.clientX - rect.left) / rect.width - 0.5) * 20,
-      y: ((e.clientY - rect.top) / rect.height - 0.5) * 20,
-    });
-  }, []);
-
+function EffectShowcaseSection() {
   return (
     <section className="py-20 px-6">
       <div className="max-w-6xl mx-auto">
@@ -896,53 +714,11 @@ function InteractivePanelGrid() {
             Effect Showcase
           </h2>
           <p className="text-slate-400 mt-3 max-w-2xl mx-auto">
-            Six distinct glass effects. Hover to expand and explore.
+            All seven glass effects at a glance. Hover to copy the code.
           </p>
         </div>
 
-        <div
-          ref={containerRef}
-          className="relative overflow-hidden rounded-3xl"
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => setMousePos({ x: 0, y: 0 })}
-        >
-          <img
-            src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1400&q=80"
-            alt=""
-            className="absolute w-[110%] h-[110%] object-cover transition-transform duration-200 ease-out"
-            style={{
-              top: "-5%",
-              left: "-5%",
-              transform: `translate(${mousePos.x}px, ${mousePos.y}px)`,
-            }}
-          />
-          <div className="absolute inset-0 bg-black/10" />
-
-          <div className="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-4 p-6">
-            {panels.map((panel, i) => (
-              <Glass
-                key={panel.effect}
-                effect={panel.effect}
-                options={{ blur: 14 }}
-                className={`p-6 rounded-2xl cursor-pointer transition-all duration-500 ${
-                  activePanel === i ? "scale-105 z-10" : activePanel !== null ? "scale-95 opacity-70" : ""
-                }`}
-                onMouseEnter={() => setActivePanel(i)}
-                onMouseLeave={() => setActivePanel(null)}
-              >
-                <h3 className="text-white font-semibold text-lg">{panel.title}</h3>
-                <p className="text-white/60 text-sm mt-1">{panel.desc}</p>
-                {activePanel === i && (
-                  <div className="mt-4 pt-4 border-t border-white/20">
-                    <code className="text-[10px] text-lime-300 font-mono">
-                      {`<Glass effect="${panel.effect}" />`}
-                    </code>
-                  </div>
-                )}
-              </Glass>
-            ))}
-          </div>
-        </div>
+        <EffectGrid showDescriptions showCopyButtons />
       </div>
     </section>
   );
@@ -954,7 +730,7 @@ export function Kitchen() {
       <HeroSection />
       <GlassButtonsShowcase />
       <LoupeShowcase />
-      <InteractivePanelGrid />
+      <EffectShowcaseSection />
     </div>
   );
 }

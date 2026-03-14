@@ -19,6 +19,18 @@
   pointer-events: none;
 }
 
+/* Content layer sits above effects */
+[class*="sg-"] > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* --- Animation Controls --- */
+[class*="sg-"]::before {
+  animation-play-state: var(--sg-animation-state, running);
+  animation-timing-function: var(--sg-animation-easing, ease);
+}
+
 /* --- Frosted Glass --- */
 .sg-frosted::before {
   z-index: 1;
@@ -33,7 +45,7 @@
   backdrop-filter: blur(var(--sg-blur, 12px));
 }
 
-/* --- Crystal Glass (with SVG distortion) --- */
+/* --- Crystal Glass (SVG distortion) --- */
 .sg-crystal::before {
   z-index: 1;
   background: rgba(var(--sg-tint-rgb, 255, 255, 255), var(--sg-tint-opacity, 0.05));
@@ -55,7 +67,8 @@
   background: var(--sg-aurora-gradient);
   background-size: 200% 200%;
   opacity: var(--sg-aurora-opacity, 0.15);
-  animation: sg-aurora-shift var(--sg-aurora-speed, 8s) ease infinite;
+  animation: sg-aurora-shift var(--sg-aurora-speed, 8s) var(--sg-animation-easing, ease) infinite;
+  animation-play-state: var(--sg-animation-state, running);
 }
 
 .sg-aurora::after {
@@ -117,7 +130,8 @@
   background: var(--sg-holo-gradient);
   background-size: 300% 300%;
   opacity: var(--sg-holo-iridescence, 0.4);
-  animation: sg-holo-shift var(--sg-holo-speed, 6s) ease infinite;
+  animation: sg-holo-shift var(--sg-holo-speed, 6s) var(--sg-animation-easing, ease) infinite;
+  animation-play-state: var(--sg-animation-state, running);
   mix-blend-mode: overlay;
 }
 
@@ -147,8 +161,24 @@
   backdrop-filter: blur(var(--sg-blur, 4px));
 }
 
-/* --- Content layer sits above effects --- */
-[class*="sg-"] > * {
-  position: relative;
-  z-index: 2;
+/* --- Refraction Glass (physics-based SVG) --- */
+.sg-refraction::before {
+  z-index: 1;
+  box-shadow:
+    rgba(0, 0, 0, 0.16) 0px 4px 9px,
+    rgba(0, 0, 0, 0.2) 0px 2px 24px inset,
+    rgba(255, 255, 255, 0.2) 0px -2px 24px inset;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sg-refraction::after {
+  z-index: -1;
+  -webkit-backdrop-filter: var(--sg-refraction-filter);
+  backdrop-filter: var(--sg-refraction-filter);
+}
+
+/* Placeholder while measuring dimensions */
+.sg-refraction--needs-measure::after {
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }

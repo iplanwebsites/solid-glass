@@ -16,6 +16,7 @@ export const holographic: GlassStyleGenerator<HolographicGlassOptions> = (opts =
 
   return {
     className: "sg-holographic",
+    renderTier: "css",
     cssVars: {
       "--sg-blur": `${o.blur}px`,
       "--sg-holo-gradient": `linear-gradient(135deg, ${gradient})`,

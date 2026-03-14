@@ -15,6 +15,7 @@ export const thin: GlassStyleGenerator<ThinGlassOptions> = (opts = {}) => {
 
   return {
     className: `sg-thin${o.dark ? " sg-thin-dark" : ""}`,
+    renderTier: "css",
     cssVars: {
       "--sg-blur": `${o.blur}px`,
       "--sg-thin-bg-rgb": base,

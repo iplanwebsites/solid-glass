@@ -1,6 +1,6 @@
 # Solid Glass
 
-Glass effects for the web. 7 shader-based effects plus a physics-based SVG refraction engine.
+Glass effects for the web. 8 effects across CSS, SVG filters, and physics-based refraction.
 
 **[Live Demo & Docs](https://solidglass.dev)** | [npm](https://www.npmjs.com/package/solid-glass)
 
@@ -23,13 +23,14 @@ import "solid-glass/css";
 
 ## Effects
 
-- **frosted** — Classic Apple-style blur + tint
-- **crystal** — SVG noise-based refraction
-- **aurora** — Animated gradient overlay
-- **smoke** — Animated turbulence
-- **prism** — Spectral color splitting
-- **holographic** — Iridescent shimmer
-- **thin** — Minimal, barely-there glass
+- **frosted** — Classic Apple-style blur + tint *(CSS)*
+- **crystal** — SVG noise-based refraction *(SVG filter)*
+- **aurora** — Animated gradient overlay *(CSS)*
+- **smoke** — Animated turbulence *(SVG filter)*
+- **prism** — Spectral color splitting *(CSS)*
+- **holographic** — Iridescent shimmer *(CSS)*
+- **thin** — Minimal, barely-there glass *(CSS)*
+- **refraction** — Physics-based Snell-Descartes refraction *(SVG filter)*
 
 ## SVG Refraction Engine
 

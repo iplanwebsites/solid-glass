@@ -1,38 +1,42 @@
+// ── Main API ────────────────────────────────────────────────────────────────
+
 // React components & hooks
 export { Glass } from "./react/Glass";
 export { useGlass } from "./react/use-glass";
 
-// Effect style generators
-export { frosted } from "./effects/frosted";
-export { crystal } from "./effects/crystal";
-export { aurora } from "./effects/aurora";
-export { smoke } from "./effects/smoke";
-export { prism } from "./effects/prism";
-export { holographic } from "./effects/holographic";
-export { thin } from "./effects/thin";
-export { effects, getEffect } from "./effects";
+// Rendering pipeline
+export { renderGlass } from "./render-glass";
 
-// Presets
-export { presets, presetNames, liquidGlassPresets, liquidGlassPresetNames } from "./presets";
+// Templates
+export {
+  templates,
+  templatePresets,
+  templateNames,
+  templatePresetNames,
+  templateRenderTiers,
+  templateFallbacks,
+  resolveTemplate,
+  refractionPresets,
+  refractionPresetNames,
+} from "./templates";
 
-// Utilities
-export { hexToRgb, rgbToHex, cn } from "./utils";
+export type { RefractionPresetName } from "./templates";
 
-// Types
+// DOM utilities
+export { injectSvgFilter, ensureStyles } from "./dom";
+
+// ── Types ───────────────────────────────────────────────────────────────────
+
 export type {
-  GlassBaseOptions,
-  GlassEffectName,
-  GlassEffectMap,
+  RenderTier,
+  GlassOptions,
   GlassProps,
   GlassCSSVars,
-  GlassStyleGenerator,
-  FrostedGlassOptions,
-  CrystalGlassOptions,
-  AuroraGlassOptions,
-  SmokeGlassOptions,
-  PrismGlassOptions,
-  HolographicGlassOptions,
-  ThinGlassOptions,
+  GlassRenderResult,
+  TemplateName,
+  TemplatePresetName,
 } from "./types";
 
-export type { PresetName, LiquidGlassPresetName } from "./presets";
+// ── Utilities (for advanced use) ────────────────────────────────────────────
+
+export { hexToRgb, rgbToHex, detectRenderTier } from "./utils";

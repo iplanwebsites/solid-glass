@@ -270,7 +270,7 @@ document.body.insertAdjacentHTML("beforeend", glass.svgFilter);
 element.style.backdropFilter = glass.filterRef;`} />
         <p className="text-slate-400 mt-4 text-sm">
           Physics approach based on <a href="https://kube.io/blog/liquid-glass-css-svg" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">Chris Feijoo's blog post</a>.
-          Try it in the <a href="/showcase" className="text-blue-400 hover:text-blue-300 underline">Playground</a>.
+          Try it in the <a href="/playground" className="text-blue-400 hover:text-blue-300 underline">Playground</a>.
         </p>
       </>
     ),
@@ -293,10 +293,10 @@ element.style.backdropFilter = glass.filterRef;`} />
               </tr>
             </thead>
             <tbody className="text-slate-400">
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassCard</td><td>Frosted glass card with title/subtitle slots</td><td><span className="text-violet-400">Shaders</span></td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassButton</td><td>Interactive glass button with hover states</td><td><span className="text-violet-400">Shaders</span></td></tr>
-              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">Loupe</td><td>Magnifying glass overlay</td><td><span className="text-emerald-400">SVG Refraction</span></td></tr>
-              <tr><td className="py-3 text-white font-mono">LiquidGlassPanel</td><td>Physics-based glass panel wrapper</td><td><span className="text-emerald-400">SVG Refraction</span></td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassCard</td><td>Frosted glass card with title/subtitle slots</td><td><span className="text-violet-400">CSS</span></td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">GlassButton</td><td>Interactive glass button with hover states</td><td><span className="text-violet-400">CSS</span></td></tr>
+              <tr className="border-b border-slate-800"><td className="py-3 text-white font-mono">Loupe</td><td>Magnifying glass overlay</td><td><span className="text-emerald-400">SVG Filter</span></td></tr>
+              <tr><td className="py-3 text-white font-mono">RefractionPanel</td><td>Physics-based glass panel wrapper</td><td><span className="text-emerald-400">SVG Filter</span></td></tr>
             </tbody>
           </table>
         </div>
