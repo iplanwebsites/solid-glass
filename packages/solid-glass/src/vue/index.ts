@@ -85,8 +85,8 @@ export const Glass = defineComponent({
 
     const overrides = computed<GlassOptions>(() => {
       const o: GlassOptions = {};
-      // Only include explicitly set props
-      const keys: (keyof GlassOptions)[] = [
+      // Only include explicitly set props (excluding style/className which aren't Vue props)
+      const keys = [
         "blur", "opacity", "borderRadius", "tintColor", "tintOpacity",
         "borderColor", "borderWidth", "borderOpacity",
         "shadowColor", "shadowBlur", "shadowSpread",
@@ -97,9 +97,9 @@ export const Glass = defineComponent({
         "colors", "colorOpacity", "gradientAngle", "colorBlend",
         "animated", "animationSpeed", "animationEasing", "bounciness", "paused",
         "colorScheme",
-      ];
+      ] as const;
       for (const key of keys) {
-        const val = props[key];
+        const val = (props as Record<string, unknown>)[key];
         if (val !== undefined) (o as Record<string, unknown>)[key] = val;
       }
       return o;

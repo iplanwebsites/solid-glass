@@ -15,7 +15,7 @@ export function renderGlass(
 ): GlassRenderResult {
   // Resolve template defaults + user overrides
   const { base, options: templateOpts } = resolveTemplate(templateName);
-  const opts = { ...templateOpts, ...stripUndefined(overrides) };
+  const opts = { ...templateOpts, ...stripUndefined(overrides as Record<string, unknown>) };
 
   // Apply dark/auto color scheme
   applyColorScheme(opts);
@@ -36,7 +36,7 @@ export function renderGlass(
         }
       });
 
-      if (typeof console !== "undefined" && process?.env?.NODE_ENV !== "production") {
+      if (typeof console !== "undefined") {
         console.warn(
           `[solid-glass] "${base}" requires SVG filters (Chromium 113+). ` +
           `Falling back to "${effectiveBase}". Pass fallback="${effectiveBase}" to silence this.`

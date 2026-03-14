@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
-import { Glass, type GlassEffectName, presets, type PresetName, presetNames, effectRenderTiers } from "solid-glass";
+import { Glass, type TemplateName, templatePresets, type TemplatePresetName, templatePresetNames, templateRenderTiers } from "solid-glass";
 import { createLiquidGlass, type SurfaceType, SURFACE_EQUATIONS } from "solid-glass/engines/svg-refraction";
 import { RotateCcw, Image, Sparkles, Gem, Box, ChevronLeft, ChevronDown } from "lucide-react";
 import { CodeBlock } from "../components/CodeBlock";
@@ -7,19 +7,22 @@ import { CodeBlock } from "../components/CodeBlock";
 /* ─── Framework Code Generators ─── */
 type Framework = "react" | "vue" | "vanilla";
 
-function generateReactSnippet(effect: string, options: Record<string, unknown>) {
+function generateReactSnippet(template: string, options: Record<string, unknown>) {
+  const propsStr = Object.entries(options).map(([k, v]) => typeof v === "string" ? `${k}="${v}"` : `${k}={${JSON.stringify(v)}}`).join("\n  ");
   return `import { Glass } from "solid-glass/react";
 import "solid-glass/css";
 
-<Glass effect="${effect}" options={${JSON.stringify(options, null, 2)}}>
+<Glass template="${template}"
+  ${propsStr}>
   {children}
 </Glass>`;
 }
 
-function generateVueSnippet(effect: string, options: Record<string, unknown>) {
-  const optStr = JSON.stringify(options, null, 2).replace(/"/g, "'");
+function generateVueSnippet(template: string, options: Record<string, unknown>) {
+  const propsStr = Object.entries(options).map(([k, v]) => typeof v === "string" ? `${k}="${v}"` : `:${k}="${JSON.stringify(v).replace(/"/g, "'")}"`).join("\n    ");
   return `<template>
-  <Glass effect="${effect}" :options="${optStr}">
+  <Glass template="${template}"
+    ${propsStr}>
     <slot />
   </Glass>
 </template>
@@ -30,12 +33,12 @@ import "solid-glass/css";
 </script>`;
 }
 
-function generateVanillaSnippet(effect: string, options: Record<string, unknown>) {
+function generateVanillaSnippet(template: string, options: Record<string, unknown>) {
   return `import { applyGlass } from "solid-glass/vanilla";
 import "solid-glass/css";
 
 const el = document.querySelector("#my-card");
-const cleanup = applyGlass(el, "${effect}", ${JSON.stringify(options, null, 2)});
+const cleanup = applyGlass(el, "${template}", ${JSON.stringify(options, null, 2)});
 
 // Later: cleanup();`;
 }
@@ -52,10 +55,10 @@ document.body.insertAdjacentHTML("beforeend", glass.svgFilter);
 element.style.backdropFilter = glass.filterRef;`;
 }
 
-function getSnippet(framework: Framework, effect: string, options: Record<string, unknown>) {
-  if (framework === "vue") return generateVueSnippet(effect, options);
-  if (framework === "vanilla") return generateVanillaSnippet(effect, options);
-  return generateReactSnippet(effect, options);
+function getSnippet(framework: Framework, template: string, options: Record<string, unknown>) {
+  if (framework === "vue") return generateVueSnippet(template, options);
+  if (framework === "vanilla") return generateVanillaSnippet(template, options);
+  return generateReactSnippet(template, options);
 }
 
 /* ─── Framework Tab Bar ─── */
@@ -105,7 +108,7 @@ function TierBadge({ tier }: { tier: string }) {
 }
 
 /* ─── Shared Data ─── */
-const CSS_EFFECTS: GlassEffectName[] = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin"];
+const CSS_EFFECTS: TemplateName[] = ["frosted", "crystal", "aurora", "smoke", "prism", "holographic", "thin"];
 
 const GRADIENT_BGS = [
   "from-blue-600 via-violet-600 to-fuchsia-600",
@@ -126,55 +129,55 @@ const BG_IMAGES = [
 /* ─── Templates ─── */
 type Template = {
   name: string;
-  effect: GlassEffectName;
-  options: Record<string, unknown>;
+  template: TemplateName;
+  overrides: Record<string, unknown>;
   surface?: SurfaceType;
   description: string;
 };
 
 const TEMPLATES: Template[] = [
-  { name: "Frosted Light", effect: "frosted", options: { blur: 12, tintColor: "#ffffff", tintOpacity: 0.1 }, description: "Classic light frosted glass." },
-  { name: "Frosted Dark", effect: "frosted", options: { blur: 14, tintColor: "#000000", tintOpacity: 0.2, shadowColor: "rgba(0,0,0,0.3)" }, description: "Dark mode frosted variant." },
-  { name: "Crystal Clear", effect: "crystal", options: { blur: 6, noiseFrequency: 0.006, distortionStrength: 40 }, description: "Subtle refraction." },
-  { name: "Crystal Cyan", effect: "crystal", options: { blur: 7, borderRadius: 4, tintOpacity: 0.23, noiseFrequency: 0.032, distortionStrength: 40, tintColor: "#0ad9f5" }, description: "Vivid cyan refraction." },
-  { name: "Aurora North", effect: "aurora", options: { colors: ["#a78bfa", "#818cf8", "#6ee7b7"] }, description: "Northern Lights gradient." },
-  { name: "Smoke Noir", effect: "smoke", options: { blur: 24, density: 0.4, smokeColor: "#000000" }, description: "Deep dark smoke." },
-  { name: "Prism Rainbow", effect: "prism", options: { blur: 8, saturation: 1.4, brightness: 1.1 }, description: "Spectral splitting." },
-  { name: "Holo Card", effect: "holographic", options: { blur: 8, iridescence: 0.5, animationSpeed: 4 }, description: "Iridescent shimmer." },
-  { name: "Thin Light", effect: "thin", options: { blur: 4, backgroundOpacity: 0.03 }, description: "Barely-there glass." },
+  { name: "Frosted Light", template: "frosted", overrides: { blur: 12, tintColor: "#ffffff", tintOpacity: 0.1 }, description: "Classic light frosted glass." },
+  { name: "Frosted Dark", template: "frosted", overrides: { blur: 14, tintColor: "#000000", tintOpacity: 0.2, shadowColor: "rgba(0,0,0,0.3)" }, description: "Dark mode frosted variant." },
+  { name: "Crystal Clear", template: "crystal", overrides: { blur: 6, noiseFrequency: 0.006, distortion: 40 }, description: "Subtle refraction." },
+  { name: "Crystal Cyan", template: "crystal", overrides: { blur: 7, borderRadius: 4, tintOpacity: 0.23, noiseFrequency: 0.032, distortion: 40, tintColor: "#0ad9f5" }, description: "Vivid cyan refraction." },
+  { name: "Aurora North", template: "aurora", overrides: { colors: ["#a78bfa", "#818cf8", "#6ee7b7"] }, description: "Northern Lights gradient." },
+  { name: "Smoke Noir", template: "smoke", overrides: { blur: 24, density: 0.4, smokeColor: "#000000" }, description: "Deep dark smoke." },
+  { name: "Prism Rainbow", template: "prism", overrides: { blur: 8, saturation: 1.4, brightness: 1.1 }, description: "Spectral splitting." },
+  { name: "Holo Card", template: "holographic", overrides: { blur: 8, iridescence: 0.5, animationSpeed: 4 }, description: "Iridescent shimmer." },
+  { name: "Thin Light", template: "thin", overrides: { blur: 4, backgroundOpacity: 0.03 }, description: "Barely-there glass." },
   // Refraction templates
-  { name: "Convex Lens", effect: "refraction", surface: "convexCircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Classic magnifying glass." },
-  { name: "Squircle Panel", effect: "refraction", surface: "convexSquircle", options: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Rounded square glass." },
-  { name: "Concave Dish", effect: "refraction", surface: "concave", options: { bezelWidth: 40, glassThickness: 180, blur: 6, refractiveIndex: 1.4, specularOpacity: 0.5 }, description: "Inward-curving surface." },
-  { name: "Sharp Refract", effect: "refraction", surface: "convexSquircle", options: { bezelWidth: 30, glassThickness: 400, blur: 4, refractiveIndex: 2.0, specularOpacity: 0.8 }, description: "Dramatic light bending." },
-  { name: "Soft Blur", effect: "refraction", surface: "convexSquircle", options: { bezelWidth: 60, glassThickness: 150, blur: 14, refractiveIndex: 1.3, specularOpacity: 0.4 }, description: "Heavy blur, gentle refraction." },
-  { name: "Lip Edge", effect: "refraction", surface: "lip", options: { bezelWidth: 50, glassThickness: 200, blur: 6, refractiveIndex: 1.5, specularOpacity: 0.5 }, description: "Raised lip edge." },
+  { name: "Convex Lens", template: "refraction", surface: "convexCircle", overrides: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Classic magnifying glass." },
+  { name: "Squircle Panel", template: "refraction", surface: "convexSquircle", overrides: { bezelWidth: 50, glassThickness: 200, blur: 8, refractiveIndex: 1.5, specularOpacity: 0.6 }, description: "Rounded square glass." },
+  { name: "Concave Dish", template: "refraction", surface: "concave", overrides: { bezelWidth: 40, glassThickness: 180, blur: 6, refractiveIndex: 1.4, specularOpacity: 0.5 }, description: "Inward-curving surface." },
+  { name: "Sharp Refract", template: "refraction", surface: "convexSquircle", overrides: { bezelWidth: 30, glassThickness: 400, blur: 4, refractiveIndex: 2.0, specularOpacity: 0.8 }, description: "Dramatic light bending." },
+  { name: "Soft Blur", template: "refraction", surface: "convexSquircle", overrides: { bezelWidth: 60, glassThickness: 150, blur: 14, refractiveIndex: 1.3, specularOpacity: 0.4 }, description: "Heavy blur, gentle refraction." },
+  { name: "Lip Edge", template: "refraction", surface: "lip", overrides: { bezelWidth: 50, glassThickness: 200, blur: 6, refractiveIndex: 1.5, specularOpacity: 0.5 }, description: "Raised lip edge." },
 ];
 
 /* ─── Sliders ─── */
-type SliderConfig = { key: string; label: string; min: number; max: number; step: number; defaultValue: number; effects: GlassEffectName[] };
+type SliderConfig = { key: string; label: string; min: number; max: number; step: number; defaultValue: number; templates: TemplateName[] };
 const SLIDERS: SliderConfig[] = [
-  { key: "blur", label: "Blur", min: 0, max: 40, step: 1, defaultValue: 12, effects: CSS_EFFECTS },
-  { key: "borderRadius", label: "Radius", min: 0, max: 50, step: 1, defaultValue: 20, effects: CSS_EFFECTS },
-  { key: "tintOpacity", label: "Tint Opacity", min: 0, max: 0.5, step: 0.01, defaultValue: 0.08, effects: ["frosted", "crystal"] },
-  { key: "shadowBlur", label: "Shadow Blur", min: 0, max: 30, step: 1, defaultValue: 6, effects: ["frosted"] },
-  { key: "noiseFrequency", label: "Noise Freq", min: 0.001, max: 0.05, step: 0.001, defaultValue: 0.008, effects: ["crystal"] },
-  { key: "distortionStrength", label: "Distortion", min: 0, max: 150, step: 1, defaultValue: 60, effects: ["crystal"] },
-  { key: "colorOpacity", label: "Color Opacity", min: 0, max: 0.5, step: 0.01, defaultValue: 0.15, effects: ["aurora"] },
-  { key: "animationSpeed", label: "Anim Speed (s)", min: 1, max: 30, step: 1, defaultValue: 8, effects: ["aurora", "holographic", "smoke"] },
-  { key: "density", label: "Density", min: 0, max: 0.8, step: 0.05, defaultValue: 0.3, effects: ["smoke"] },
-  { key: "hueRotate", label: "Hue Rotate", min: -180, max: 180, step: 5, defaultValue: 0, effects: ["prism"] },
-  { key: "saturation", label: "Saturation", min: 0.5, max: 2, step: 0.1, defaultValue: 1.2, effects: ["prism"] },
-  { key: "iridescence", label: "Iridescence", min: 0, max: 1, step: 0.05, defaultValue: 0.4, effects: ["holographic"] },
-  { key: "backgroundOpacity", label: "BG Opacity", min: 0, max: 0.2, step: 0.005, defaultValue: 0.02, effects: ["thin"] },
+  { key: "blur", label: "Blur", min: 0, max: 40, step: 1, defaultValue: 12, templates: CSS_EFFECTS },
+  { key: "borderRadius", label: "Radius", min: 0, max: 50, step: 1, defaultValue: 20, templates: CSS_EFFECTS },
+  { key: "tintOpacity", label: "Tint Opacity", min: 0, max: 0.5, step: 0.01, defaultValue: 0.08, templates: ["frosted", "crystal"] },
+  { key: "shadowBlur", label: "Shadow Blur", min: 0, max: 30, step: 1, defaultValue: 6, templates: ["frosted"] },
+  { key: "noiseFrequency", label: "Noise Freq", min: 0.001, max: 0.05, step: 0.001, defaultValue: 0.008, templates: ["crystal"] },
+  { key: "distortion", label: "Distortion", min: 0, max: 150, step: 1, defaultValue: 60, templates: ["crystal"] },
+  { key: "colorOpacity", label: "Color Opacity", min: 0, max: 0.5, step: 0.01, defaultValue: 0.15, templates: ["aurora"] },
+  { key: "animationSpeed", label: "Anim Speed (s)", min: 1, max: 30, step: 1, defaultValue: 8, templates: ["aurora", "holographic", "smoke"] },
+  { key: "density", label: "Density", min: 0, max: 0.8, step: 0.05, defaultValue: 0.3, templates: ["smoke"] },
+  { key: "hueRotate", label: "Hue Rotate", min: -180, max: 180, step: 5, defaultValue: 0, templates: ["prism"] },
+  { key: "saturation", label: "Saturation", min: 0.5, max: 2, step: 0.1, defaultValue: 1.2, templates: ["prism"] },
+  { key: "iridescence", label: "Iridescence", min: 0, max: 1, step: 0.05, defaultValue: 0.4, templates: ["holographic"] },
+  { key: "backgroundOpacity", label: "BG Opacity", min: 0, max: 0.2, step: 0.005, defaultValue: 0.02, templates: ["thin"] },
   // Refraction-specific
-  { key: "bezelWidth", label: "Bezel Width", min: 10, max: 100, step: 1, defaultValue: 50, effects: ["refraction"] },
-  { key: "glassThickness", label: "Glass Thickness", min: 20, max: 500, step: 10, defaultValue: 200, effects: ["refraction"] },
-  { key: "blur", label: "Blur", min: 0, max: 20, step: 1, defaultValue: 8, effects: ["refraction"] },
-  { key: "refractiveIndex", label: "Refractive Index", min: 1.0, max: 2.5, step: 0.05, defaultValue: 1.5, effects: ["refraction"] },
-  { key: "specularOpacity", label: "Specular", min: 0, max: 1, step: 0.05, defaultValue: 0.6, effects: ["refraction"] },
-  { key: "refractionSaturation", label: "Saturation", min: 0.5, max: 3, step: 0.1, defaultValue: 1.2, effects: ["refraction"] },
-  { key: "radius", label: "Corner Radius", min: 4, max: 60, step: 1, defaultValue: 20, effects: ["refraction"] },
+  { key: "bezelWidth", label: "Bezel Width", min: 10, max: 100, step: 1, defaultValue: 50, templates: ["refraction"] },
+  { key: "glassThickness", label: "Glass Thickness", min: 20, max: 500, step: 10, defaultValue: 200, templates: ["refraction"] },
+  { key: "blur", label: "Blur", min: 0, max: 20, step: 1, defaultValue: 8, templates: ["refraction"] },
+  { key: "refractiveIndex", label: "Refractive Index", min: 1.0, max: 2.5, step: 0.05, defaultValue: 1.5, templates: ["refraction"] },
+  { key: "specularOpacity", label: "Specular", min: 0, max: 1, step: 0.05, defaultValue: 0.6, templates: ["refraction"] },
+  { key: "refractionSaturation", label: "Saturation", min: 0.5, max: 3, step: 0.1, defaultValue: 1.2, templates: ["refraction"] },
+  { key: "radius", label: "Corner Radius", min: 4, max: 60, step: 1, defaultValue: 20, templates: ["refraction"] },
 ];
 
 const SURFACE_TYPES: { key: SurfaceType; label: string }[] = [
@@ -194,14 +197,14 @@ function BrowseView({ onSelect }: { onSelect: (index: number) => void }) {
 
   const filtered = TEMPLATES.filter((t) => {
     if (filter === "all") return true;
-    return effectRenderTiers[t.effect] === filter;
+    return templateRenderTiers[t.template] === filter;
   });
 
   const tabs: { key: FilterTab; label: string; count: number }[] = [
     { key: "all", label: "All", count: TEMPLATES.length },
-    { key: "css", label: "CSS", count: TEMPLATES.filter((t) => effectRenderTiers[t.effect] === "css").length },
-    { key: "svg-filter", label: "SVG Filter", count: TEMPLATES.filter((t) => effectRenderTiers[t.effect] === "svg-filter").length },
-    { key: "webgl", label: "WebGL", count: TEMPLATES.filter((t) => effectRenderTiers[t.effect] === "webgl").length },
+    { key: "css", label: "CSS", count: TEMPLATES.filter((t) => templateRenderTiers[t.template] === "css").length },
+    { key: "svg-filter", label: "SVG Filter", count: TEMPLATES.filter((t) => templateRenderTiers[t.template] === "svg-filter").length },
+    { key: "webgl", label: "WebGL", count: TEMPLATES.filter((t) => templateRenderTiers[t.template] === "webgl").length },
   ].filter((tab): tab is { key: FilterTab; label: string; count: number } => tab.key === "all" || tab.count > 0);
 
   return (
@@ -230,7 +233,7 @@ function BrowseView({ onSelect }: { onSelect: (index: number) => void }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map((t) => {
           const idx = TEMPLATES.indexOf(t);
-          const tier = effectRenderTiers[t.effect];
+          const tier = templateRenderTiers[t.template];
           return (
             <button
               key={idx}
@@ -239,8 +242,8 @@ function BrowseView({ onSelect }: { onSelect: (index: number) => void }) {
             >
               {/* Mini preview */}
               <div className="relative h-32 bg-gradient-to-br from-blue-600 via-violet-600 to-fuchsia-600 flex items-center justify-center overflow-hidden">
-                {t.effect !== "refraction" ? (
-                  <Glass effect={t.effect} options={t.options as never} className="w-[160px] h-[80px] flex items-center justify-center">
+                {t.template !== "refraction" ? (
+                  <Glass template={t.template} {...(t.overrides as Record<string, unknown>)} className="w-[160px] h-[80px] flex items-center justify-center">
                     <span className="text-white/60 text-xs">Preview</span>
                   </Glass>
                 ) : (
@@ -256,7 +259,7 @@ function BrowseView({ onSelect }: { onSelect: (index: number) => void }) {
                   <TierBadge tier={tier} />
                 </div>
                 <p className="text-xs text-slate-500">{t.description}</p>
-                <p className="text-[10px] text-slate-600 mt-1 capitalize">{t.effect}</p>
+                <p className="text-[10px] text-slate-600 mt-1 capitalize">{t.template}</p>
               </div>
             </button>
           );
@@ -372,13 +375,13 @@ function TweakView({
   const template = TEMPLATES[templateIndex];
   const [values, setValues] = useState<Record<string, number>>(() => {
     const nv: Record<string, number> = {};
-    for (const [k, v] of Object.entries(template.options)) {
+    for (const [k, v] of Object.entries(template.overrides)) {
       if (typeof v === "number") nv[k] = v;
     }
     return nv;
   });
   const [tintColor, setTintColor] = useState(() => {
-    const tc = template.options.tintColor;
+    const tc = template.overrides.tintColor;
     return typeof tc === "string" ? tc : "#ffffff";
   });
   const [surface, setSurface] = useState<SurfaceType>(template.surface ?? "convexSquircle");
@@ -389,24 +392,24 @@ function TweakView({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
-  const effect = template.effect;
-  const isRefraction = effect === "refraction";
-  const tier = effectRenderTiers[effect];
+  const tmplName = template.template;
+  const isRefraction = tmplName === "refraction";
+  const tier = templateRenderTiers[tmplName];
 
-  // All templates for the same effect (for the dropdown)
+  // All templates for the same template type (for the dropdown)
   const sameEffectTemplates = TEMPLATES
     .map((t, i) => ({ ...t, index: i }))
-    .filter((t) => t.effect === effect);
+    .filter((t) => t.template === tmplName);
 
   // When switching templates, reload values
   const switchTemplate = (idx: number) => {
     const t = TEMPLATES[idx];
     const nv: Record<string, number> = {};
-    for (const [k, v] of Object.entries(t.options)) {
+    for (const [k, v] of Object.entries(t.overrides)) {
       if (typeof v === "number") nv[k] = v;
     }
     setValues(nv);
-    const tc = t.options.tintColor;
+    const tc = t.overrides.tintColor;
     setTintColor(typeof tc === "string" ? tc : "#ffffff");
     if (t.surface) setSurface(t.surface);
     setDropdownOpen(false);
@@ -421,19 +424,19 @@ function TweakView({
     setMouseOffset({ x: nx * -20, y: ny * -20 });
   }, []);
 
-  const activeSliders = SLIDERS.filter((s) => s.effects.includes(effect));
+  const activeSliders = SLIDERS.filter((s) => s.templates.includes(tmplName));
   const getValue = (key: string, def: number) => values[key] ?? def;
 
   const options = useMemo(() => {
     const o: Record<string, unknown> = {};
     activeSliders.forEach((s) => { o[s.key] = getValue(s.key, s.defaultValue); });
-    if (["frosted", "crystal"].includes(effect)) o.tintColor = tintColor;
+    if (["frosted", "crystal"].includes(tmplName)) o.tintColor = tintColor;
     if (isRefraction && o.refractionSaturation !== undefined) {
       o.saturation = o.refractionSaturation;
       delete o.refractionSaturation;
     }
     return o;
-  }, [effect, values, tintColor, activeSliders, isRefraction]);
+  }, [tmplName, values, tintColor, activeSliders, isRefraction]);
 
   const codeSnippet = useMemo(() => {
     if (isRefraction) {
@@ -448,16 +451,16 @@ function TweakView({
         specularOpacity: getValue("specularOpacity", 0.6),
       });
     }
-    return getSnippet(framework, effect, options);
-  }, [framework, effect, options, isRefraction, surface, values]);
+    return getSnippet(framework, tmplName, options);
+  }, [framework, tmplName, options, isRefraction, surface, values]);
 
   const resetToTemplate = () => {
     const nv: Record<string, number> = {};
-    for (const [k, v] of Object.entries(template.options)) {
+    for (const [k, v] of Object.entries(template.overrides)) {
       if (typeof v === "number") nv[k] = v;
     }
     setValues(nv);
-    const tc = template.options.tintColor;
+    const tc = template.overrides.tintColor;
     setTintColor(typeof tc === "string" ? tc : "#ffffff");
     if (template.surface) setSurface(template.surface);
   };
@@ -496,10 +499,10 @@ function TweakView({
                 >
                   <div>
                     <span className="font-medium">{t.name}</span>
-                    <span className="text-[10px] text-slate-500 ml-2 capitalize">{t.effect}</span>
+                    <span className="text-[10px] text-slate-500 ml-2 capitalize">{t.template}</span>
                   </div>
-                  <span className={`text-[9px] ${effectRenderTiers[t.effect] === "svg-filter" ? "text-emerald-400" : "text-violet-400"}`}>
-                    {effectRenderTiers[t.effect] === "svg-filter" ? "SVG" : effectRenderTiers[t.effect] === "webgl" ? "WebGL" : "CSS"}
+                  <span className={`text-[9px] ${templateRenderTiers[t.template] === "svg-filter" ? "text-emerald-400" : "text-violet-400"}`}>
+                    {templateRenderTiers[t.template] === "svg-filter" ? "SVG" : templateRenderTiers[t.template] === "webgl" ? "WebGL" : "CSS"}
                   </span>
                 </button>
               ))}
@@ -560,9 +563,9 @@ function TweakView({
                   style={{ top: "-7.5%", left: "-7.5%", transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)` }}
                 />
               )}
-              <Glass effect={effect} options={options as never} className="w-[280px] h-[200px] flex items-center justify-center transition-all duration-300">
+              <Glass template={tmplName} {...(options as Record<string, unknown>)} className="w-[280px] h-[200px] flex items-center justify-center transition-all duration-300">
                 <div className="text-center px-4">
-                  <p className="text-white/90 text-sm font-medium capitalize">{effect}</p>
+                  <p className="text-white/90 text-sm font-medium capitalize">{tmplName}</p>
                   <p className="text-white/50 text-xs mt-1">{template.name}</p>
                 </div>
               </Glass>
@@ -607,7 +610,7 @@ function TweakView({
               </button>
             </div>
             <div className="space-y-3">
-              {!isRefraction && ["frosted", "crystal"].includes(effect) && (
+              {!isRefraction && ["frosted", "crystal"].includes(tmplName) && (
                 <label className="flex items-center justify-between">
                   <span className="text-xs text-slate-400">Tint Color</span>
                   <input type="color" value={tintColor} onChange={(e) => setTintColor(e.target.value)} className="w-7 h-7 rounded cursor-pointer bg-transparent border-0" />

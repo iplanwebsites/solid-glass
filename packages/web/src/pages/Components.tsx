@@ -44,12 +44,12 @@ function GlassCardDemo() {
       <div className="relative overflow-hidden rounded-2xl h-80 flex items-center justify-center">
         <img src={BG_IMAGE} alt="" className="absolute inset-0 w-[120%] h-[120%] object-cover -top-[10%] -left-[10%]" />
         <div className="relative z-10 flex gap-4 flex-wrap justify-center px-4">
-          <Glass effect="frosted" options={{ blur: 16, tintColor: "#ffffff", tintOpacity: 0.1, borderRadius: 20 } as never} className="p-6 w-64">
+          <Glass template="frosted" blur={16} tintColor="#ffffff" tintOpacity={0.1} borderRadius={20} className="p-6 w-64">
             <h3 className="text-lg font-semibold text-white mb-1">Notification</h3>
             <p className="text-sm text-white/60 mb-3">3 new messages</p>
             <p className="text-sm text-white/80">Preview of the latest message content goes here...</p>
           </Glass>
-          <Glass effect="crystal" options={{ blur: 8, tintColor: "#8b5cf6", tintOpacity: 0.08, borderRadius: 20 } as never} className="p-6 w-64">
+          <Glass template="crystal" blur={8} tintColor="#8b5cf6" tintOpacity={0.08} borderRadius={20} className="p-6 w-64">
             <h3 className="text-lg font-semibold text-white mb-1">Analytics</h3>
             <p className="text-sm text-white/60 mb-3">Weekly report</p>
             <p className="text-sm text-white/80">Up 24% from last week</p>
@@ -87,16 +87,19 @@ function GlassButtonDemo() {
 
       <div className="relative overflow-hidden rounded-2xl h-48 flex items-center justify-center bg-gradient-to-br from-blue-600 via-violet-600 to-fuchsia-600">
         <div className="flex gap-4 flex-wrap justify-center px-4">
-          {(["frosted", "crystal", "thin", "aurora"] as const).map((effect) => (
+          {(["frosted", "crystal", "thin", "aurora"] as const).map((tmpl) => (
             <Glass
-              key={effect}
+              key={tmpl}
               as="button"
-              effect={effect}
-              options={{ blur: 12, tintColor: "#ffffff", tintOpacity: 0.08, borderRadius: 12 } as never}
-              className={`px-5 py-2.5 text-sm font-medium text-white cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${clicked === effect ? "ring-2 ring-white/50" : ""}`}
-              onClick={() => { setClicked(effect); setTimeout(() => setClicked(null), 1000); }}
+              template={tmpl}
+              blur={12}
+              tintColor="#ffffff"
+              tintOpacity={0.08}
+              borderRadius={12}
+              className={`px-5 py-2.5 text-sm font-medium text-white cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${clicked === tmpl ? "ring-2 ring-white/50" : ""}`}
+              onClick={() => { setClicked(tmpl); setTimeout(() => setClicked(null), 1000); }}
             >
-              {effect.charAt(0).toUpperCase() + effect.slice(1)}
+              {tmpl.charAt(0).toUpperCase() + tmpl.slice(1)}
             </Glass>
           ))}
         </div>

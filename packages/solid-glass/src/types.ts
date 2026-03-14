@@ -152,7 +152,9 @@ export type TemplatePresetName =
   | "refractionLoupe";
 
 /** Props for the unified Glass component */
-export interface GlassProps extends GlassOptions {
+export interface GlassProps
+  extends GlassOptions,
+    Omit<React.HTMLAttributes<HTMLDivElement>, "style" | "className"> {
   /** Template — curated starting point (default: "frosted") */
   template?: TemplateName | TemplatePresetName;
   /** Content */

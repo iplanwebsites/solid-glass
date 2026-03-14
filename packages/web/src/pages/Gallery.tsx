@@ -1,7 +1,29 @@
 import { useState, useRef, useMemo, useEffect } from "react";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
-import { refractionPresets } from "solid-glass";
+import { templatePresets } from "solid-glass";
 import { EffectGrid } from "../components/EffectGrid";
+
+/** Refraction engine presets derived from template presets */
+const refractionPresets = {
+  loupe: {
+    radius: templatePresets.refractionLoupe.overrides.borderRadius as number,
+    bezelWidth: templatePresets.refractionLoupe.overrides.bezelWidth as number,
+    glassThickness: templatePresets.refractionLoupe.overrides.glassThickness as number,
+    blur: templatePresets.refractionLoupe.overrides.blur as number,
+    refractiveIndex: templatePresets.refractionLoupe.overrides.refractiveIndex as number,
+    surface: templatePresets.refractionLoupe.overrides.surface as SurfaceType,
+    specularOpacity: templatePresets.refractionLoupe.overrides.specularOpacity as number,
+  },
+  panel: {
+    radius: templatePresets.refractionPanel.overrides.width ? 54 : 54, // not in overrides, use base template default
+    bezelWidth: 22,
+    glassThickness: 130,
+    blur: 2,
+    refractiveIndex: 2.05,
+    surface: "convexSquircle" as const,
+    specularOpacity: 0.7,
+  },
+};
 
 const LOUPE_IMAGE = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80";
 const PANEL_IMAGE = "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&q=80";

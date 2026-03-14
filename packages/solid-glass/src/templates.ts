@@ -1,4 +1,5 @@
 import type { GlassOptions, TemplateName, TemplatePresetName, RenderTier } from "./types";
+import type { LiquidGlassOptions } from "./engines/svg-refraction";
 
 /** Base template definitions — minimal defaults that define each look */
 export const templates: Record<TemplateName, GlassOptions> = {
@@ -136,6 +137,66 @@ export const templateFallbacks: Partial<Record<TemplateName, TemplateName>> = {
 /** All template names (base + preset) */
 export const templateNames: TemplateName[] = Object.keys(templates) as TemplateName[];
 export const templatePresetNames: TemplatePresetName[] = Object.keys(templatePresets) as TemplatePresetName[];
+
+/**
+ * Liquid glass presets for the SVG refraction engine.
+ * These define dimension-independent settings; width/height should be set per-use.
+ */
+export const refractionPresets = {
+  /** Default panel style — balanced refraction with soft blur */
+  panel: {
+    radius: 54,
+    bezelWidth: 22,
+    glassThickness: 130,
+    blur: 2,
+    refractiveIndex: 2.05,
+    surface: "convexSquircle",
+    specularOpacity: 0.7,
+  },
+  /** Magnifying loupe — no blur, strong refraction */
+  loupe: {
+    radius: 50,
+    bezelWidth: 20,
+    glassThickness: 200,
+    blur: 0,
+    refractiveIndex: 1.5,
+    surface: "convexCircle",
+    specularOpacity: 0.7,
+  },
+  /** Subtle card — light refraction for content cards */
+  card: {
+    radius: 20,
+    bezelWidth: 16,
+    glassThickness: 100,
+    blur: 4,
+    refractiveIndex: 1.8,
+    surface: "convexSquircle",
+    specularOpacity: 0.5,
+  },
+  /** Bold bubble — pronounced convex effect */
+  bubble: {
+    radius: 40,
+    bezelWidth: 30,
+    glassThickness: 180,
+    blur: 1,
+    refractiveIndex: 2.2,
+    surface: "convexCircle",
+    specularOpacity: 0.8,
+  },
+  /** Concave dish — inverted glass surface */
+  dish: {
+    radius: 24,
+    bezelWidth: 24,
+    glassThickness: 150,
+    blur: 3,
+    refractiveIndex: 1.6,
+    surface: "concave",
+    specularOpacity: 0.6,
+  },
+} as const satisfies Record<string, Omit<LiquidGlassOptions, "width" | "height">>;
+
+export type RefractionPresetName = keyof typeof refractionPresets;
+export const refractionPresetNames = Object.keys(refractionPresets) as RefractionPresetName[];
 
 /**
  * Resolve a template name (base or preset) into merged GlassOptions.

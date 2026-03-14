@@ -16,7 +16,11 @@ export {
   templateRenderTiers,
   templateFallbacks,
   resolveTemplate,
+  refractionPresets,
+  refractionPresetNames,
 } from "./templates";
+
+export type { RefractionPresetName } from "./templates";
 
 // DOM utilities
 export { injectSvgFilter, ensureStyles } from "./dom";

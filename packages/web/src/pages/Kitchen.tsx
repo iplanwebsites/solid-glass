@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
-import { Glass, type GlassEffectName } from "solid-glass";
+import { Glass, type TemplateName } from "solid-glass";
 import { ArrowRight, Sparkles, Play, Pause, Settings2, RotateCcw, X } from "lucide-react";
 import { Slider } from "../components/ui/slider";
 
@@ -562,10 +562,10 @@ function GlassButtonsShowcase() {
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
 
   const buttons = [
-    { effect: "frosted" as GlassEffectName, label: "Frosted Button", options: { blur: 12, tintOpacity: 0.15 } },
-    { effect: "crystal" as GlassEffectName, label: "Crystal Button", options: { blur: 8, distortionStrength: 30 } },
-    { effect: "aurora" as GlassEffectName, label: "Aurora Button", options: { colors: ["#a78bfa", "#6ee7b7"] } },
-    { effect: "holographic" as GlassEffectName, label: "Holo Button", options: { iridescence: 0.5 } },
+    { template: "frosted" as TemplateName, label: "Frosted Button", overrides: { blur: 12, tintOpacity: 0.15 } },
+    { template: "crystal" as TemplateName, label: "Crystal Button", overrides: { blur: 8, distortion: 30 } },
+    { template: "aurora" as TemplateName, label: "Aurora Button", overrides: { colors: ["#a78bfa", "#6ee7b7"] } },
+    { template: "holographic" as TemplateName, label: "Holo Button", overrides: { iridescence: 0.5 } },
   ];
 
   return (
@@ -591,13 +591,13 @@ function GlassButtonsShowcase() {
           <div className="relative z-10 flex flex-wrap items-center justify-center gap-6 p-12">
             {buttons.map((btn) => (
               <Glass
-                key={btn.effect}
-                effect={btn.effect}
-                options={btn.options as never}
+                key={btn.template}
+                template={btn.template}
+                {...btn.overrides}
                 className={`px-8 py-4 rounded-2xl cursor-pointer transition-all duration-300 ${
-                  hoveredBtn === btn.effect ? "scale-110 shadow-2xl" : ""
+                  hoveredBtn === btn.template ? "scale-110 shadow-2xl" : ""
                 }`}
-                onMouseEnter={() => setHoveredBtn(btn.effect)}
+                onMouseEnter={() => setHoveredBtn(btn.template)}
                 onMouseLeave={() => setHoveredBtn(null)}
               >
                 <span className="text-white font-semibold text-sm whitespace-nowrap">{btn.label}</span>
@@ -710,12 +710,12 @@ function InteractivePanelGrid() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const panels = [
-    { effect: "frosted" as GlassEffectName, title: "Frosted", desc: "Classic Apple-style blur" },
-    { effect: "crystal" as GlassEffectName, title: "Crystal", desc: "Noise-based distortion" },
-    { effect: "aurora" as GlassEffectName, title: "Aurora", desc: "Animated gradient overlay" },
-    { effect: "smoke" as GlassEffectName, title: "Smoke", desc: "Dark animated turbulence" },
-    { effect: "prism" as GlassEffectName, title: "Prism", desc: "Spectral color splitting" },
-    { effect: "holographic" as GlassEffectName, title: "Holographic", desc: "Iridescent shimmer" },
+    { template: "frosted" as TemplateName, title: "Frosted", desc: "Classic Apple-style blur" },
+    { template: "crystal" as TemplateName, title: "Crystal", desc: "Noise-based distortion" },
+    { template: "aurora" as TemplateName, title: "Aurora", desc: "Animated gradient overlay" },
+    { template: "smoke" as TemplateName, title: "Smoke", desc: "Dark animated turbulence" },
+    { template: "prism" as TemplateName, title: "Prism", desc: "Spectral color splitting" },
+    { template: "holographic" as TemplateName, title: "Holographic", desc: "Iridescent shimmer" },
   ];
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
@@ -760,9 +760,9 @@ function InteractivePanelGrid() {
           <div className="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-4 p-6">
             {panels.map((panel, i) => (
               <Glass
-                key={panel.effect}
-                effect={panel.effect}
-                options={{ blur: 14 }}
+                key={panel.template}
+                template={panel.template}
+                blur={14}
                 className={`p-6 rounded-2xl cursor-pointer transition-all duration-500 ${
                   activePanel === i ? "scale-105 z-10" : activePanel !== null ? "scale-95 opacity-70" : ""
                 }`}
@@ -774,7 +774,7 @@ function InteractivePanelGrid() {
                 {activePanel === i && (
                   <div className="mt-4 pt-4 border-t border-white/20">
                     <code className="text-[10px] text-lime-300 font-mono">
-                      {`<Glass effect="${panel.effect}" />`}
+                      {`<Glass template="${panel.template}" />`}
                     </code>
                   </div>
                 )}
