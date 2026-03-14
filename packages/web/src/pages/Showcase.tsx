@@ -443,115 +443,128 @@ export function Showcase() {
         </div>
 
         {/* Controls */}
-        <div className="space-y-5">
-          {/* Effect picker */}
-          <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
-            <h3 className="text-sm font-semibold text-slate-200 mb-3">Effect</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {ALL_EFFECTS.map((e) => (
-                <button
-                  key={e}
-                  onClick={() => { setEffect(e); setValues({}); }}
-                  className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${effect === e ? "bg-white text-slate-900" : "bg-slate-700 text-slate-300 hover:bg-slate-600"}`}
-                >
-                  <span>{e}</span>
-                  {effect !== e && (
-                    <span className={`text-[9px] ${effectRenderTiers[e] === "svg-filter" ? "text-emerald-400" : "text-violet-400"}`}>
-                      {effectRenderTiers[e] === "svg-filter" ? "SVG" : "CSS"}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Surface type picker (liquid only) */}
-          {isLiquid && (
-            <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
-              <h3 className="text-sm font-semibold text-slate-200 mb-3">Surface Shape</h3>
-              <div className="grid grid-cols-2 gap-2">
-                {SURFACE_TYPES.map((s) => (
-                  <button key={s.key} onClick={() => setSurface(s.key)} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${surface === s.key ? "bg-white text-slate-900" : "bg-slate-700 text-slate-300 hover:bg-slate-600"}`}>
-                    {s.label}
-                  </button>
-                ))}
+        <div className="space-y-6">
+          {/* ── SECTION 1: Choose ── */}
+          <div>
+            <h3 className="text-[11px] uppercase tracking-widest text-slate-500 font-semibold mb-3 px-1">Choose</h3>
+            <div className="space-y-3">
+              {/* Effect picker */}
+              <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-slate-200">Effect</h4>
+                  <TierBadge effect={effect} />
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {ALL_EFFECTS.map((e) => (
+                    <button
+                      key={e}
+                      onClick={() => { setEffect(e); setValues({}); }}
+                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${effect === e ? "bg-white text-slate-900" : "bg-slate-700/60 text-slate-300 hover:bg-slate-600"}`}
+                    >
+                      <span>{e}</span>
+                      {effect !== e && (
+                        <span className={`text-[9px] ${effectRenderTiers[e] === "svg-filter" ? "text-emerald-400" : "text-violet-400"}`}>
+                          {effectRenderTiers[e] === "svg-filter" ? "SVG" : "CSS"}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
 
-          {/* Templates & Presets */}
-          {(effectTemplates.length > 0 || effectPresets.length > 0) && (
-            <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
-              <h3 className="text-sm font-semibold text-slate-200 mb-3">Templates</h3>
-              <div className="flex flex-wrap gap-2">
-                {effectTemplates.map((t) => (
-                  <button key={t.name} onClick={() => loadTemplate(t)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">{t.name}</button>
-                ))}
-              </div>
-              {effectPresets.length > 0 && (
-                <div className="mt-3 border-t border-slate-700 pt-3">
-                  <h4 className="text-xs text-slate-500 mb-2">Presets</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {effectPresets.map((name) => (
-                      <button key={name} onClick={() => handlePreset(name)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700/60 text-slate-400 hover:bg-slate-600 transition-colors">{name}</button>
+              {/* Surface type picker (liquid only) */}
+              {isLiquid && (
+                <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
+                  <h4 className="text-sm font-semibold text-slate-200 mb-3">Surface Shape</h4>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {SURFACE_TYPES.map((s) => (
+                      <button key={s.key} onClick={() => setSurface(s.key)} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${surface === s.key ? "bg-white text-slate-900" : "bg-slate-700/60 text-slate-300 hover:bg-slate-600"}`}>
+                        {s.label}
+                      </button>
                     ))}
                   </div>
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Parameters */}
-          <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-sm font-semibold text-slate-200">Parameters</h3>
-              <button onClick={() => { setValues({}); setTintColor("#ffffff"); }} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"><RotateCcw size={12} /> Reset</button>
-            </div>
-            <div className="space-y-4">
-              {!isLiquid && ["frosted", "crystal"].includes(effect) && (
-                <label className="flex items-center justify-between">
-                  <span className="text-sm text-slate-300">Tint Color</span>
-                  <input type="color" value={tintColor} onChange={(e) => setTintColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer bg-transparent border-0" />
-                </label>
-              )}
-              {activeSliders.map((s) => (
-                <label key={s.key} className="block">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-slate-300">{s.label}</span>
-                    <span className="text-slate-500 font-mono text-xs">{getValue(s.key, s.defaultValue)}</span>
+              {/* Templates & Presets */}
+              {(effectTemplates.length > 0 || effectPresets.length > 0) && (
+                <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
+                  <h4 className="text-sm font-semibold text-slate-200 mb-3">Templates</h4>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {effectTemplates.map((t) => (
+                      <button
+                        key={t.name}
+                        onClick={() => loadTemplate(t)}
+                        className="px-3 py-2 rounded-lg text-left transition-colors bg-slate-700/60 hover:bg-slate-600 group"
+                      >
+                        <span className="text-xs font-medium text-slate-200 group-hover:text-white">{t.name}</span>
+                        <span className="block text-[10px] text-slate-500 mt-0.5 leading-tight">{t.description}</span>
+                      </button>
+                    ))}
                   </div>
-                  <input type="range" min={s.min} max={s.max} step={s.step} value={getValue(s.key, s.defaultValue)} onChange={(e) => setValues((p) => ({ ...p, [s.key]: Number(e.target.value) }))} className="w-full accent-blue-500" />
-                </label>
-              ))}
+                  {effectPresets.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-slate-700/50">
+                      <h5 className="text-[10px] uppercase tracking-wider text-slate-600 mb-2">Library Presets</h5>
+                      <div className="flex flex-wrap gap-1.5">
+                        {effectPresets.map((name) => (
+                          <button key={name} onClick={() => handlePreset(name)} className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-colors">{name}</button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Render tier info */}
-          <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-sm font-semibold text-slate-200">Render Tier</h3>
-              <TierBadge effect={effect} />
+          {/* ── Divider ── */}
+          <div className="border-t border-slate-700/50" />
+
+          {/* ── SECTION 2: Tune ── */}
+          <div>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <h3 className="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">Tune</h3>
+              <button onClick={() => { setValues({}); setTintColor("#ffffff"); }} className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-white transition-colors"><RotateCcw size={10} /> Reset</button>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <div className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4">
+              <div className="space-y-3">
+                {!isLiquid && ["frosted", "crystal"].includes(effect) && (
+                  <label className="flex items-center justify-between">
+                    <span className="text-xs text-slate-400">Tint Color</span>
+                    <input type="color" value={tintColor} onChange={(e) => setTintColor(e.target.value)} className="w-7 h-7 rounded cursor-pointer bg-transparent border-0" />
+                  </label>
+                )}
+                {activeSliders.map((s) => (
+                  <label key={s.key} className="block">
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-slate-400">{s.label}</span>
+                      <span className="text-slate-600 font-mono text-[11px] tabular-nums">{getValue(s.key, s.defaultValue)}</span>
+                    </div>
+                    <input type="range" min={s.min} max={s.max} step={s.step} value={getValue(s.key, s.defaultValue)} onChange={(e) => setValues((p) => ({ ...p, [s.key]: Number(e.target.value) }))} className="w-full accent-blue-500 h-1" />
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Render tier info — compact footer */}
+          <div className="px-1">
+            <p className="text-[11px] text-slate-500 leading-relaxed">
               {isLiquid ? (
                 <>
-                  Uses Snell-Descartes law to calculate how light bends through a curved glass surface.
-                  The displacement map is generated per-pixel on a canvas, then fed into an SVG
-                  <code className="text-blue-300 mx-1">feDisplacementMap</code>
-                  filter with a specular highlight overlay.
+                  <span className="text-slate-400 font-medium">SVG Refraction</span> — Snell-Descartes displacement map via canvas, fed into
+                  <code className="text-blue-400/70 mx-0.5">feDisplacementMap</code>.
                 </>
               ) : effectRenderTiers[effect] === "svg-filter" ? (
                 <>
-                  This effect uses SVG filter primitives
-                  (<code className="text-blue-300 mx-0.5">feTurbulence</code>,
-                  <code className="text-blue-300 mx-0.5">feDisplacementMap</code>)
-                  applied via <code className="text-blue-300 mx-0.5">backdrop-filter</code>.
+                  <span className="text-slate-400 font-medium">SVG Filter</span> —
+                  <code className="text-blue-400/70 mx-0.5">feTurbulence</code> +
+                  <code className="text-blue-400/70 mx-0.5">feDisplacementMap</code>
+                  via backdrop-filter.
                 </>
               ) : (
                 <>
-                  This effect uses pure CSS — <code className="text-blue-300 mx-0.5">backdrop-filter</code>,
-                  <code className="text-blue-300 mx-0.5">box-shadow</code>, and CSS animations.
-                  Works across all modern browsers.
+                  <span className="text-slate-400 font-medium">CSS</span> — backdrop-filter, box-shadow, CSS animations. All modern browsers.
                 </>
               )}
             </p>
