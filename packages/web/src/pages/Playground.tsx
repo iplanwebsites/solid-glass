@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Glass, type TemplateName, templatePresets, type TemplatePresetName, templatePresetNames, templateRenderTiers } from "solid-glass";
 import { createLiquidGlass, type SurfaceType, SURFACE_EQUATIONS } from "solid-glass/engines/svg-refraction";
-import { RotateCcw, Image, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { RotateCcw, Image, ChevronLeft, ChevronRight, ChevronDown, Link2 } from "lucide-react";
 import { CodeBlock } from "../components/CodeBlock";
 import { RenderTierBadge, RenderTierTag, ChromiumNotice } from "../components/RenderTierTag";
 
@@ -167,6 +167,109 @@ const SURFACE_TYPES: { key: SurfaceType; label: string }[] = [
 
 type FilterTab = "all" | "css" | "svg-filter" | "svg-backdrop" | "webgl";
 
+/* ─── Preview Size Presets ─── */
+type PreviewSize = { key: string; label: string; w: number; h: number };
+const PREVIEW_SIZES: PreviewSize[] = [
+  { key: "card", label: "Card", w: 280, h: 200 },
+  { key: "banner", label: "Banner", w: 480, h: 160 },
+  { key: "square", label: "Square", w: 240, h: 240 },
+  { key: "full", label: "Full", w: 0, h: 0 }, // 0 = fill container
+];
+
+/* ─── URL Hash State ─── */
+function encodeHashState(templateIndex: number, values: Record<string, number>, tintColor: string, surface?: SurfaceType): string {
+  const parts: string[] = [`t=${templateIndex}`];
+  const numEntries = Object.entries(values);
+  if (numEntries.length > 0) parts.push(`v=${numEntries.map(([k, v]) => `${k}:${v}`).join(",")}`);
+  if (tintColor !== "#ffffff") parts.push(`c=${tintColor.replace("#", "")}`);
+  if (surface) parts.push(`s=${surface}`);
+  return parts.join("&");
+}
+
+function decodeHashState(hash: string): { templateIndex: number; values: Record<string, number>; tintColor: string; surface?: SurfaceType } | null {
+  if (!hash || hash.length < 2) return null;
+  const params = new URLSearchParams(hash.replace(/^#/, ""));
+  const tStr = params.get("t");
+  if (tStr === null) return null;
+  const templateIndex = parseInt(tStr, 10);
+  if (isNaN(templateIndex) || templateIndex < 0 || templateIndex >= TEMPLATES.length) return null;
+
+  const values: Record<string, number> = {};
+  const vStr = params.get("v");
+  if (vStr) {
+    for (const pair of vStr.split(",")) {
+      const [k, v] = pair.split(":");
+      if (k && v) values[k] = parseFloat(v);
+    }
+  }
+
+  const cStr = params.get("c");
+  const tintColor = cStr ? `#${cStr}` : "#ffffff";
+  const surface = params.get("s") as SurfaceType | undefined;
+
+  return { templateIndex, values, tintColor, surface: surface || undefined };
+}
+
+/* ─── Editable Number Input ─── */
+function EditableValue({
+  value,
+  step,
+  min,
+  max,
+  onChange,
+  isModified,
+}: {
+  value: number;
+  step: number;
+  min: number;
+  max: number;
+  onChange: (v: number) => void;
+  isModified: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const decimals = step < 1 ? Math.max(String(step).split(".")[1]?.length ?? 0, 2) : 0;
+  const display = decimals > 0 ? value.toFixed(decimals) : String(value);
+
+  const commit = () => {
+    const n = parseFloat(editText);
+    if (!isNaN(n)) onChange(Math.min(max, Math.max(min, n)));
+    setEditing(false);
+  };
+
+  useEffect(() => {
+    if (editing) inputRef.current?.select();
+  }, [editing]);
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        type="text"
+        value={editText}
+        onChange={(e) => setEditText(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(false); }}
+        className="w-16 bg-slate-700 text-slate-200 text-[11px] font-mono tabular-nums rounded px-1.5 py-0.5 text-right outline-none ring-1 ring-blue-500"
+      />
+    );
+  }
+
+  return (
+    <button
+      onClick={() => { setEditText(display); setEditing(true); }}
+      className={`font-mono text-[11px] tabular-nums px-1.5 py-0.5 rounded transition-colors cursor-text ${
+        isModified ? "text-blue-400 bg-blue-500/10" : "text-slate-600 hover:text-slate-400 hover:bg-slate-800"
+      }`}
+      title="Click to type a value"
+    >
+      {display}
+    </button>
+  );
+}
+
 /* ═══════════════════════════════════════════════ */
 /*  Browse Mode — template gallery                  */
 /* ═══════════════════════════════════════════════ */
@@ -249,6 +352,75 @@ function BrowseView({ onSelect }: { onSelect: (index: number) => void }) {
 }
 
 /* ═══════════════════════════════════════════════ */
+/*  Grouped Dropdown for Template Switching        */
+/* ═══════════════════════════════════════════════ */
+function GroupedTemplateDropdown({
+  templateIndex,
+  onSelect,
+  open,
+  onToggle,
+}: {
+  templateIndex: number;
+  onSelect: (index: number) => void;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const template = TEMPLATES[templateIndex];
+  const tier = templateRenderTiers[template.template];
+
+  // Group templates by effect type
+  const groups = useMemo(() => {
+    const map = new Map<string, { template: Template; index: number }[]>();
+    TEMPLATES.forEach((t, i) => {
+      const key = t.template;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push({ template: t, index: i });
+    });
+    return map;
+  }, []);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={onToggle}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-sm text-slate-200 hover:border-slate-500 transition-colors"
+      >
+        {template.name}
+        <RenderTierBadge tier={tier} />
+        <span className="text-[10px] text-slate-600 tabular-nums">{templateIndex + 1}/{TEMPLATES.length}</span>
+        <ChevronDown size={14} className={`text-slate-500 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 w-72 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 py-1 max-h-80 overflow-y-auto">
+          {[...groups.entries()].map(([effectType, items], gi) => (
+            <div key={effectType}>
+              {gi > 0 && <div className="mx-3 my-1 border-t border-slate-700/50" />}
+              <div className="px-3 pt-2 pb-1">
+                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{effectType}</span>
+              </div>
+              {items.map(({ template: t, index: i }) => (
+                <button
+                  key={i}
+                  onClick={() => onSelect(i)}
+                  className={`w-full text-left px-3 py-1.5 text-sm transition-colors flex items-center justify-between ${
+                    i === templateIndex
+                      ? "bg-white/10 text-white"
+                      : "text-slate-300 hover:bg-slate-700"
+                  }`}
+                >
+                  <span className="font-medium">{t.name}</span>
+                  <RenderTierBadge tier={templateRenderTiers[t.template]} />
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════ */
 /*  Refraction Preview (tweak mode)                  */
 /* ═══════════════════════════════════════════════ */
 function RefractionPreview({
@@ -260,6 +432,8 @@ function RefractionPreview({
   gradientIndex,
   previewRef,
   onMouseMove,
+  panelWidth,
+  panelHeight,
 }: {
   surface: SurfaceType;
   values: Record<string, number>;
@@ -269,10 +443,10 @@ function RefractionPreview({
   gradientIndex: number;
   previewRef: React.RefObject<HTMLDivElement | null>;
   onMouseMove: (e: React.MouseEvent) => void;
+  panelWidth: number;
+  panelHeight: number;
 }) {
   const svgRef = useRef<Element | null>(null);
-  const panelWidth = 280;
-  const panelHeight = 200;
 
   const glass = useMemo(() => {
     return createLiquidGlass({
@@ -288,7 +462,7 @@ function RefractionPreview({
       saturation: getValue("refractionSaturation", 1.2),
       dpr: 1,
     });
-  }, [surface, values]);
+  }, [surface, values, panelWidth, panelHeight]);
 
   useEffect(() => {
     if (svgRef.current) svgRef.current.remove();
@@ -369,19 +543,27 @@ function TweakView({
   const [framework, setFramework] = useState<Framework>("react");
   const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [previewSize, setPreviewSize] = useState<string>("card");
+  const [linkCopied, setLinkCopied] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
   const tmplName = template.template;
   const isRefraction = tmplName === "refraction";
   const tier = templateRenderTiers[tmplName];
 
-  // All templates for the same template type (for the dropdown)
-  const sameEffectTemplates = TEMPLATES
-    .map((t, i) => ({ ...t, index: i }))
-    .filter((t) => t.template === tmplName);
+  const sizePreset = PREVIEW_SIZES.find((s) => s.key === previewSize) ?? PREVIEW_SIZES[0];
+  const isFull = sizePreset.key === "full";
+  const panelWidth = isFull ? 440 : sizePreset.w;
+  const panelHeight = isFull ? 300 : sizePreset.h;
+
+  // Get template default value for a slider
+  const getTemplateDefault = (key: string): number | undefined => {
+    const val = template.overrides[key];
+    return typeof val === "number" ? val : undefined;
+  };
 
   // When switching templates, reload values
-  const switchTemplate = (idx: number) => {
+  const switchTemplate = useCallback((idx: number) => {
     const t = TEMPLATES[idx];
     const nv: Record<string, number> = {};
     for (const [k, v] of Object.entries(t.overrides)) {
@@ -393,7 +575,7 @@ function TweakView({
     if (t.surface) setSurface(t.surface);
     setDropdownOpen(false);
     onSwitch(idx);
-  };
+  }, [onSwitch]);
 
   // Keyboard navigation: left/right arrow keys
   useEffect(() => {
@@ -409,7 +591,13 @@ function TweakView({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [templateIndex]);
+  }, [templateIndex, switchTemplate]);
+
+  // Sync state to URL hash
+  useEffect(() => {
+    const hash = encodeHashState(templateIndex, values, tintColor, isRefraction ? surface : undefined);
+    window.history.replaceState(null, "", `#${hash}`);
+  }, [templateIndex, values, tintColor, surface, isRefraction]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const rect = previewRef.current?.getBoundingClientRect();
@@ -421,6 +609,25 @@ function TweakView({
 
   const activeSliders = SLIDERS.filter((s) => s.templates.includes(tmplName));
   const getValue = (key: string, def: number) => values[key] ?? def;
+
+  // Only include values that differ from slider defaults (for cleaner code output)
+  const changedOptions = useMemo(() => {
+    const o: Record<string, unknown> = {};
+    activeSliders.forEach((s) => {
+      const current = getValue(s.key, s.defaultValue);
+      const templateVal = getTemplateDefault(s.key);
+      // Always include values that are set in the template overrides or differ from slider defaults
+      if (templateVal !== undefined || current !== s.defaultValue) {
+        o[s.key] = current;
+      }
+    });
+    if (["frosted", "crystal"].includes(tmplName)) o.tintColor = tintColor;
+    if (isRefraction && o.refractionSaturation !== undefined) {
+      o.saturation = o.refractionSaturation;
+      delete o.refractionSaturation;
+    }
+    return o;
+  }, [tmplName, values, tintColor, activeSliders, isRefraction]);
 
   const options = useMemo(() => {
     const o: Record<string, unknown> = {};
@@ -436,7 +643,7 @@ function TweakView({
   const codeSnippet = useMemo(() => {
     if (isRefraction) {
       return generateRefractionSnippet({
-        width: 280, height: 200,
+        width: panelWidth, height: panelHeight,
         radius: getValue("radius", 20),
         bezelWidth: getValue("bezelWidth", 50),
         glassThickness: getValue("glassThickness", 200),
@@ -446,8 +653,8 @@ function TweakView({
         specularOpacity: getValue("specularOpacity", 0.6),
       });
     }
-    return getSnippet(framework, tmplName, options);
-  }, [framework, tmplName, options, isRefraction, surface, values]);
+    return getSnippet(framework, tmplName, changedOptions);
+  }, [framework, tmplName, changedOptions, isRefraction, surface, values, panelWidth, panelHeight]);
 
   const resetToTemplate = () => {
     const nv: Record<string, number> = {};
@@ -460,9 +667,25 @@ function TweakView({
     if (template.surface) setSurface(template.surface);
   };
 
+  const copyLink = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    });
+  };
+
+  // Count how many sliders are modified from template defaults
+  const modifiedCount = activeSliders.filter((s) => {
+    const templateVal = getTemplateDefault(s.key);
+    const current = getValue(s.key, s.defaultValue);
+    const base = templateVal ?? s.defaultValue;
+    return current !== base;
+  }).length;
+
   return (
     <div>
-      {/* Header: back + prev/next + template switcher */}
+      {/* Header: back + prev/next + template switcher + share */}
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={onBack}
@@ -488,38 +711,21 @@ function TweakView({
             <ChevronRight size={16} />
           </button>
         </div>
-        <div className="relative">
-          <button
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-sm text-slate-200 hover:border-slate-500 transition-colors"
-          >
-            {template.name}
-            <RenderTierBadge tier={tier} />
-            <span className="text-[10px] text-slate-600 tabular-nums">{templateIndex + 1}/{TEMPLATES.length}</span>
-            <ChevronDown size={14} className={`text-slate-500 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
-          </button>
-          {dropdownOpen && (
-            <div className="absolute top-full left-0 mt-1 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 py-1 max-h-72 overflow-y-auto">
-              {TEMPLATES.map((t, i) => (
-                <button
-                  key={i}
-                  onClick={() => switchTemplate(i)}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center justify-between ${
-                    i === templateIndex
-                      ? "bg-white/10 text-white"
-                      : "text-slate-300 hover:bg-slate-700"
-                  }`}
-                >
-                  <div>
-                    <span className="font-medium">{t.name}</span>
-                    <span className="text-[10px] text-slate-500 ml-2 capitalize">{t.template}</span>
-                  </div>
-                  <RenderTierBadge tier={templateRenderTiers[t.template]} />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <GroupedTemplateDropdown
+          templateIndex={templateIndex}
+          onSelect={switchTemplate}
+          open={dropdownOpen}
+          onToggle={() => setDropdownOpen(!dropdownOpen)}
+        />
+        {/* Share link button */}
+        <button
+          onClick={copyLink}
+          className="ml-auto flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white bg-slate-800 border border-slate-700 hover:border-slate-500 transition-colors"
+          title="Copy shareable link"
+        >
+          <Link2 size={13} />
+          {linkCopied ? "Copied!" : "Share"}
+        </button>
       </div>
 
       <ChromiumNotice tier={tier} />
@@ -527,17 +733,36 @@ function TweakView({
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
         {/* Preview + Code */}
         <div className="space-y-4">
-          {/* Background picker */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500">BG:</span>
-            {GRADIENT_BGS.map((g, i) => (
-              <button key={g} onClick={() => { setBgIndex(-1); setGradientIndex(i); }} className={`w-6 h-6 rounded-full bg-gradient-to-br ${g} border-2 transition-colors ${bgIndex === -1 && gradientIndex === i ? "border-white" : "border-transparent"}`} />
-            ))}
-            {BG_IMAGES.slice(0, 4).map((_, i) => (
-              <button key={i} onClick={() => setBgIndex(i)} className={`w-6 h-6 rounded-full border-2 transition-colors flex items-center justify-center bg-slate-700 ${bgIndex === i ? "border-white" : "border-transparent"}`}>
-                <Image size={10} className="text-slate-400" />
-              </button>
-            ))}
+          {/* Background picker + Size presets */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500">BG:</span>
+              {GRADIENT_BGS.map((g, i) => (
+                <button key={g} onClick={() => { setBgIndex(-1); setGradientIndex(i); }} className={`w-6 h-6 rounded-full bg-gradient-to-br ${g} border-2 transition-colors ${bgIndex === -1 && gradientIndex === i ? "border-white" : "border-transparent"}`} />
+              ))}
+              {BG_IMAGES.slice(0, 4).map((_, i) => (
+                <button key={i} onClick={() => setBgIndex(i)} className={`w-6 h-6 rounded-full border-2 transition-colors flex items-center justify-center bg-slate-700 ${bgIndex === i ? "border-white" : "border-transparent"}`}>
+                  <Image size={10} className="text-slate-400" />
+                </button>
+              ))}
+            </div>
+            <div className="h-4 w-px bg-slate-700" />
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-slate-500">Size:</span>
+              {PREVIEW_SIZES.map((s) => (
+                <button
+                  key={s.key}
+                  onClick={() => setPreviewSize(s.key)}
+                  className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${
+                    previewSize === s.key
+                      ? "bg-slate-600 text-white"
+                      : "text-slate-500 hover:text-slate-300"
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Preview */}
@@ -551,6 +776,8 @@ function TweakView({
               gradientIndex={gradientIndex}
               previewRef={previewRef}
               onMouseMove={handleMouseMove}
+              panelWidth={panelWidth}
+              panelHeight={panelHeight}
             />
           ) : (
             <div
@@ -567,7 +794,12 @@ function TweakView({
                   style={{ top: "-7.5%", left: "-7.5%", transform: `translate(${mouseOffset.x}px, ${mouseOffset.y}px)` }}
                 />
               )}
-              <Glass template={tmplName} {...(options as Record<string, unknown>)} className="w-[280px] h-[200px] flex items-center justify-center transition-all duration-300">
+              <Glass
+                template={tmplName}
+                {...(options as Record<string, unknown>)}
+                className={`flex items-center justify-center transition-all duration-300 ${isFull ? "w-[90%] h-[80%]" : ""}`}
+                style={isFull ? undefined : { width: panelWidth, height: panelHeight }}
+              >
                 <div className="text-center px-4">
                   <p className="text-white/90 text-sm font-medium capitalize">{tmplName}</p>
                   <p className="text-white/50 text-xs mt-1">{template.name}</p>
@@ -608,7 +840,14 @@ function TweakView({
           {/* Parameters */}
           <div className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Parameters</h4>
+              <div className="flex items-center gap-2">
+                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Parameters</h4>
+                {modifiedCount > 0 && (
+                  <span className="text-[10px] text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded-full">
+                    {modifiedCount} changed
+                  </span>
+                )}
+              </div>
               <button onClick={resetToTemplate} className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-white transition-colors">
                 <RotateCcw size={10} /> Reset
               </button>
@@ -620,15 +859,42 @@ function TweakView({
                   <input type="color" value={tintColor} onChange={(e) => setTintColor(e.target.value)} className="w-7 h-7 rounded cursor-pointer bg-transparent border-0" />
                 </label>
               )}
-              {activeSliders.map((s) => (
-                <label key={s.key} className="block">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-400">{s.label}</span>
-                    <span className="text-slate-600 font-mono text-[11px] tabular-nums">{getValue(s.key, s.defaultValue)}</span>
+              {activeSliders.map((s) => {
+                const current = getValue(s.key, s.defaultValue);
+                const templateVal = getTemplateDefault(s.key);
+                const base = templateVal ?? s.defaultValue;
+                const isModified = current !== base;
+                return (
+                  <div key={s.key} className="group/slider">
+                    <div className="flex justify-between items-center text-xs mb-1">
+                      <div className="flex items-center gap-1.5">
+                        {isModified && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />}
+                        <span className={isModified ? "text-slate-300" : "text-slate-400"}>{s.label}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {isModified && (
+                          <button
+                            onClick={() => setValues((p) => ({ ...p, [s.key]: base }))}
+                            className="opacity-0 group-hover/slider:opacity-100 transition-opacity text-slate-600 hover:text-slate-300"
+                            title="Reset to default"
+                          >
+                            <RotateCcw size={10} />
+                          </button>
+                        )}
+                        <EditableValue
+                          value={current}
+                          step={s.step}
+                          min={s.min}
+                          max={s.max}
+                          onChange={(v) => setValues((p) => ({ ...p, [s.key]: v }))}
+                          isModified={isModified}
+                        />
+                      </div>
+                    </div>
+                    <input type="range" min={s.min} max={s.max} step={s.step} value={current} onChange={(e) => setValues((p) => ({ ...p, [s.key]: Number(e.target.value) }))} className="w-full accent-blue-500 h-1" />
                   </div>
-                  <input type="range" min={s.min} max={s.max} step={s.step} value={getValue(s.key, s.defaultValue)} onChange={(e) => setValues((p) => ({ ...p, [s.key]: Number(e.target.value) }))} className="w-full accent-blue-500 h-1" />
-                </label>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -646,7 +912,17 @@ function TweakView({
 /*  Main Playground — state machine                  */
 /* ═══════════════════════════════════════════════ */
 export function Playground() {
-  const [activeTemplate, setActiveTemplate] = useState<number | null>(null);
+  const [activeTemplate, setActiveTemplate] = useState<number | null>(() => {
+    // Restore from URL hash on initial load
+    const decoded = decodeHashState(window.location.hash);
+    return decoded ? decoded.templateIndex : null;
+  });
+
+  // Clear hash when going back to browse
+  const handleBack = () => {
+    setActiveTemplate(null);
+    window.history.replaceState(null, "", window.location.pathname);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -667,7 +943,7 @@ export function Playground() {
       ) : (
         <TweakView
           templateIndex={activeTemplate}
-          onBack={() => setActiveTemplate(null)}
+          onBack={handleBack}
           onSwitch={setActiveTemplate}
         />
       )}
