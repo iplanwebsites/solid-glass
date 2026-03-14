@@ -1,8 +1,9 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Glass, type TemplateName, templatePresets, type TemplatePresetName, templatePresetNames, templateRenderTiers } from "solid-glass";
 import { createLiquidGlass, type SurfaceType, SURFACE_EQUATIONS } from "solid-glass/engines/svg-refraction";
-import { RotateCcw, Image, Sparkles, Gem, Box, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { RotateCcw, Image, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { CodeBlock } from "../components/CodeBlock";
+import { RenderTierBadge, RenderTierTag, ChromiumNotice } from "../components/RenderTierTag";
 
 /* ─── Framework Code Generators ─── */
 type Framework = "react" | "vue" | "vanilla";
@@ -81,36 +82,6 @@ function FrameworkTabs({ active, onChange }: { active: Framework; onChange: (f: 
         </button>
       ))}
     </div>
-  );
-}
-
-/* ─── Render Tier Badge ─── */
-function TierBadge({ tier }: { tier: string }) {
-  if (tier === "svg-backdrop") {
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full px-2 py-0.5">
-        <Gem size={10} /> SVG Backdrop
-      </span>
-    );
-  }
-  if (tier === "svg-filter") {
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">
-        <Gem size={10} /> SVG Filter
-      </span>
-    );
-  }
-  if (tier === "webgl") {
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full px-2 py-0.5">
-        <Box size={10} /> WebGL
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-full px-2 py-0.5">
-      <Sparkles size={10} /> CSS
-    </span>
   );
 }
 
@@ -264,7 +235,7 @@ function BrowseView({ onSelect }: { onSelect: (index: number) => void }) {
               <div className="p-3">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-semibold text-slate-200 group-hover:text-white">{t.name}</span>
-                  <TierBadge tier={tier} />
+                  <RenderTierBadge tier={tier} />
                 </div>
                 <p className="text-xs text-slate-500">{t.description}</p>
                 <p className="text-[10px] text-slate-600 mt-1 capitalize">{t.template}</p>
@@ -523,7 +494,7 @@ function TweakView({
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-sm text-slate-200 hover:border-slate-500 transition-colors"
           >
             {template.name}
-            <TierBadge tier={tier} />
+            <RenderTierBadge tier={tier} />
             <span className="text-[10px] text-slate-600 tabular-nums">{templateIndex + 1}/{TEMPLATES.length}</span>
             <ChevronDown size={14} className={`text-slate-500 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
           </button>
@@ -543,9 +514,7 @@ function TweakView({
                     <span className="font-medium">{t.name}</span>
                     <span className="text-[10px] text-slate-500 ml-2 capitalize">{t.template}</span>
                   </div>
-                  <span className={`text-[9px] ${templateRenderTiers[t.template] === "svg-backdrop" ? "text-amber-400" : templateRenderTiers[t.template] === "svg-filter" ? "text-emerald-400" : "text-violet-400"}`}>
-                    {templateRenderTiers[t.template] === "svg-backdrop" ? "SVG Backdrop" : templateRenderTiers[t.template] === "svg-filter" ? "SVG Filter" : templateRenderTiers[t.template] === "webgl" ? "WebGL" : "CSS"}
-                  </span>
+                  <RenderTierBadge tier={templateRenderTiers[t.template]} />
                 </button>
               ))}
             </div>
@@ -553,14 +522,7 @@ function TweakView({
         </div>
       </div>
 
-      {/* Chromium notice — only for svg-backdrop tier (backdrop-filter: url()) */}
-      {tier === "svg-backdrop" && (
-        <div className="text-center mb-4">
-          <span className="inline-flex items-center gap-2 text-xs text-yellow-400/80 bg-yellow-400/5 border border-yellow-400/20 rounded-full px-3 py-1">
-            Chromium 113+ only — <code className="font-mono">backdrop-filter: url()</code> requires Chrome or Edge
-          </span>
-        </div>
-      )}
+      <ChromiumNotice tier={tier} />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
         {/* Preview + Code */}
@@ -670,18 +632,10 @@ function TweakView({
             </div>
           </div>
 
-          {/* Render tier footnote */}
-          <p className="text-[11px] text-slate-600 leading-relaxed px-1">
-            {tier === "svg-backdrop" ? (
-              <>SVG displacement via <code className="text-amber-400/60">backdrop-filter: url()</code> — Chromium 113+ only.</>
-            ) : tier === "webgl" ? (
-              <>WebGL — GPU-accelerated rendering with custom shaders.</>
-            ) : tier === "svg-filter" ? (
-              <>SVG <code className="text-emerald-400/60">filter: url()</code> + <code className="text-emerald-400/60">backdrop-filter: blur()</code> — all modern browsers.</>
-            ) : (
-              <>Pure CSS — backdrop-filter, box-shadow, animations. All modern browsers.</>
-            )}
-          </p>
+          {/* Render tier — expandable explanation */}
+          <div className="px-1">
+            <RenderTierTag tier={tier} />
+          </div>
         </div>
       </div>
     </div>

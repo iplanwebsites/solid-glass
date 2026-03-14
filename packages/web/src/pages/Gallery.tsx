@@ -2,6 +2,7 @@ import { useState, useRef, useMemo, useEffect } from "react";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
 import { templatePresets } from "solid-glass";
 import { EffectGrid } from "../components/EffectGrid";
+import { RenderTierBadge } from "../components/RenderTierTag";
 
 /** Refraction engine presets derived from template presets */
 const refractionPresets = {
@@ -70,8 +71,7 @@ function LoupeDemoCard() {
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <h3 className="text-sm font-semibold text-white">Loupe</h3>
-        <span className="text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">SVG Filter</span>
-        <span className="text-[10px] text-yellow-400/70">Chromium</span>
+        <RenderTierBadge tier="svg-backdrop" />
       </div>
       <div
         ref={containerRef}
@@ -133,8 +133,7 @@ function RefractionDemoCard() {
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <h3 className="text-sm font-semibold text-white">Refraction Panel</h3>
-        <span className="text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">SVG Filter</span>
-        <span className="text-[10px] text-yellow-400/70">Chromium</span>
+        <RenderTierBadge tier="svg-backdrop" />
       </div>
       <div className="flex gap-1.5 mb-2">
         {(["convexCircle", "convexSquircle", "concave", "lip"] as SurfaceType[]).map((s) => (

@@ -1,31 +1,12 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Glass } from "solid-glass";
 import { createLiquidGlass, type SurfaceType } from "solid-glass/engines/svg-refraction";
-import { Sparkles, Gem, Box, Search, Bell, X, Info, CheckCircle, AlertTriangle, User, Lock, Mail } from "lucide-react";
+import { Search, Bell, X, Info, CheckCircle, AlertTriangle, User, Lock, Mail } from "lucide-react";
 import { CodeBlock } from "../components/CodeBlock";
+import { RenderTierBadge } from "../components/RenderTierTag";
 
-/* ─── Render Tier Badge ─── */
-function TierBadge({ tier }: { tier: string }) {
-  if (tier === "svg-filter") {
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">
-        <Gem size={10} /> SVG Filter
-      </span>
-    );
-  }
-  if (tier === "webgl") {
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full px-2 py-0.5">
-        <Box size={10} /> WebGL
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-full px-2 py-0.5">
-      <Sparkles size={10} /> CSS
-    </span>
-  );
-}
+/* TierBadge alias for shared component */
+const TierBadge = RenderTierBadge;
 
 const BG_IMAGE = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80";
 
@@ -171,11 +152,10 @@ function LoupeDemo() {
       <div>
         <div className="flex items-center gap-3 mb-2">
           <h3 className="text-xl font-bold text-white">Loupe</h3>
-          <TierBadge tier="svg-filter" />
+          <TierBadge tier="svg-backdrop" />
         </div>
         <p className="text-slate-400 text-sm">
           A magnifying glass component using the SVG refraction engine. Move your mouse over the image.
-          <span className="text-yellow-400/80 ml-1">(Chromium only)</span>
         </p>
       </div>
 
@@ -256,11 +236,10 @@ function RefractionPanelDemo() {
       <div>
         <div className="flex items-center gap-3 mb-2">
           <h3 className="text-xl font-bold text-white">RefractionPanel</h3>
-          <TierBadge tier="svg-filter" />
+          <TierBadge tier="svg-backdrop" />
         </div>
         <p className="text-slate-400 text-sm">
           A panel using the SVG refraction engine with Snell-Descartes law.
-          <span className="text-yellow-400/80 ml-1">(Chromium only)</span>
         </p>
       </div>
 
@@ -705,8 +684,8 @@ const COMPONENTS = [
   { id: "glass-tooltip", label: "GlassTooltip", tier: "css" as const, Component: GlassTooltipDemo },
   { id: "glass-toast", label: "GlassToast", tier: "css" as const, Component: GlassToastDemo },
   { id: "glass-form", label: "GlassForm", tier: "css" as const, Component: GlassFormDemo },
-  { id: "loupe", label: "Loupe", tier: "svg-filter" as const, Component: LoupeDemo },
-  { id: "liquid-glass-panel", label: "RefractionPanel", tier: "svg-filter" as const, Component: RefractionPanelDemo },
+  { id: "loupe", label: "Loupe", tier: "svg-backdrop" as const, Component: LoupeDemo },
+  { id: "liquid-glass-panel", label: "RefractionPanel", tier: "svg-backdrop" as const, Component: RefractionPanelDemo },
 ];
 
 export function Components() {
@@ -742,8 +721,8 @@ export function Components() {
                   }`}
                 >
                   <span className="font-mono">{c.label}</span>
-                  <span className={`ml-2 text-[9px] ${c.tier === "svg-filter" ? "text-emerald-500" : "text-violet-400"}`}>
-                    {c.tier === "svg-filter" ? "SVG Filter" : "CSS"}
+                  <span className={`ml-2 text-[9px] ${c.tier === "svg-backdrop" ? "text-amber-400" : c.tier === "svg-filter" ? "text-emerald-400" : "text-violet-400"}`}>
+                    {c.tier === "svg-backdrop" ? "SVG Backdrop" : c.tier === "svg-filter" ? "SVG Filter" : "CSS"}
                   </span>
                 </button>
               </li>
