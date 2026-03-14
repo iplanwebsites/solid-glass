@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Glass, type TemplateName, templatePresets, type TemplatePresetName, templatePresetNames, templateRenderTiers } from "solid-glass";
 import { createLiquidGlass, type SurfaceType, SURFACE_EQUATIONS } from "solid-glass/engines/svg-refraction";
-import { RotateCcw, Image, Sparkles, Gem, Box, ChevronLeft, ChevronDown } from "lucide-react";
+import { RotateCcw, Image, Sparkles, Gem, Box, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { CodeBlock } from "../components/CodeBlock";
 
 /* ─── Framework Code Generators ─── */
@@ -416,6 +416,22 @@ function TweakView({
     onSwitch(idx);
   };
 
+  // Keyboard navigation: left/right arrow keys
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        switchTemplate((templateIndex - 1 + TEMPLATES.length) % TEMPLATES.length);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        switchTemplate((templateIndex + 1) % TEMPLATES.length);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [templateIndex]);
+
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const rect = previewRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -467,7 +483,7 @@ function TweakView({
 
   return (
     <div>
-      {/* Header: back + template switcher */}
+      {/* Header: back + prev/next + template switcher */}
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={onBack}
@@ -476,6 +492,23 @@ function TweakView({
           <ChevronLeft size={16} /> Browse
         </button>
         <div className="h-4 w-px bg-slate-700" />
+        {/* Prev / Next buttons */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => switchTemplate((templateIndex - 1 + TEMPLATES.length) % TEMPLATES.length)}
+            className="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
+            aria-label="Previous template"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            onClick={() => switchTemplate((templateIndex + 1) % TEMPLATES.length)}
+            className="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
+            aria-label="Next template"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
         <div className="relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -483,6 +516,7 @@ function TweakView({
           >
             {template.name}
             <TierBadge tier={tier} />
+            <span className="text-[10px] text-slate-600 tabular-nums">{templateIndex + 1}/{TEMPLATES.length}</span>
             <ChevronDown size={14} className={`text-slate-500 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
           </button>
           {dropdownOpen && (
