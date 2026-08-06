@@ -35,5 +35,11 @@
   "packageManager": "pnpm@10.29.3",
   "devDependencies": {
     "turbo": "^2.8.16"
+  },
+  "sidequest": {
+    "schemaVersion": 1,
+    "presentation": {
+      "emoji": "🧊"
+    }
   }
 }
